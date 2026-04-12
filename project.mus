@@ -1,0 +1,125 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+-- Copyright (c) 2026 Johannes Lochmann
+--
+-- This software is dual-licensed:
+--  - GNU Affero General Public License v3 (AGPL-3.0), see LICENSE-AGPL
+--  - Commercial license, contact muscovite-licensing@johanneslochmann.net
+
+-- ============================================================================
+-- Muscovite Harbor — Port & Maritime Operations Management
+-- ============================================================================
+-- Purpose: Autonomous sample project demonstrating a full Muscovite-managed
+--          application with its own ADRs, iterations, and release lifecycle.
+-- Domain:  Port operations — vessel scheduling, berth allocation, cargo tracking.
+-- ============================================================================
+
+PROJECT MuscoviteHarbor {
+    description "Port and maritime operations management system"
+    version "0.1.0"
+
+    OUTPUT {
+        directory "generated"
+    }
+
+    DATABASE development {
+        uri "postgresql://postgres:postgres@localhost:5555/harbor_dev"
+        description "Local development database"
+        POOL_MIN 2
+        POOL_MAX 10
+        RETRY {
+            MAX_RETRIES 3
+            BACKOFF Exponential BASE "100ms" MAX "5s"
+            ON_CONNECTION_ERROR true
+            ON_SERIALIZATION_FAILURE true
+            ON_DEADLOCK true
+        }
+    }
+
+    GENERATE {
+        cpp_dba      true
+        cpp_dba_test true
+        grpc         true
+        qt_widgets   true
+    }
+
+    CAPABILITIES {
+        state_machine
+    }
+
+    SERVER {
+        GRPC_DEFAULT_DEADLINE "5s"
+        GRPC_MAX_DEADLINE "30s"
+        DEADLINE_BUFFER "100ms"
+    }
+
+    TELEMETRY {
+        OTLP_ENDPOINT "http://localhost:4317"
+        SERVICE_NAME "muscovite-harbor"
+        SAMPLING_RATE 1.0
+        EXPORT_INTERVAL "30s"
+    }
+
+    DEPLOYMENT {
+        PROJECT "harbor"
+        SCHEMA "public"
+        STRATEGY SEQUENTIAL
+    }
+
+    COMPLIANCE_SCHEME MaritimeCompliance {
+        IMO      DOC "International Maritime Organization regulations";
+        ISPS     DOC "International Ship and Port Facility Security Code";
+        INTERNAL DOC "Internal port authority data";
+    }
+
+    QUALITY_SCHEME OperationalQuality {
+        VERIFIED    DOC "Verified by port authority operations";
+        ESTIMATED   DOC "Estimated value, pending confirmation";
+        PROVISIONAL DOC "Provisional data from AIS or manifest";
+    }
+
+    CLASSIFICATION_SCHEME PortDomain {
+        CORE       DOC "Core domain — vessel and berth operations";
+        SUPPORTING DOC "Supporting — cargo and documentation";
+        GENERIC    DOC "Generic — notifications and reporting";
+    }
+
+    GOVERNANCE_SCHEME IntegrationMode {
+        PARTNERSHIP    DOC "Shared kernel between port systems";
+        CUSTOMER       DOC "Downstream consumer of upstream data";
+    }
+
+    CLASSIFICATION_SCHEME TeamTopology {
+        STREAM_ALIGNED DOC "Aligned to a port operations stream";
+        PLATFORM       DOC "Internal platform for shared services";
+    }
+
+    TEAM PortOpsTeam @uuid "aa000001-0001-4000-8000-000000000001" {
+        TYPE TeamTopology.STREAM_ALIGNED
+        VISION "Manage vessel scheduling and berth allocation"
+        DOC "Core port operations team";
+    }
+
+    TEAM CargoTeam @uuid "aa000001-0001-4000-8000-000000000002" {
+        TYPE TeamTopology.STREAM_ALIGNED
+        VISION "Track cargo from vessel to warehouse"
+        DOC "Cargo and logistics team";
+    }
+
+    FRONTENDS {
+        QT_WIDGETS {
+            enabled true
+            app_name "Harbor Operations Console"
+            style "Fusion"
+            theme "Light"
+            mdi true
+            startup_context "PortOperations"
+        }
+    }
+
+    IDEMPOTENCY_TTL "24h"
+
+    CONTEXTS {
+        include "contexts/port-operations.ddd"
+        include "contexts/cargo.ddd"
+    }
+}

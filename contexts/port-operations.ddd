@@ -1,0 +1,325 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+-- Copyright (c) 2026 Johannes Lochmann
+--
+-- This software is dual-licensed:
+--  - GNU Affero General Public License v3 (AGPL-3.0), see LICENSE-AGPL
+--  - Commercial license, contact muscovite-licensing@johanneslochmann.net
+
+-- ============================================================================
+-- Port Operations Context — Vessel Scheduling & Berth Management
+-- ============================================================================
+-- Core bounded context for harbor operations. Manages vessel arrivals,
+-- departures, and berth allocation.
+--
+-- DSL constructs exercised:
+--   ENTITY, AGGREGATE, REPOSITORY, LOOKUP_TABLE, STRONG_TYPE, VALUE_OBJECT,
+--   SPECIFICATION, COMMAND, EVENT, STATE_MACHINE, DISPLAY_FORMAT, PLURAL,
+--   SEED_DATA, RELATIONSHIPS, CHECK, @compliance, @quality, @SEARCHABLE
+-- ============================================================================
+
+CONTEXT PortOperations @uuid "aa000010-0001-4000-8000-000000000001"
+    OWNER PortOpsTeam
+    VISION "Single source of truth for vessel movements and berth allocation"
+    @wardley(CUSTOM) {
+
+    GROUNDING {
+        DOMAIN "Port and maritime vessel operations";
+        KEY_CONCEPTS ["vessel", "berth", "arrival", "departure", "pilot", "draft"];
+        DIALECT English;
+        PRECISION_LEVEL Standard;
+        CONSTRAINTS ["All vessels require pilot assignment for entry"];
+        DOC "AI grounding for harbor vessel operations";
+    }
+
+    -- ========================================================================
+    -- Strong Types
+    -- ========================================================================
+
+    STRONG_TYPE IMONumber TEXT @uuid "aa000010-0010-4000-8000-000000000001"
+        CHECK format: VALUE ~ '^IMO[0-9]{7}$'
+        DOC "IMO vessel identification number (e.g., IMO9074729)";
+
+    STRONG_TYPE CallSign TEXT @uuid "aa000010-0010-4000-8000-000000000002"
+        CHECK not_empty: LENGTH(VALUE) > 0
+        CHECK max_length: LENGTH(VALUE) <= 10
+        DOC "Maritime radio call sign";
+
+    STRONG_TYPE BerthCode TEXT @uuid "aa000010-0010-4000-8000-000000000003"
+        CHECK not_empty: LENGTH(VALUE) > 0
+        CHECK max_length: LENGTH(VALUE) <= 20
+        DOC "Unique berth identifier within the port";
+
+    -- ========================================================================
+    -- Value Objects
+    -- ========================================================================
+
+    VALUE_OBJECT VesselDimensions @uuid "aa000010-0011-4000-8000-000000000001" (
+        length_overall  NUMERIC NOT_NULL @uuid "aa000010-0011-4000-8000-000000000010"
+            DOC "Length overall in meters",
+        beam            NUMERIC NOT_NULL @uuid "aa000010-0011-4000-8000-000000000011"
+            DOC "Maximum beam in meters",
+        max_draft       NUMERIC NOT_NULL @uuid "aa000010-0011-4000-8000-000000000012"
+            DOC "Maximum draft in meters"
+    )
+    DOC "Physical dimensions of a vessel";
+
+    VALUE_OBJECT PilotAssignment @uuid "aa000010-0011-4000-8000-000000000002" (
+        pilot_name    TEXT      NOT_NULL @uuid "aa000010-0011-4000-8000-000000000020"
+            @compliance(MaritimeCompliance.INTERNAL),
+        assigned_at   TIMESTAMPTZ NOT_NULL @uuid "aa000010-0011-4000-8000-000000000021"
+    )
+    DOC "Pilot assigned to guide a vessel into port";
+
+    -- ========================================================================
+    -- Lookup Tables
+    -- ========================================================================
+
+    LOOKUP_TABLE VesselType @uuid "aa000010-0020-4000-8000-000000000001" (
+        code  TEXT NOT_NULL,
+        label TEXT NOT_NULL
+    )
+    SEED_VALUES [
+        ("container",  "Container Ship"),
+        ("bulk",       "Bulk Carrier"),
+        ("tanker",     "Tanker"),
+        ("roro",       "Roll-on/Roll-off"),
+        ("passenger",  "Passenger/Cruise"),
+        ("general",    "General Cargo")
+    ]
+    DOC "Classification of vessel types";
+
+    LOOKUP_TABLE BerthStatus @uuid "aa000010-0020-4000-8000-000000000002" (
+        code  TEXT NOT_NULL,
+        label TEXT NOT_NULL
+    )
+    SEED_VALUES [
+        ("available",    "Available"),
+        ("occupied",     "Occupied"),
+        ("maintenance",  "Under Maintenance"),
+        ("reserved",     "Reserved")
+    ]
+    DOC "Current operational status of a berth";
+
+    -- ========================================================================
+    -- Events
+    -- ========================================================================
+
+    EVENT VesselArrivalRequested @uuid "aa000010-0030-4000-8000-000000000001" (
+        vessel_id UUID NOT_NULL @uuid "aa000010-0030-4000-8000-000000000010",
+        eta       TIMESTAMPTZ NOT_NULL @uuid "aa000010-0030-4000-8000-000000000011"
+    )
+    DOC "A vessel has requested arrival at the port";
+
+    EVENT VesselBerthed @uuid "aa000010-0030-4000-8000-000000000002" (
+        vessel_id UUID NOT_NULL @uuid "aa000010-0030-4000-8000-000000000020",
+        berth_id  UUID NOT_NULL @uuid "aa000010-0030-4000-8000-000000000021"
+    )
+    DOC "A vessel has been assigned to and arrived at a berth";
+
+    EVENT VesselDeparted @uuid "aa000010-0030-4000-8000-000000000003" (
+        vessel_id UUID NOT_NULL @uuid "aa000010-0030-4000-8000-000000000030",
+        berth_id  UUID NOT_NULL @uuid "aa000010-0030-4000-8000-000000000031"
+    )
+    DOC "A vessel has departed from its berth";
+
+    EVENT BerthReserved @uuid "aa000010-0030-4000-8000-000000000004" (
+        berth_id   UUID NOT_NULL @uuid "aa000010-0030-4000-8000-000000000040",
+        vessel_id  UUID NOT_NULL @uuid "aa000010-0030-4000-8000-000000000041",
+        reserved_from TIMESTAMPTZ NOT_NULL @uuid "aa000010-0030-4000-8000-000000000042",
+        reserved_to   TIMESTAMPTZ NOT_NULL @uuid "aa000010-0030-4000-8000-000000000043"
+    )
+    DOC "A berth has been reserved for an incoming vessel";
+
+    -- ========================================================================
+    -- Entities
+    -- ========================================================================
+
+    ENTITY Vessel @uuid "aa000010-0002-4000-8000-000000000001"
+        IDENTIFIED_BY id (
+            id              UUID        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000010",
+            name            TEXT        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000011"
+                @NOT_EMPTY @SEARCHABLE
+                DOC "Vessel name as registered",
+            imo_number      TEXT        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000012"
+                @NOT_EMPTY
+                @compliance(MaritimeCompliance.IMO)
+                DOC "IMO identification number",
+            call_sign       TEXT        @uuid "aa000010-0002-4000-8000-000000000013"
+                DOC "Maritime radio call sign",
+            flag_state      TEXT        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000014"
+                @quality(OperationalQuality.VERIFIED)
+                DOC "Country of registration (ISO 3166)",
+            vessel_type_id  UUID        @uuid "aa000010-0002-4000-8000-000000000015",
+            length_overall  NUMERIC     @uuid "aa000010-0002-4000-8000-000000000016"
+                DOC "Length overall in meters",
+            beam            NUMERIC     @uuid "aa000010-0002-4000-8000-000000000017"
+                DOC "Maximum beam in meters",
+            max_draft       NUMERIC     @uuid "aa000010-0002-4000-8000-000000000018"
+                DOC "Maximum draft in meters",
+            status          TEXT        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000019"
+                DOC "Current vessel visit status",
+            created_at      TIMESTAMPTZ NOT_NULL @uuid "aa000010-0002-4000-8000-00000000001a"
+        )
+        RELATIONSHIPS {
+            vessel_type -> VesselType OPTIONAL ONE @uuid "aa000010-0004-4000-8000-000000000001";
+        }
+        PLURAL "Vessels"
+        SYNONYMS "Ship"
+        DISPLAY_FORMAT (
+            SHORT: "{name} ({imo_number})",
+            FULL:  "{name} [{call_sign}] — {flag_state}, {status}"
+        )
+        CHECK name_not_empty: length(name) > 0
+        DOC "A vessel visiting or registered at the port";
+
+    ENTITY Berth @uuid "aa000010-0002-4000-8000-000000000002"
+        IDENTIFIED_BY id (
+            id              UUID        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000020",
+            code            TEXT        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000021"
+                @NOT_EMPTY @SEARCHABLE
+                DOC "Unique berth code (e.g., B-14)",
+            name            TEXT        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000022"
+                @SEARCHABLE
+                DOC "Human-readable berth name",
+            max_length      NUMERIC     NOT_NULL @uuid "aa000010-0002-4000-8000-000000000023"
+                DOC "Maximum vessel length in meters",
+            max_draft       NUMERIC     NOT_NULL @uuid "aa000010-0002-4000-8000-000000000024"
+                DOC "Maximum draft depth in meters",
+            max_beam        NUMERIC     NOT_NULL @uuid "aa000010-0002-4000-8000-000000000025"
+                DOC "Maximum vessel beam in meters",
+            berth_status_id UUID        @uuid "aa000010-0002-4000-8000-000000000026",
+            current_vessel_id UUID      @uuid "aa000010-0002-4000-8000-000000000027"
+                DOC "Currently berthed vessel, if any"
+        )
+        RELATIONSHIPS {
+            berth_status -> BerthStatus OPTIONAL ONE @uuid "aa000010-0004-4000-8000-000000000002";
+            current_vessel -> Vessel OPTIONAL ONE @uuid "aa000010-0004-4000-8000-000000000003";
+        }
+        PLURAL "Berths"
+        DISPLAY_FORMAT (
+            SHORT: "{code}",
+            FULL:  "{name} ({code}) — max {max_length}m LOA, {max_draft}m draft"
+        )
+        DOC "A physical berth where vessels can dock";
+
+    ENTITY VesselVisit @uuid "aa000010-0002-4000-8000-000000000003"
+        IDENTIFIED_BY id (
+            id              UUID        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000030",
+            vessel_id       UUID        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000031",
+            berth_id        UUID        @uuid "aa000010-0002-4000-8000-000000000032",
+            eta             TIMESTAMPTZ NOT_NULL @uuid "aa000010-0002-4000-8000-000000000033"
+                @quality(OperationalQuality.ESTIMATED)
+                DOC "Estimated time of arrival",
+            ata             TIMESTAMPTZ @uuid "aa000010-0002-4000-8000-000000000034"
+                DOC "Actual time of arrival",
+            etd             TIMESTAMPTZ @uuid "aa000010-0002-4000-8000-000000000035"
+                @quality(OperationalQuality.ESTIMATED)
+                DOC "Estimated time of departure",
+            atd             TIMESTAMPTZ @uuid "aa000010-0002-4000-8000-000000000036"
+                DOC "Actual time of departure",
+            pilot_name      TEXT        @uuid "aa000010-0002-4000-8000-000000000037"
+                @compliance(MaritimeCompliance.INTERNAL),
+            status          TEXT        NOT_NULL @uuid "aa000010-0002-4000-8000-000000000038"
+                DOC "Visit lifecycle status",
+            created_at      TIMESTAMPTZ NOT_NULL @uuid "aa000010-0002-4000-8000-000000000039"
+        )
+        RELATIONSHIPS {
+            vessel -> Vessel REQUIRED ONE @uuid "aa000010-0004-4000-8000-000000000004";
+            berth -> Berth OPTIONAL ONE @uuid "aa000010-0004-4000-8000-000000000005";
+        }
+        PLURAL "VesselVisits"
+        SYNONYMS "PortCall"
+        DISPLAY_FORMAT (
+            SHORT: "Visit {id}",
+            FULL:  "Visit for vessel {vessel_id} — ETA {eta}, status {status}"
+        )
+        DOC "A single visit of a vessel to the port";
+
+    -- ========================================================================
+    -- State Machine — Vessel Visit Lifecycle
+    -- ========================================================================
+
+    STATE_MACHINE VesselVisitLifecycle FOR VesselVisit ON status {
+        announced   -> berth_assigned  ON AssignBerth;
+        berth_assigned -> arrived      ON RecordArrival;
+        arrived     -> departed        ON RecordDeparture;
+        announced   -> cancelled       ON CancelVisit;
+        berth_assigned -> cancelled    ON CancelVisit;
+    }
+
+    -- ========================================================================
+    -- Aggregates
+    -- ========================================================================
+
+    AGGREGATE VesselVisit @uuid "aa000010-0003-4000-8000-000000000001" ROOT VesselVisit
+    DOC "Vessel visit aggregate — tracks a vessel's complete port call";
+
+    AGGREGATE Berth @uuid "aa000010-0003-4000-8000-000000000002" ROOT Berth
+    DOC "Berth aggregate — physical berth and its allocation state";
+
+    -- ========================================================================
+    -- Repositories
+    -- ========================================================================
+
+    REPOSITORY VesselRepository FOR Vessel (
+        find_by_id(id UUID) -> Vessel,
+        find_by_imo(imo_number TEXT) -> Vessel,
+        find_all() -> Vessel[]
+    );
+
+    REPOSITORY BerthRepository FOR Berth (
+        find_by_id(id UUID) -> Berth,
+        find_by_code(code TEXT) -> Berth,
+        find_available() -> Berth[]
+    );
+
+    REPOSITORY VesselVisitRepository FOR VesselVisit (
+        find_by_id(id UUID) -> VesselVisit,
+        find_active() -> VesselVisit[],
+        find_by_vessel(vessel_id UUID) -> VesselVisit[]
+    );
+
+    -- ========================================================================
+    -- Specifications
+    -- ========================================================================
+
+    SPECIFICATION ActiveVisits FOR VesselVisit
+        WHERE status != 'departed' AND status != 'cancelled'
+        DOC "Vessel visits that are currently active (not departed or cancelled)";
+
+    SPECIFICATION AvailableBerths FOR Berth (min_length NUMERIC @uuid "aa000010-0050-4000-8000-000000000001")
+        WHERE max_length >= min_length
+        DOC "Berths available for a vessel of given minimum length";
+
+    -- ========================================================================
+    -- Commands
+    -- ========================================================================
+
+    COMMAND AnnounceArrival ON VesselVisit (
+        vessel_id UUID NOT_NULL @uuid "aa000010-0060-4000-8000-000000000001",
+        eta       TIMESTAMPTZ NOT_NULL @uuid "aa000010-0060-4000-8000-000000000002"
+    )
+    EMITS VesselArrivalRequested;
+
+    COMMAND AssignBerth ON VesselVisit (
+        berth_id UUID NOT_NULL @uuid "aa000010-0060-4000-8000-000000000010"
+    )
+    EMITS BerthReserved;
+
+    COMMAND RecordArrival ON VesselVisit (
+        ata        TIMESTAMPTZ NOT_NULL @uuid "aa000010-0060-4000-8000-000000000020",
+        pilot_name TEXT @uuid "aa000010-0060-4000-8000-000000000021"
+    )
+    EMITS VesselBerthed;
+
+    COMMAND RecordDeparture ON VesselVisit (
+        atd TIMESTAMPTZ NOT_NULL @uuid "aa000010-0060-4000-8000-000000000030"
+    )
+    EMITS VesselDeparted;
+
+    COMMAND CancelVisit ON VesselVisit (
+        reason TEXT @uuid "aa000010-0060-4000-8000-000000000040"
+    )
+    DOC "Cancel a vessel visit before arrival";
+
+}
