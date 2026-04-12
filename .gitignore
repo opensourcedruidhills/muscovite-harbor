@@ -1,6 +1,3 @@
-# Generated output (muscomp)
-generated/
-
 # Build
 build/
 CMakeCache.txt

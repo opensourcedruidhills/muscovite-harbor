@@ -24,34 +24,60 @@ code generation pipeline. The DSL model compiles to PostgreSQL, gRPC, C++, and Q
 
 ## Prerequisites
 
-- [Muscovite muscomp](https://github.com/opensourcedruidhills/muscovite) compiler
-- PostgreSQL 15+
+**To build** (CI/production — no muscomp needed):
 - C++23 compiler (GCC 13+ or Clang 17+)
+- Conan 2.x + CMake 3.28+ + Ninja
+- PostgreSQL 15+ (libpqxx)
 - Qt 6.5+ (for UI targets)
-- Conan 2.x + CMake 3.28+
+
+**To modify the domain model** (dev workstation):
+- All of the above, plus:
+- [Muscovite muscomp](https://github.com/opensourcedruidhills/muscovite) compiler
 
 ## Quick Start
 
 ```bash
-# Compile the domain model
-muscomp --project project.mus --cpp-dba --cpp-dba-test --grpc --qt-frontend widgets --test
+# Build (generated code is already checked in)
+conan install --profile conan_profiles/debug .
+cmake --preset debug
+cmake --build --preset debug
+ctest --preset debug
+```
 
-# Lint only (fast check)
-muscomp --project project.mus --lint-only
+### Regenerating from DSL (after .ddd/.mus changes)
 
-# Dry run (preview generated files)
-muscomp --project project.mus --dry-run
+```bash
+# Requires muscomp on PATH (or set MUSCOMP_BIN)
+tools/regenerate.sh
+
+# Review the generated diff, then commit
+git add generated/ && git commit -m "regen: update generated code"
 ```
 
 ## Project Structure
 
 ```
 muscovite-harbor/
-├── project.mus              # Muscovite project definition
+├── project.mus              # Muscovite project definition (.mus)
 ├── contexts/
-│   ├── port-operations.ddd  # Core: vessel & berth management
-│   └── cargo.ddd            # Supporting: cargo tracking
-├── generated/               # muscomp output (gitignored)
+│   ├── port-operations.ddd  # Core: vessel & berth management (.ddd)
+│   └── cargo.ddd            # Supporting: cargo tracking (.ddd)
+├── generated/               # muscomp output — CHECKED IN (ADR-004)
+│   ├── src/                 # Generated C++ sources
+│   ├── proto/               # Generated .proto files
+│   ├── sql/                 # Generated SQL / Sqitch migrations
+│   └── qml/                 # Generated QML files
+├── src/                     # Hand-written application code
+├── tests/                   # Hand-written tests
+├── CMakeLists.txt           # Build system (pure consumer of muscovite)
+├── conanfile.py             # Conan dependencies (muscovite as package)
+├── CMakePresets.json         # Build presets (debug, release)
+├── conan_profiles/          # Conan profiles
+├── MUSCOMP_VERSION          # Which muscomp version generated the output
+├── HARBOR_VERSION           # Project version
+├── tools/
+│   ├── regenerate.sh        # Re-run muscomp (dev-time only)
+│   └── verify-generated.sh  # CI: check generated code is fresh
 ├── doc/
 │   └── adr/                 # Architecture Decision Records
 └── README.md
@@ -63,6 +89,8 @@ See [doc/adr/](doc/adr/) for all ADRs. Key decisions:
 
 - **ADR-001**: Muscovite DSL as single source of truth
 - **ADR-002**: Harbor domain bounded context boundaries
+- **ADR-003**: Iteration and release governance
+- **ADR-004**: Generated artifacts are checked in (key distinction)
 
 ## Versioning
 
