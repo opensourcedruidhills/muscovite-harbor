@@ -1,0 +1,281 @@
+erDiagram
+
+    %% Context: VesselTraffic
+    Vessel {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        IMONumber imo_number NOT_NULL,UK
+        MMSI mmsi NOT_NULL,UK
+        CallSign call_sign NOT_NULL
+        String name NOT_NULL
+        String vessel_type NOT_NULL
+        String flag_state NOT_NULL
+        Boolean is_active NOT_NULL
+    }
+    Berth {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        BerthCode code NOT_NULL,UK
+        String name NOT_NULL
+        Decimal max_loa_metres NOT_NULL
+        Decimal max_draft_metres NOT_NULL
+        Decimal max_beam_metres NOT_NULL
+        Boolean has_crane_access NOT_NULL
+        Boolean has_reefer_plugs NOT_NULL
+        Boolean is_active NOT_NULL
+    }
+    Voyage {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID vessel_id NOT_NULL
+        UUID berth_id
+        String voyage_number NOT_NULL,UK
+        DateTime eta NOT_NULL
+        DateTime ata
+        DateTime etd
+        DateTime atd
+        String cargo_category NOT_NULL
+        String status NOT_NULL
+    }
+    PilotAssignment {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID voyage_id NOT_NULL
+        String pilot_name NOT_NULL
+        String pilot_zone NOT_NULL
+        DateTime boarding_time
+        DateTime disembark_time
+    }
+    TugBooking {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID voyage_id NOT_NULL
+        String tug_name NOT_NULL
+        Decimal bollard_pull_t NOT_NULL
+        Boolean is_confirmed NOT_NULL
+    }
+    TideWindow {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID berth_id NOT_NULL
+        Decimal tide_height_metres NOT_NULL
+        Decimal available_draft NOT_NULL
+    }
+    Voyage ||--o| Vessel : "Voyage"
+    Voyage ||--o| Berth : "Voyage"
+    PilotAssignment ||--o| Voyage : "PilotAssignment"
+    TugBooking ||--o| Voyage : "TugBooking"
+    TideWindow ||--o| Berth : "TideWindow"
+
+    %% Context: CargoOperations
+    Container {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        ContainerNumber container_number NOT_NULL,UK
+        String size_category NOT_NULL
+        String hazmat_class
+        UUID voyage_id NOT_NULL
+        UUID yard_slot_id
+        String status NOT_NULL
+    }
+    YardSlot {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        YardSlotCode code NOT_NULL,UK
+        Decimal max_weight_kg NOT_NULL
+        Integer max_tier NOT_NULL
+        Boolean has_power NOT_NULL
+        Boolean is_occupied NOT_NULL
+    }
+    Crane {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        String name NOT_NULL
+        String crane_type NOT_NULL
+        Decimal max_lift_kg NOT_NULL
+        Boolean is_active NOT_NULL
+    }
+    ReeferUnit {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID container_id NOT_NULL
+        Decimal target_temp_c NOT_NULL
+        Decimal current_temp_c
+        Boolean is_powered NOT_NULL
+    }
+    LoadPlan {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID voyage_id NOT_NULL
+        DateTime created_at NOT_NULL
+        String status NOT_NULL
+    }
+    DischargeSequence {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID load_plan_id NOT_NULL
+        UUID container_id NOT_NULL
+        Integer sequence_order NOT_NULL
+        UUID crane_id
+    }
+    ReeferUnit ||--o| Container : "ReeferUnit"
+    DischargeSequence ||--o| LoadPlan : "DischargeSequence"
+    DischargeSequence ||--o| Container : "DischargeSequence"
+    DischargeSequence ||--o| Crane : "DischargeSequence"
+
+    %% Context: PassengerTerminal
+    Passenger {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        BookingReference booking_ref NOT_NULL,UK
+        String passenger_type NOT_NULL
+        UUID voyage_id NOT_NULL
+        String status NOT_NULL
+    }
+    Gate {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        GateCode code NOT_NULL,UK
+        String name NOT_NULL
+        Integer capacity NOT_NULL
+        String status NOT_NULL
+        UUID voyage_id
+    }
+    BoardingPass {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID passenger_id NOT_NULL
+        UUID gate_id
+        String boarding_group NOT_NULL
+        String seat_number
+        DateTime issued_at NOT_NULL
+        DateTime scanned_at
+    }
+    BoardingPass ||--o| Passenger : "BoardingPass"
+    BoardingPass ||--o| Gate : "BoardingPass"
+
+    %% Context: IntermodalTransfer
+    TransferSlot {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        SlotReference reference NOT_NULL,UK
+        UUID container_id NOT_NULL
+        String transport_mode NOT_NULL
+        DateTime scheduled_at NOT_NULL
+        String status NOT_NULL
+    }
+    TruckVisit {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        TruckPlate truck_plate NOT_NULL
+        String carrier_name NOT_NULL
+        UUID slot_id NOT_NULL
+        DateTime arrived_at
+        DateTime departed_at
+    }
+    RailWagon {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        String wagon_number NOT_NULL,UK
+        Decimal max_weight_kg NOT_NULL
+        UUID slot_id
+    }
+    BargeBooking {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        String barge_name NOT_NULL
+        Integer capacity_teu NOT_NULL
+        DateTime departure_at NOT_NULL
+        String status NOT_NULL
+    }
+    ChassisUnit {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        String chassis_number NOT_NULL,UK
+        String chassis_type NOT_NULL
+        Boolean is_available NOT_NULL
+    }
+    TruckVisit ||--o| TransferSlot : "TruckVisit"
+
+    %% Context: CargoDecomposition
+    Pallet {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        PalletId pallet_id NOT_NULL,UK
+        UUID container_id NOT_NULL
+        Decimal weight_kg NOT_NULL
+        Decimal length_cm NOT_NULL
+        Decimal width_cm NOT_NULL
+        Decimal height_cm NOT_NULL
+        HSCode hs_code NOT_NULL
+    }
+    Parcel {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        TrackingNumber tracking_number NOT_NULL,UK
+        UUID pallet_id NOT_NULL
+        Decimal weight_kg NOT_NULL
+        HSCode hs_code NOT_NULL
+        String description NOT_NULL
+    }
+    DeliveryUnit {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        TrackingNumber tracking_number NOT_NULL
+        String destination NOT_NULL
+        String carrier NOT_NULL
+        DateTime dispatched_at
+    }
+    BreakBulkItem {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID container_id NOT_NULL
+        String item_type NOT_NULL
+        Decimal weight_kg NOT_NULL
+        Boolean requires_crane NOT_NULL
+    }
+    Parcel ||--o| Pallet : "Parcel"
+    DeliveryUnit ||--o| Parcel : "DeliveryUnit"
+
+    %% Context: HarbourControl
+    SafetyZone {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        ZoneCode zone_code NOT_NULL,UK
+        String zone_name NOT_NULL
+        String security_level NOT_NULL
+        Integer max_hazmat_class NOT_NULL
+        Boolean is_restricted NOT_NULL
+    }
+    HazmatPermit {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        PermitNumber permit_number NOT_NULL,UK
+        UUID vessel_id NOT_NULL
+        Integer imo_class NOT_NULL
+        Decimal quantity_kg NOT_NULL
+        Boolean approved NOT_NULL
+        DateTime valid_from NOT_NULL
+        DateTime valid_until NOT_NULL
+    }
+    InvoiceLine {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID vessel_id NOT_NULL
+        String service_type NOT_NULL
+        Decimal amount NOT_NULL
+        String currency NOT_NULL
+        DateTime issued_at NOT_NULL
+    }
+    PortCall {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        String vessel_name NOT_NULL
+        String imo_number NOT_NULL
+        String berth_code
+        DateTime arrival_time
+        DateTime departure_time
+        Integer container_count NOT_NULL
+        Integer hazmat_permits NOT_NULL
+        Decimal total_billed NOT_NULL
+    }

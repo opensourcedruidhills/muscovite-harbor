@@ -1,0 +1,1163 @@
+{
+  "adr": "20260305-event-hub-nats-jetstream-phased-adoption",
+  "generator": "muscomp/generators/messaging",
+  "project": "muscovite_harbor",
+  "subjects": [
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "voyage_id",
+      "doc": "A vessel has announced its arrival",
+      "event_type": "vessel_announced",
+      "event_uuid": "bb000010-0070-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "vessel_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "eta",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.vessel_announced"
+    },
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "voyage_id",
+      "doc": "Dead-letter queue for vessel_announced",
+      "event_type": "vessel_announced.dlq",
+      "event_uuid": "bb000010-0070-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "vessel_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "eta",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.vessel_announced.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "voyage_id",
+      "doc": "A berth has been allocated to a voyage",
+      "event_type": "berth_allocated",
+      "event_uuid": "bb000010-0070-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "berth_id",
+          "nullable": false,
+          "type": "UUID"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.berth_allocated"
+    },
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "voyage_id",
+      "doc": "Dead-letter queue for berth_allocated",
+      "event_type": "berth_allocated.dlq",
+      "event_uuid": "bb000010-0070-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "berth_id",
+          "nullable": false,
+          "type": "UUID"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.berth_allocated.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "voyage_id",
+      "doc": "Pilot dispatched to meet inbound vessel",
+      "event_type": "pilot_dispatched",
+      "event_uuid": "bb000010-0070-4000-8000-000000000003",
+      "payload_fields": [
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "pilot_name",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.pilot_dispatched"
+    },
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "voyage_id",
+      "doc": "Dead-letter queue for pilot_dispatched",
+      "event_type": "pilot_dispatched.dlq",
+      "event_uuid": "bb000010-0070-4000-8000-000000000003",
+      "payload_fields": [
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "pilot_name",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.pilot_dispatched.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "voyage_id",
+      "doc": "Vessel has been moored at berth",
+      "event_type": "vessel_moored_event",
+      "event_uuid": "bb000010-0070-4000-8000-000000000004",
+      "payload_fields": [
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "berth_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "moored_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.vessel_moored_event"
+    },
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "voyage_id",
+      "doc": "Dead-letter queue for vessel_moored_event",
+      "event_type": "vessel_moored_event.dlq",
+      "event_uuid": "bb000010-0070-4000-8000-000000000004",
+      "payload_fields": [
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "berth_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "moored_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.vessel_moored_event.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "voyage_id",
+      "doc": "Vessel has departed harbour",
+      "event_type": "vessel_departed_event",
+      "event_uuid": "bb000010-0070-4000-8000-000000000005",
+      "payload_fields": [
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "departed_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.vessel_departed_event"
+    },
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "voyage_id",
+      "doc": "Dead-letter queue for vessel_departed_event",
+      "event_type": "vessel_departed_event.dlq",
+      "event_uuid": "bb000010-0070-4000-8000-000000000005",
+      "payload_fields": [
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "departed_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.vessel_departed_event.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "vessel_traffic",
+      "correlation_key": "",
+      "doc": "Consumer group wildcard for all vessel_traffic events",
+      "event_type": "*",
+      "event_uuid": "",
+      "payload_fields": [],
+      "subject": "muscovite.muscovite_harbor.vessel_traffic.events.*"
+    },
+    {
+      "aggregate": "Container",
+      "context": "cargo_operations",
+      "correlation_key": "container_id",
+      "doc": "Container placed in yard slot",
+      "event_type": "container_placed",
+      "event_uuid": "bb000020-0070-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "yard_slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "tier",
+          "nullable": false,
+          "type": "Integer"
+        },
+        {
+          "name": "placed_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.container_placed"
+    },
+    {
+      "aggregate": "Container",
+      "context": "cargo_operations",
+      "correlation_key": "container_id",
+      "doc": "Dead-letter queue for container_placed",
+      "event_type": "container_placed.dlq",
+      "event_uuid": "bb000020-0070-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "yard_slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "tier",
+          "nullable": false,
+          "type": "Integer"
+        },
+        {
+          "name": "placed_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.container_placed.dlq"
+    },
+    {
+      "aggregate": "Container",
+      "context": "cargo_operations",
+      "correlation_key": "container_id",
+      "doc": "Container picked from yard slot",
+      "event_type": "container_picked",
+      "event_uuid": "bb000020-0070-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "yard_slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "picked_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.container_picked"
+    },
+    {
+      "aggregate": "Container",
+      "context": "cargo_operations",
+      "correlation_key": "container_id",
+      "doc": "Dead-letter queue for container_picked",
+      "event_type": "container_picked.dlq",
+      "event_uuid": "bb000020-0070-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "yard_slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "picked_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.container_picked.dlq"
+    },
+    {
+      "aggregate": "Container",
+      "context": "cargo_operations",
+      "correlation_key": "container_id",
+      "doc": "Container relocated between yard slots",
+      "event_type": "container_moved",
+      "event_uuid": "bb000020-0070-4000-8000-000000000003",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "from_slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "to_slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "moved_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.container_moved"
+    },
+    {
+      "aggregate": "Container",
+      "context": "cargo_operations",
+      "correlation_key": "container_id",
+      "doc": "Dead-letter queue for container_moved",
+      "event_type": "container_moved.dlq",
+      "event_uuid": "bb000020-0070-4000-8000-000000000003",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "from_slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "to_slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "moved_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.container_moved.dlq"
+    },
+    {
+      "aggregate": "Container",
+      "context": "cargo_operations",
+      "correlation_key": "container_id",
+      "doc": "Reefer temperature out of range",
+      "event_type": "reefer_alarm",
+      "event_uuid": "bb000020-0070-4000-8000-000000000004",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "current_temp_c",
+          "nullable": false,
+          "type": "Decimal"
+        },
+        {
+          "name": "target_temp_c",
+          "nullable": false,
+          "type": "Decimal"
+        },
+        {
+          "name": "alarm_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.reefer_alarm"
+    },
+    {
+      "aggregate": "Container",
+      "context": "cargo_operations",
+      "correlation_key": "container_id",
+      "doc": "Dead-letter queue for reefer_alarm",
+      "event_type": "reefer_alarm.dlq",
+      "event_uuid": "bb000020-0070-4000-8000-000000000004",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "current_temp_c",
+          "nullable": false,
+          "type": "Decimal"
+        },
+        {
+          "name": "target_temp_c",
+          "nullable": false,
+          "type": "Decimal"
+        },
+        {
+          "name": "alarm_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.reefer_alarm.dlq"
+    },
+    {
+      "aggregate": "Container",
+      "context": "cargo_operations",
+      "correlation_key": "container_id",
+      "doc": "Damage reported on container",
+      "event_type": "damage_reported",
+      "event_uuid": "bb000020-0070-4000-8000-000000000005",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "description",
+          "nullable": false,
+          "type": "String"
+        },
+        {
+          "name": "reported_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.damage_reported"
+    },
+    {
+      "aggregate": "Container",
+      "context": "cargo_operations",
+      "correlation_key": "container_id",
+      "doc": "Dead-letter queue for damage_reported",
+      "event_type": "damage_reported.dlq",
+      "event_uuid": "bb000020-0070-4000-8000-000000000005",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "description",
+          "nullable": false,
+          "type": "String"
+        },
+        {
+          "name": "reported_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.damage_reported.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "cargo_operations",
+      "correlation_key": "",
+      "doc": "Consumer group wildcard for all cargo_operations events",
+      "event_type": "*",
+      "event_uuid": "",
+      "payload_fields": [],
+      "subject": "muscovite.muscovite_harbor.cargo_operations.events.*"
+    },
+    {
+      "aggregate": null,
+      "context": "passenger_terminal",
+      "correlation_key": "passenger_id",
+      "doc": "Passenger completed check-in",
+      "event_type": "passenger_checked_in",
+      "event_uuid": "bb000030-0070-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "passenger_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "checked_in_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.passenger_terminal.events.passenger_checked_in"
+    },
+    {
+      "aggregate": null,
+      "context": "passenger_terminal",
+      "correlation_key": "passenger_id",
+      "doc": "Dead-letter queue for passenger_checked_in",
+      "event_type": "passenger_checked_in.dlq",
+      "event_uuid": "bb000030-0070-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "passenger_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "voyage_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "checked_in_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.passenger_terminal.events.passenger_checked_in.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "passenger_terminal",
+      "correlation_key": "boarding_pass_id",
+      "doc": "Boarding pass issued to passenger",
+      "event_type": "boarding_pass_issued",
+      "event_uuid": "bb000030-0070-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "boarding_pass_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "passenger_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "gate_id",
+          "nullable": false,
+          "type": "UUID"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.passenger_terminal.events.boarding_pass_issued"
+    },
+    {
+      "aggregate": null,
+      "context": "passenger_terminal",
+      "correlation_key": "boarding_pass_id",
+      "doc": "Dead-letter queue for boarding_pass_issued",
+      "event_type": "boarding_pass_issued.dlq",
+      "event_uuid": "bb000030-0070-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "boarding_pass_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "passenger_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "gate_id",
+          "nullable": false,
+          "type": "UUID"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.passenger_terminal.events.boarding_pass_issued.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "passenger_terminal",
+      "correlation_key": "gate_id",
+      "doc": "Gate status transition",
+      "event_type": "gate_status_changed",
+      "event_uuid": "bb000030-0070-4000-8000-000000000003",
+      "payload_fields": [
+        {
+          "name": "gate_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "new_status",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.passenger_terminal.events.gate_status_changed"
+    },
+    {
+      "aggregate": null,
+      "context": "passenger_terminal",
+      "correlation_key": "gate_id",
+      "doc": "Dead-letter queue for gate_status_changed",
+      "event_type": "gate_status_changed.dlq",
+      "event_uuid": "bb000030-0070-4000-8000-000000000003",
+      "payload_fields": [
+        {
+          "name": "gate_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "new_status",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.passenger_terminal.events.gate_status_changed.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "passenger_terminal",
+      "correlation_key": "",
+      "doc": "Consumer group wildcard for all passenger_terminal events",
+      "event_type": "*",
+      "event_uuid": "",
+      "payload_fields": [],
+      "subject": "muscovite.muscovite_harbor.passenger_terminal.events.*"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "slot_id",
+      "doc": "Yard exit slot reserved for container",
+      "event_type": "yard_exit_reserved",
+      "event_uuid": "bb000040-0070-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.yard_exit_reserved"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "slot_id",
+      "doc": "Dead-letter queue for yard_exit_reserved",
+      "event_type": "yard_exit_reserved.dlq",
+      "event_uuid": "bb000040-0070-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.yard_exit_reserved.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "slot_id",
+      "doc": "Container cleared gate checkout",
+      "event_type": "gate_checkout_completed",
+      "event_uuid": "bb000040-0070-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "truck_plate",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.gate_checkout_completed"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "slot_id",
+      "doc": "Dead-letter queue for gate_checkout_completed",
+      "event_type": "gate_checkout_completed.dlq",
+      "event_uuid": "bb000040-0070-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "truck_plate",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.gate_checkout_completed.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "slot_id",
+      "doc": "Container loaded onto outbound transport",
+      "event_type": "transport_loaded",
+      "event_uuid": "bb000040-0070-4000-8000-000000000003",
+      "payload_fields": [
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "transport_mode",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.transport_loaded"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "slot_id",
+      "doc": "Dead-letter queue for transport_loaded",
+      "event_type": "transport_loaded.dlq",
+      "event_uuid": "bb000040-0070-4000-8000-000000000003",
+      "payload_fields": [
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "transport_mode",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.transport_loaded.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "slot_id",
+      "doc": "Outbound transport has departed",
+      "event_type": "departure_confirmed",
+      "event_uuid": "bb000040-0070-4000-8000-000000000004",
+      "payload_fields": [
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "departed_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.departure_confirmed"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "slot_id",
+      "doc": "Dead-letter queue for departure_confirmed",
+      "event_type": "departure_confirmed.dlq",
+      "event_uuid": "bb000040-0070-4000-8000-000000000004",
+      "payload_fields": [
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "departed_at",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.departure_confirmed.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "slot_id",
+      "doc": "Handoff failed — requires compensation",
+      "event_type": "handoff_failed",
+      "event_uuid": "bb000040-0070-4000-8000-000000000005",
+      "payload_fields": [
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "reason",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.handoff_failed"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "slot_id",
+      "doc": "Dead-letter queue for handoff_failed",
+      "event_type": "handoff_failed.dlq",
+      "event_uuid": "bb000040-0070-4000-8000-000000000005",
+      "payload_fields": [
+        {
+          "name": "slot_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "reason",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.handoff_failed.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "intermodal_transfer",
+      "correlation_key": "",
+      "doc": "Consumer group wildcard for all intermodal_transfer events",
+      "event_type": "*",
+      "event_uuid": "",
+      "payload_fields": [],
+      "subject": "muscovite.muscovite_harbor.intermodal_transfer.events.*"
+    },
+    {
+      "aggregate": null,
+      "context": "cargo_decomposition",
+      "correlation_key": "container_id",
+      "doc": "Container has been fully unpacked into pallets",
+      "event_type": "container_unpacked",
+      "event_uuid": "bb000050-0070-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "pallet_count",
+          "nullable": false,
+          "type": "Integer"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_decomposition.events.container_unpacked"
+    },
+    {
+      "aggregate": null,
+      "context": "cargo_decomposition",
+      "correlation_key": "container_id",
+      "doc": "Dead-letter queue for container_unpacked",
+      "event_type": "container_unpacked.dlq",
+      "event_uuid": "bb000050-0070-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "container_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "pallet_count",
+          "nullable": false,
+          "type": "Integer"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_decomposition.events.container_unpacked.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "cargo_decomposition",
+      "correlation_key": "pallet_id",
+      "doc": "Pallet weight verified against manifest",
+      "event_type": "pallet_weight_verified",
+      "event_uuid": "bb000050-0070-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "pallet_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "verified_kg",
+          "nullable": false,
+          "type": "Decimal"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_decomposition.events.pallet_weight_verified"
+    },
+    {
+      "aggregate": null,
+      "context": "cargo_decomposition",
+      "correlation_key": "pallet_id",
+      "doc": "Dead-letter queue for pallet_weight_verified",
+      "event_type": "pallet_weight_verified.dlq",
+      "event_uuid": "bb000050-0070-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "pallet_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "name": "verified_kg",
+          "nullable": false,
+          "type": "Decimal"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_decomposition.events.pallet_weight_verified.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "cargo_decomposition",
+      "correlation_key": "id",
+      "doc": "Parcel dispatched for last-mile delivery",
+      "event_type": "parcel_dispatched",
+      "event_uuid": "bb000050-0070-4000-8000-000000000003",
+      "payload_fields": [
+        {
+          "name": "tracking_number",
+          "nullable": false,
+          "type": "String"
+        },
+        {
+          "name": "carrier",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_decomposition.events.parcel_dispatched"
+    },
+    {
+      "aggregate": null,
+      "context": "cargo_decomposition",
+      "correlation_key": "id",
+      "doc": "Dead-letter queue for parcel_dispatched",
+      "event_type": "parcel_dispatched.dlq",
+      "event_uuid": "bb000050-0070-4000-8000-000000000003",
+      "payload_fields": [
+        {
+          "name": "tracking_number",
+          "nullable": false,
+          "type": "String"
+        },
+        {
+          "name": "carrier",
+          "nullable": false,
+          "type": "String"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.cargo_decomposition.events.parcel_dispatched.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "cargo_decomposition",
+      "correlation_key": "",
+      "doc": "Consumer group wildcard for all cargo_decomposition events",
+      "event_type": "*",
+      "event_uuid": "",
+      "payload_fields": [],
+      "subject": "muscovite.muscovite_harbor.cargo_decomposition.events.*"
+    },
+    {
+      "aggregate": null,
+      "context": "harbour_control",
+      "correlation_key": "id",
+      "doc": "Vessel position update from radar translation",
+      "event_type": "vessel_position_updated",
+      "event_uuid": "bb000060-0080-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "mmsi",
+          "nullable": false,
+          "type": "String"
+        },
+        {
+          "name": "latitude",
+          "nullable": false,
+          "type": "Decimal"
+        },
+        {
+          "name": "longitude",
+          "nullable": false,
+          "type": "Decimal"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.harbour_control.events.vessel_position_updated"
+    },
+    {
+      "aggregate": null,
+      "context": "harbour_control",
+      "correlation_key": "id",
+      "doc": "Dead-letter queue for vessel_position_updated",
+      "event_type": "vessel_position_updated.dlq",
+      "event_uuid": "bb000060-0080-4000-8000-000000000001",
+      "payload_fields": [
+        {
+          "name": "mmsi",
+          "nullable": false,
+          "type": "String"
+        },
+        {
+          "name": "latitude",
+          "nullable": false,
+          "type": "Decimal"
+        },
+        {
+          "name": "longitude",
+          "nullable": false,
+          "type": "Decimal"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.harbour_control.events.vessel_position_updated.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "harbour_control",
+      "correlation_key": "vessel_id",
+      "doc": "Hazmat permit approved by port authority",
+      "event_type": "hazmat_permit_approved",
+      "event_uuid": "bb000060-0080-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "permit_number",
+          "nullable": false,
+          "type": "String"
+        },
+        {
+          "name": "vessel_id",
+          "nullable": false,
+          "type": "UUID"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.harbour_control.events.hazmat_permit_approved"
+    },
+    {
+      "aggregate": null,
+      "context": "harbour_control",
+      "correlation_key": "vessel_id",
+      "doc": "Dead-letter queue for hazmat_permit_approved",
+      "event_type": "hazmat_permit_approved.dlq",
+      "event_uuid": "bb000060-0080-4000-8000-000000000002",
+      "payload_fields": [
+        {
+          "name": "permit_number",
+          "nullable": false,
+          "type": "String"
+        },
+        {
+          "name": "vessel_id",
+          "nullable": false,
+          "type": "UUID"
+        }
+      ],
+      "subject": "muscovite.muscovite_harbor.harbour_control.events.hazmat_permit_approved.dlq"
+    },
+    {
+      "aggregate": null,
+      "context": "harbour_control",
+      "correlation_key": "",
+      "doc": "Consumer group wildcard for all harbour_control events",
+      "event_type": "*",
+      "event_uuid": "",
+      "payload_fields": [],
+      "subject": "muscovite.muscovite_harbor.harbour_control.events.*"
+    }
+  ]
+}

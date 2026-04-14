@@ -1,0 +1,8 @@
+stateDiagram-v2
+    [*] --> CLOSED
+    CLOSED --> CHECK_IN_OPEN : OpenCheckIn
+    CHECK_IN_OPEN --> BOARDING : StartBoarding
+    BOARDING --> FINAL_CALL : AnnounceFinalCall
+    FINAL_CALL --> CLOSED : CloseGate
+    CHECK_IN_OPEN --> CLOSED : CancelBoarding
+    CLOSED --> [*]

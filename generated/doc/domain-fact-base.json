@@ -1,0 +1,2856 @@
+{
+  "bibliography": [
+    {
+      "authors": [
+        "Eric Evans"
+      ],
+      "id": "evans-2003",
+      "isbn": "978-0-321-12521-7",
+      "publisher": "Addison-Wesley",
+      "title": "Domain-Driven Design: Tackling Complexity in the Heart of Software",
+      "type": "book",
+      "year": 2003
+    },
+    {
+      "authors": [
+        "Vaughn Vernon"
+      ],
+      "id": "vernon-2013",
+      "isbn": "978-0-321-83457-7",
+      "publisher": "Addison-Wesley",
+      "title": "Implementing Domain-Driven Design",
+      "type": "book",
+      "year": 2013
+    },
+    {
+      "authors": [
+        "Scott Millett",
+        "Nick Tune"
+      ],
+      "id": "millett-2015",
+      "isbn": "978-1-118-71470-6",
+      "publisher": "Wrox",
+      "title": "Patterns, Principles, and Practices of Domain-Driven Design",
+      "type": "book",
+      "year": 2015
+    },
+    {
+      "authors": [
+        "Greg Young"
+      ],
+      "id": "young-2010",
+      "publisher": "Self-published",
+      "title": "CQRS Documents",
+      "type": "paper",
+      "url": "https://cqrs.files.wordpress.com/2010/11/cqrs_documents.pdf",
+      "year": 2010
+    }
+  ],
+  "bounded_contexts": [
+    {
+      "aggregates": [
+        {
+          "entities": [
+            "PilotAssignment",
+            "TugBooking"
+          ],
+          "event_sourced": false,
+          "name": "VesselCall",
+          "root": "Voyage"
+        }
+      ],
+      "entities": [
+        {
+          "commands": [],
+          "doc": "A registered vessel in the harbour traffic system",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "imo_number",
+              "required": true,
+              "type": "IMONumber",
+              "unique": true
+            },
+            {
+              "name": "mmsi",
+              "required": true,
+              "type": "MMSI",
+              "unique": true
+            },
+            {
+              "name": "call_sign",
+              "required": true,
+              "type": "CallSign"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "vessel_type",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "flag_state",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "is_active",
+              "required": true,
+              "type": "Boolean"
+            }
+          ],
+          "invariants": [],
+          "name": "Vessel",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "A physical berth where vessels moor",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "code",
+              "required": true,
+              "type": "BerthCode",
+              "unique": true
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "10"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "500"
+                }
+              ],
+              "doc": "Maximum vessel LOA this berth can accommodate",
+              "name": "max_loa_metres",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "1"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "25"
+                }
+              ],
+              "doc": "Maximum draft at lowest astronomical tide",
+              "name": "max_draft_metres",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "5"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "80"
+                }
+              ],
+              "name": "max_beam_metres",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "has_crane_access",
+              "required": true,
+              "type": "Boolean"
+            },
+            {
+              "name": "has_reefer_plugs",
+              "required": true,
+              "type": "Boolean"
+            },
+            {
+              "name": "is_active",
+              "required": true,
+              "type": "Boolean"
+            }
+          ],
+          "invariants": [],
+          "name": "Berth",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "A single vessel call at the harbour",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "vessel_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "berth_id",
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "voyage_number",
+              "required": true,
+              "type": "String",
+              "unique": true
+            },
+            {
+              "name": "eta",
+              "required": true,
+              "type": "DateTime"
+            },
+            {
+              "name": "ata",
+              "type": "DateTime"
+            },
+            {
+              "name": "etd",
+              "type": "DateTime"
+            },
+            {
+              "name": "atd",
+              "type": "DateTime"
+            },
+            {
+              "name": "cargo_category",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "status",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "invariants": [],
+          "name": "Voyage",
+          "relationships": [
+            {
+              "direction": "to-one",
+              "name": "Voyage",
+              "required": true,
+              "target": "Vessel"
+            },
+            {
+              "direction": "to-one",
+              "name": "Voyage",
+              "target": "Berth"
+            }
+          ],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Assignment of a pilot to a voyage",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "pilot_name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "pilot_zone",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "boarding_time",
+              "type": "DateTime"
+            },
+            {
+              "name": "disembark_time",
+              "type": "DateTime"
+            }
+          ],
+          "invariants": [],
+          "name": "PilotAssignment",
+          "relationships": [
+            {
+              "direction": "to-one",
+              "name": "PilotAssignment",
+              "required": true,
+              "target": "Voyage"
+            }
+          ],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Booking of a tug for vessel manoeuvring",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "tug_name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "5"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "200"
+                }
+              ],
+              "doc": "Bollard pull in tonnes",
+              "name": "bollard_pull_t",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "is_confirmed",
+              "required": true,
+              "type": "Boolean"
+            }
+          ],
+          "invariants": [],
+          "name": "TugBooking",
+          "relationships": [
+            {
+              "direction": "to-one",
+              "name": "TugBooking",
+              "required": true,
+              "target": "Voyage"
+            }
+          ],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [
+            {
+              "emits": [
+                "VesselAnnounced"
+              ],
+              "name": "AnnounceVessel",
+              "parameters": [
+                {
+                  "name": "vessel_id",
+                  "type": "UUID"
+                },
+                {
+                  "name": "eta",
+                  "type": "DateTime"
+                },
+                {
+                  "name": "cargo_category",
+                  "type": "String"
+                }
+              ]
+            },
+            {
+              "emits": [
+                "BerthAllocated"
+              ],
+              "name": "AllocateBerth",
+              "parameters": [
+                {
+                  "name": "berth_id",
+                  "type": "UUID"
+                }
+              ]
+            }
+          ],
+          "doc": "A tidal window with navigable draft at a specific berth",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "berth_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "-2"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "15"
+                }
+              ],
+              "doc": "Predicted tide height above chart datum",
+              "name": "tide_height_metres",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                }
+              ],
+              "doc": "Effective navigable draft = berth depth + tide height",
+              "name": "available_draft",
+              "required": true,
+              "type": "Decimal"
+            }
+          ],
+          "invariants": [],
+          "name": "TideWindow",
+          "relationships": [
+            {
+              "direction": "to-one",
+              "name": "TideWindow",
+              "required": true,
+              "target": "Berth"
+            }
+          ],
+          "storage_mode": "table"
+        }
+      ],
+      "events": [
+        {
+          "doc": "A vessel has announced its arrival",
+          "fields": [
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "vessel_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "eta",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "kind": "domain",
+          "name": "VesselAnnounced"
+        },
+        {
+          "doc": "A berth has been allocated to a voyage",
+          "fields": [
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "berth_id",
+              "required": true,
+              "type": "UUID"
+            }
+          ],
+          "kind": "domain",
+          "name": "BerthAllocated"
+        },
+        {
+          "doc": "Pilot dispatched to meet inbound vessel",
+          "fields": [
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "pilot_name",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "kind": "domain",
+          "name": "PilotDispatched"
+        },
+        {
+          "doc": "Vessel has been moored at berth",
+          "fields": [
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "berth_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "moored_at",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "kind": "domain",
+          "name": "VesselMooredEvent"
+        },
+        {
+          "doc": "Vessel has departed harbour",
+          "fields": [
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "departed_at",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "kind": "domain",
+          "name": "VesselDepartedEvent"
+        }
+      ],
+      "name": "VesselTraffic",
+      "owner": "VesselOpsTeam",
+      "relationship_graph": [
+        {
+          "direction": "to-one",
+          "name": "Voyage",
+          "source": "Voyage",
+          "target": "Vessel"
+        },
+        {
+          "direction": "to-one",
+          "name": "Voyage",
+          "source": "Voyage",
+          "target": "Berth"
+        },
+        {
+          "direction": "to-one",
+          "name": "PilotAssignment",
+          "source": "PilotAssignment",
+          "target": "Voyage"
+        },
+        {
+          "direction": "to-one",
+          "name": "TugBooking",
+          "source": "TugBooking",
+          "target": "Voyage"
+        },
+        {
+          "direction": "to-one",
+          "name": "TideWindow",
+          "source": "TideWindow",
+          "target": "Berth"
+        }
+      ],
+      "services": [],
+      "specifications": [
+        {
+          "for_entity": "Berth",
+          "name": "AvailableBerths"
+        },
+        {
+          "for_entity": "Voyage",
+          "name": "VesselsByETA"
+        }
+      ],
+      "strong_types": [
+        {
+          "base_type": "TEXT ",
+          "doc": "IMO vessel identification number (7 digits)",
+          "name": "IMONumber"
+        },
+        {
+          "base_type": "TEXT ",
+          "doc": "Maritime Mobile Service Identity (9 digits)",
+          "name": "MMSI"
+        },
+        {
+          "base_type": "TEXT ",
+          "doc": "International radio call sign",
+          "name": "CallSign"
+        },
+        {
+          "base_type": "TEXT ",
+          "doc": "Berth identifier (e.g. NQ-12, SC-3)",
+          "name": "BerthCode"
+        }
+      ],
+      "value_objects": [
+        {
+          "fields": [
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "1"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "500"
+                }
+              ],
+              "doc": "Length overall in metres",
+              "name": "loa_metres",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "1"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "80"
+                }
+              ],
+              "doc": "Beam (width) in metres",
+              "name": "beam_metres",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0.5"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "25"
+                }
+              ],
+              "doc": "Current draft in metres",
+              "name": "draft_metres",
+              "required": true,
+              "type": "Decimal"
+            }
+          ],
+          "invariants": [
+            {
+              "name": "valid_proportions"
+            }
+          ],
+          "name": "Dimensions",
+          "storage_mode": "inline"
+        },
+        {
+          "fields": [
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "-90"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "90"
+                }
+              ],
+              "name": "latitude",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "-180"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "180"
+                }
+              ],
+              "name": "longitude",
+              "required": true,
+              "type": "Decimal"
+            }
+          ],
+          "name": "GeoPosition",
+          "storage_mode": "inline"
+        },
+        {
+          "fields": [
+            {
+              "name": "window_start",
+              "required": true,
+              "type": "DateTime"
+            },
+            {
+              "name": "window_end",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "invariants": [
+            {
+              "name": "valid_range"
+            }
+          ],
+          "name": "TimeWindow",
+          "storage_mode": "inline"
+        }
+      ],
+      "vision": "Safe and efficient vessel movement through the harbour",
+      "wardley": {
+        "stage": "CUSTOM"
+      }
+    },
+    {
+      "aggregates": [
+        {
+          "entities": [],
+          "event_sourced": true,
+          "name": "ContainerStack",
+          "root": "Container"
+        },
+        {
+          "entities": [
+            "DischargeSequence"
+          ],
+          "event_sourced": false,
+          "name": "LoadPlanExecution",
+          "root": "LoadPlan"
+        }
+      ],
+      "entities": [
+        {
+          "commands": [],
+          "doc": "A shipping container in terminal operations",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "container_number",
+              "required": true,
+              "type": "ContainerNumber",
+              "unique": true
+            },
+            {
+              "name": "size_category",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "hazmat_class",
+              "type": "String"
+            },
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "yard_slot_id",
+              "type": "UUID"
+            },
+            {
+              "name": "status",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "invariants": [],
+          "name": "Container",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "A position in the container yard (bay-row-tier)",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "code",
+              "required": true,
+              "type": "YardSlotCode",
+              "unique": true
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "100000"
+                }
+              ],
+              "name": "max_weight_kg",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "1"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "6"
+                }
+              ],
+              "doc": "Maximum stacking height",
+              "name": "max_tier",
+              "required": true,
+              "type": "Integer"
+            },
+            {
+              "doc": "Has reefer power connection",
+              "name": "has_power",
+              "required": true,
+              "type": "Boolean"
+            },
+            {
+              "name": "is_occupied",
+              "required": true,
+              "type": "Boolean"
+            }
+          ],
+          "invariants": [],
+          "name": "YardSlot",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "A crane for container handling",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "crane_type",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "1000"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "100000"
+                }
+              ],
+              "name": "max_lift_kg",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "is_active",
+              "required": true,
+              "type": "Boolean"
+            }
+          ],
+          "invariants": [],
+          "name": "Crane",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Refrigeration monitoring unit for a reefer container",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "-30"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "30"
+                }
+              ],
+              "doc": "Target temperature in Celsius",
+              "name": "target_temp_c",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "-40"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "50"
+                }
+              ],
+              "name": "current_temp_c",
+              "type": "Decimal"
+            },
+            {
+              "name": "is_powered",
+              "required": true,
+              "type": "Boolean"
+            }
+          ],
+          "invariants": [],
+          "name": "ReeferUnit",
+          "relationships": [
+            {
+              "direction": "to-one",
+              "name": "ReeferUnit",
+              "required": true,
+              "target": "Container"
+            }
+          ],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Plan for loading/discharging containers for a voyage",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_IN_FUTURE",
+                  "value": ""
+                }
+              ],
+              "name": "created_at",
+              "required": true,
+              "type": "DateTime"
+            },
+            {
+              "name": "status",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "invariants": [],
+          "name": "LoadPlan",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [
+            {
+              "emits": [
+                "ContainerPlaced"
+              ],
+              "name": "PlaceContainer",
+              "parameters": [
+                {
+                  "name": "slot_id",
+                  "type": "UUID"
+                },
+                {
+                  "name": "tier",
+                  "type": "Integer"
+                }
+              ]
+            },
+            {
+              "emits": [
+                "ContainerPicked"
+              ],
+              "name": "PickContainer",
+              "parameters": [
+                {
+                  "name": "picked_by",
+                  "type": "UUID"
+                }
+              ]
+            }
+          ],
+          "doc": "Ordered sequence for container discharge",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "load_plan_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "1"
+                }
+              ],
+              "name": "sequence_order",
+              "required": true,
+              "type": "Integer"
+            },
+            {
+              "name": "crane_id",
+              "type": "UUID"
+            }
+          ],
+          "invariants": [],
+          "name": "DischargeSequence",
+          "relationships": [
+            {
+              "direction": "to-one",
+              "name": "DischargeSequence",
+              "required": true,
+              "target": "LoadPlan"
+            },
+            {
+              "direction": "to-one",
+              "name": "DischargeSequence",
+              "required": true,
+              "target": "Container"
+            },
+            {
+              "direction": "to-one",
+              "name": "DischargeSequence",
+              "target": "Crane"
+            }
+          ],
+          "storage_mode": "table"
+        }
+      ],
+      "events": [
+        {
+          "applies_to": "Container",
+          "doc": "Container placed in yard slot",
+          "fields": [
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "yard_slot_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "tier",
+              "required": true,
+              "type": "Integer"
+            },
+            {
+              "name": "placed_at",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "kind": "sourced",
+          "name": "ContainerPlaced"
+        },
+        {
+          "applies_to": "Container",
+          "doc": "Container picked from yard slot",
+          "fields": [
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "yard_slot_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "picked_at",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "kind": "sourced",
+          "name": "ContainerPicked"
+        },
+        {
+          "applies_to": "Container",
+          "doc": "Container relocated between yard slots",
+          "fields": [
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "from_slot_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "to_slot_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "moved_at",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "kind": "sourced",
+          "name": "ContainerMoved"
+        },
+        {
+          "applies_to": "Container",
+          "doc": "Reefer temperature out of range",
+          "fields": [
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "current_temp_c",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "target_temp_c",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "alarm_at",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "kind": "sourced",
+          "name": "ReeferAlarm"
+        },
+        {
+          "applies_to": "Container",
+          "doc": "Damage reported on container",
+          "fields": [
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "description",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "reported_at",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "kind": "sourced",
+          "name": "DamageReported"
+        }
+      ],
+      "name": "CargoOperations",
+      "owner": "CargoTeam",
+      "relationship_graph": [
+        {
+          "direction": "to-one",
+          "name": "ReeferUnit",
+          "source": "ReeferUnit",
+          "target": "Container"
+        },
+        {
+          "direction": "to-one",
+          "name": "DischargeSequence",
+          "source": "DischargeSequence",
+          "target": "LoadPlan"
+        },
+        {
+          "direction": "to-one",
+          "name": "DischargeSequence",
+          "source": "DischargeSequence",
+          "target": "Container"
+        },
+        {
+          "direction": "to-one",
+          "name": "DischargeSequence",
+          "source": "DischargeSequence",
+          "target": "Crane"
+        }
+      ],
+      "services": [],
+      "specifications": [],
+      "strong_types": [
+        {
+          "base_type": "TEXT ",
+          "doc": "ISO 6346 container number (4 letters + 7 digits)",
+          "name": "ContainerNumber"
+        },
+        {
+          "base_type": "TEXT ",
+          "doc": "Yard slot address: bay-row-tier (e.g. A01-03-02)",
+          "name": "YardSlotCode"
+        }
+      ],
+      "value_objects": [
+        {
+          "fields": [
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "20"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "45"
+                }
+              ],
+              "doc": "Container length: 20, 40, or 45 feet",
+              "name": "length_ft",
+              "required": true,
+              "type": "Integer"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "30500"
+                }
+              ],
+              "doc": "Gross weight in kilograms",
+              "name": "weight_kg",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "is_reefer",
+              "required": true,
+              "type": "Boolean"
+            }
+          ],
+          "name": "ContainerDimensions",
+          "storage_mode": "inline"
+        }
+      ],
+      "vision": "Track every container from quayside to final destination",
+      "wardley": {
+        "stage": "PRODUCT"
+      }
+    },
+    {
+      "aggregates": [
+        {
+          "entities": [
+            "BoardingPass"
+          ],
+          "event_sourced": false,
+          "name": "Embarkation",
+          "root": "Passenger"
+        }
+      ],
+      "entities": [
+        {
+          "commands": [],
+          "doc": "A passenger travelling on a voyage",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "booking_ref",
+              "required": true,
+              "type": "BookingReference",
+              "unique": true
+            },
+            {
+              "name": "passenger_type",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "status",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "invariants": [],
+          "name": "Passenger",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "A physical gate in the passenger terminal",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "code",
+              "required": true,
+              "type": "GateCode",
+              "unique": true
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "1"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "500"
+                }
+              ],
+              "doc": "Maximum passengers in gate area",
+              "name": "capacity",
+              "required": true,
+              "type": "Integer"
+            },
+            {
+              "name": "status",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "voyage_id",
+              "type": "UUID"
+            }
+          ],
+          "invariants": [],
+          "name": "Gate",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Issued boarding pass for a passenger",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "passenger_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "gate_id",
+              "type": "UUID"
+            },
+            {
+              "name": "boarding_group",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "seat_number",
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_IN_FUTURE",
+                  "value": ""
+                }
+              ],
+              "name": "issued_at",
+              "required": true,
+              "type": "DateTime"
+            },
+            {
+              "name": "scanned_at",
+              "type": "DateTime"
+            }
+          ],
+          "invariants": [],
+          "name": "BoardingPass",
+          "relationships": [
+            {
+              "direction": "to-one",
+              "name": "BoardingPass",
+              "required": true,
+              "target": "Passenger"
+            },
+            {
+              "direction": "to-one",
+              "name": "BoardingPass",
+              "target": "Gate"
+            }
+          ],
+          "storage_mode": "table"
+        }
+      ],
+      "events": [
+        {
+          "doc": "Passenger completed check-in",
+          "fields": [
+            {
+              "name": "passenger_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "voyage_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "checked_in_at",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "kind": "domain",
+          "name": "PassengerCheckedIn"
+        },
+        {
+          "doc": "Boarding pass issued to passenger",
+          "fields": [
+            {
+              "name": "boarding_pass_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "passenger_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "gate_id",
+              "required": true,
+              "type": "UUID"
+            }
+          ],
+          "kind": "domain",
+          "name": "BoardingPassIssued"
+        },
+        {
+          "doc": "Gate status transition",
+          "fields": [
+            {
+              "name": "gate_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "new_status",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "kind": "domain",
+          "name": "GateStatusChanged"
+        }
+      ],
+      "name": "PassengerTerminal",
+      "owner": "PassengerTeam",
+      "relationship_graph": [
+        {
+          "direction": "to-one",
+          "name": "BoardingPass",
+          "source": "BoardingPass",
+          "target": "Passenger"
+        },
+        {
+          "direction": "to-one",
+          "name": "BoardingPass",
+          "source": "BoardingPass",
+          "target": "Gate"
+        }
+      ],
+      "services": [],
+      "specifications": [],
+      "strong_types": [
+        {
+          "base_type": "TEXT ",
+          "doc": "Passenger booking reference (e.g. AB123456)",
+          "name": "BookingReference"
+        },
+        {
+          "base_type": "TEXT ",
+          "doc": "Terminal gate identifier (e.g. G1, G12)",
+          "name": "GateCode"
+        }
+      ],
+      "use_cases": [
+        {
+          "actors": [
+            "Ticket Agent"
+          ],
+          "benefits": [
+            "Passengers receive boarding pass and gate assignment"
+          ],
+          "creates": [
+            "BoardingPass"
+          ],
+          "name": "PassengerCheckIn",
+          "triggers": [
+            "PassengerCheckedIn"
+          ],
+          "updates": [
+            "Passenger"
+          ]
+        }
+      ],
+      "user_stories": [
+        {
+          "as_a": "A passenger",
+          "i_want_to": "See real-time departure information on terminal displays",
+          "name": "DepartureInfo",
+          "so_that": "I can plan my arrival at the correct gate"
+        },
+        {
+          "as_a": "A ticket agent",
+          "i_want_to": "Complete passenger check-in in under 60 seconds",
+          "name": "FastCheckIn",
+          "so_that": "Queues remain short during peak boarding times"
+        }
+      ],
+      "value_objects": [
+        {
+          "fields": [
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "given_name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "family_name",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "name": "PassengerName",
+          "storage_mode": "inline"
+        }
+      ],
+      "vision": "Seamless passenger embarkation and disembarkation",
+      "wardley": {
+        "stage": "PRODUCT"
+      }
+    },
+    {
+      "aggregates": [
+        {
+          "entities": [
+            "TruckVisit"
+          ],
+          "event_sourced": false,
+          "name": "IntermodalHandoff",
+          "root": "TransferSlot"
+        }
+      ],
+      "entities": [
+        {
+          "commands": [],
+          "doc": "A time slot for container transfer to outbound transport",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "reference",
+              "required": true,
+              "type": "SlotReference",
+              "unique": true
+            },
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "transport_mode",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "scheduled_at",
+              "required": true,
+              "type": "DateTime"
+            },
+            {
+              "name": "status",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "invariants": [],
+          "name": "TransferSlot",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "A truck arriving for container pickup",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "truck_plate",
+              "required": true,
+              "type": "TruckPlate"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "carrier_name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "slot_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "arrived_at",
+              "type": "DateTime"
+            },
+            {
+              "name": "departed_at",
+              "type": "DateTime"
+            }
+          ],
+          "invariants": [],
+          "name": "TruckVisit",
+          "relationships": [
+            {
+              "direction": "to-one",
+              "name": "TruckVisit",
+              "required": true,
+              "target": "TransferSlot"
+            }
+          ],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "A rail wagon for container transport",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "wagon_number",
+              "required": true,
+              "type": "String",
+              "unique": true
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "80000"
+                }
+              ],
+              "name": "max_weight_kg",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "slot_id",
+              "type": "UUID"
+            }
+          ],
+          "invariants": [],
+          "name": "RailWagon",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Booking for barge transport of containers",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "barge_name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "1"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "500"
+                }
+              ],
+              "name": "capacity_teu",
+              "required": true,
+              "type": "Integer"
+            },
+            {
+              "name": "departure_at",
+              "required": true,
+              "type": "DateTime"
+            },
+            {
+              "name": "status",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "invariants": [],
+          "name": "BargeBooking",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Chassis for container road transport",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "chassis_number",
+              "required": true,
+              "type": "String",
+              "unique": true
+            },
+            {
+              "name": "chassis_type",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "is_available",
+              "required": true,
+              "type": "Boolean"
+            }
+          ],
+          "invariants": [],
+          "name": "ChassisUnit",
+          "relationships": [],
+          "storage_mode": "table"
+        }
+      ],
+      "events": [
+        {
+          "doc": "Yard exit slot reserved for container",
+          "fields": [
+            {
+              "name": "slot_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            }
+          ],
+          "kind": "domain",
+          "name": "YardExitReserved"
+        },
+        {
+          "doc": "Container cleared gate checkout",
+          "fields": [
+            {
+              "name": "slot_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "truck_plate",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "kind": "domain",
+          "name": "GateCheckoutCompleted"
+        },
+        {
+          "doc": "Container loaded onto outbound transport",
+          "fields": [
+            {
+              "name": "slot_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "transport_mode",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "kind": "domain",
+          "name": "TransportLoaded"
+        },
+        {
+          "doc": "Outbound transport has departed",
+          "fields": [
+            {
+              "name": "slot_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "departed_at",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "kind": "domain",
+          "name": "DepartureConfirmed"
+        },
+        {
+          "doc": "Handoff failed — requires compensation",
+          "fields": [
+            {
+              "name": "slot_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "reason",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "kind": "domain",
+          "name": "HandoffFailed"
+        }
+      ],
+      "flows": [
+        {
+          "doc": "Choreography: container from yard to truck",
+          "name": "YardToTruck",
+          "steps": [
+            {
+              "emits": [
+                "ContainerAtGate"
+              ],
+              "kind": "command",
+              "name": "MoveToGate",
+              "ref": "MoveContainer"
+            },
+            {
+              "emits": [
+                "ContainerWeighed"
+              ],
+              "kind": "event",
+              "name": "WeighBridge",
+              "ref": "ContainerAtGate"
+            },
+            {
+              "completes": true,
+              "emits": [
+                "GateReleased"
+              ],
+              "kind": "event",
+              "name": "GateRelease",
+              "ref": "ContainerWeighed"
+            }
+          ]
+        },
+        {
+          "doc": "Choreography: container from yard to rail wagon",
+          "name": "YardToRail",
+          "steps": [
+            {
+              "emits": [
+                "ContainerAtRailHead"
+              ],
+              "kind": "command",
+              "name": "MoveToRailHead",
+              "ref": "MoveToRailHead"
+            },
+            {
+              "emits": [
+                "ContainerOnWagon"
+              ],
+              "kind": "event",
+              "name": "CraneToWagon",
+              "ref": "ContainerAtRailHead"
+            },
+            {
+              "completes": true,
+              "emits": [
+                "TrainDeparted"
+              ],
+              "kind": "event",
+              "name": "TrainDepart",
+              "ref": "ContainerOnWagon"
+            }
+          ]
+        }
+      ],
+      "name": "IntermodalTransfer",
+      "owner": "LogisticsTeam",
+      "relationship_graph": [
+        {
+          "direction": "to-one",
+          "name": "TruckVisit",
+          "source": "TruckVisit",
+          "target": "TransferSlot"
+        }
+      ],
+      "services": [
+        {
+          "doc": "Selects best transport mode based on urgency, destination, and availability",
+          "methods": [
+            {
+              "name": "recommend"
+            }
+          ],
+          "name": "OptimalTransportSelector"
+        }
+      ],
+      "specifications": [],
+      "strong_types": [
+        {
+          "base_type": "TEXT ",
+          "doc": "Transfer slot reference (e.g. TS-20260415-0001)",
+          "name": "SlotReference"
+        },
+        {
+          "base_type": "TEXT ",
+          "doc": "Truck licence plate number",
+          "name": "TruckPlate"
+        }
+      ],
+      "value_objects": [],
+      "vision": "Optimise multimodal transport handoffs",
+      "wardley": {
+        "stage": "PRODUCT"
+      }
+    },
+    {
+      "aggregates": [
+        {
+          "entities": [
+            "Parcel"
+          ],
+          "event_sourced": false,
+          "name": "ContainerUnpack",
+          "root": "Pallet"
+        },
+        {
+          "entities": [
+            "DeliveryUnit"
+          ],
+          "event_sourced": false,
+          "name": "PalletDispatch",
+          "root": "Parcel"
+        }
+      ],
+      "entities": [
+        {
+          "commands": [],
+          "doc": "A pallet extracted from a container",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "pallet_id",
+              "required": true,
+              "type": "PalletId",
+              "unique": true
+            },
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "2000"
+                }
+              ],
+              "name": "weight_kg",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                }
+              ],
+              "name": "length_cm",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                }
+              ],
+              "name": "width_cm",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                }
+              ],
+              "name": "height_cm",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "hs_code",
+              "required": true,
+              "type": "HSCode"
+            }
+          ],
+          "invariants": [],
+          "name": "Pallet",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "An individual parcel within a pallet",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "tracking_number",
+              "required": true,
+              "type": "TrackingNumber",
+              "unique": true
+            },
+            {
+              "name": "pallet_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "500"
+                }
+              ],
+              "name": "weight_kg",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "hs_code",
+              "required": true,
+              "type": "HSCode"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "description",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "invariants": [],
+          "name": "Parcel",
+          "relationships": [
+            {
+              "direction": "to-one",
+              "name": "Parcel",
+              "required": true,
+              "target": "Pallet"
+            }
+          ],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Last-mile delivery unit dispatched from terminal",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "tracking_number",
+              "required": true,
+              "type": "TrackingNumber"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "destination",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "carrier",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "dispatched_at",
+              "type": "DateTime"
+            }
+          ],
+          "invariants": [],
+          "name": "DeliveryUnit",
+          "relationships": [
+            {
+              "direction": "to-one",
+              "name": "DeliveryUnit",
+              "required": true,
+              "target": "Parcel"
+            }
+          ],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Non-containerised cargo item requiring special handling",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "item_type",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                }
+              ],
+              "name": "weight_kg",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "requires_crane",
+              "required": true,
+              "type": "Boolean"
+            }
+          ],
+          "invariants": [],
+          "name": "BreakBulkItem",
+          "relationships": [],
+          "storage_mode": "table"
+        }
+      ],
+      "events": [
+        {
+          "doc": "Container has been fully unpacked into pallets",
+          "fields": [
+            {
+              "name": "container_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "pallet_count",
+              "required": true,
+              "type": "Integer"
+            }
+          ],
+          "kind": "domain",
+          "name": "ContainerUnpacked"
+        },
+        {
+          "doc": "Pallet weight verified against manifest",
+          "fields": [
+            {
+              "name": "pallet_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "verified_kg",
+              "required": true,
+              "type": "Decimal"
+            }
+          ],
+          "kind": "domain",
+          "name": "PalletWeightVerified"
+        },
+        {
+          "doc": "Parcel dispatched for last-mile delivery",
+          "fields": [
+            {
+              "name": "tracking_number",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "carrier",
+              "required": true,
+              "type": "String"
+            }
+          ],
+          "kind": "domain",
+          "name": "ParcelDispatched"
+        }
+      ],
+      "name": "CargoDecomposition",
+      "owner": "LogisticsTeam",
+      "relationship_graph": [
+        {
+          "direction": "to-one",
+          "name": "Parcel",
+          "source": "Parcel",
+          "target": "Pallet"
+        },
+        {
+          "direction": "to-one",
+          "name": "DeliveryUnit",
+          "source": "DeliveryUnit",
+          "target": "Parcel"
+        }
+      ],
+      "services": [],
+      "specifications": [],
+      "strong_types": [
+        {
+          "base_type": "TEXT ",
+          "doc": "Pallet identifier (e.g. PLT-ABC12345)",
+          "name": "PalletId"
+        },
+        {
+          "base_type": "TEXT ",
+          "doc": "Parcel tracking number",
+          "name": "TrackingNumber"
+        },
+        {
+          "base_type": "TEXT ",
+          "doc": "Harmonised System tariff classification code",
+          "name": "HSCode"
+        }
+      ],
+      "value_objects": [
+        {
+          "fields": [
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "10000"
+                }
+              ],
+              "name": "length_cm",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "10000"
+                }
+              ],
+              "name": "width_cm",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "10000"
+                }
+              ],
+              "name": "height_cm",
+              "required": true,
+              "type": "Decimal"
+            }
+          ],
+          "name": "Dimensions",
+          "storage_mode": "inline"
+        },
+        {
+          "fields": [
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "50000"
+                }
+              ],
+              "name": "value_kg",
+              "required": true,
+              "type": "Decimal"
+            }
+          ],
+          "name": "Weight",
+          "storage_mode": "shared"
+        }
+      ],
+      "vision": "Container to parcel breakdown and last-mile dispatch",
+      "wardley": {
+        "stage": "COMMODITY"
+      }
+    },
+    {
+      "aggregates": [],
+      "entities": [
+        {
+          "commands": [],
+          "doc": "Designated safety zone within the port area",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "zone_code",
+              "required": true,
+              "type": "ZoneCode",
+              "unique": true
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "zone_name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "security_level",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "9"
+                }
+              ],
+              "name": "max_hazmat_class",
+              "required": true,
+              "type": "Integer"
+            },
+            {
+              "name": "is_restricted",
+              "required": true,
+              "type": "Boolean"
+            }
+          ],
+          "invariants": [],
+          "name": "SafetyZone",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Hazmat handling permit issued by port authority",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "permit_number",
+              "required": true,
+              "type": "PermitNumber",
+              "unique": true
+            },
+            {
+              "name": "vessel_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "1"
+                },
+                {
+                  "kind": "MAX",
+                  "value": "9"
+                }
+              ],
+              "name": "imo_class",
+              "required": true,
+              "type": "Integer"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                }
+              ],
+              "name": "quantity_kg",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "approved",
+              "required": true,
+              "type": "Boolean"
+            },
+            {
+              "name": "valid_from",
+              "required": true,
+              "type": "DateTime"
+            },
+            {
+              "name": "valid_until",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "invariants": [],
+          "name": "HazmatPermit",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Port services invoice line item",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "vessel_id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "NOT_EMPTY",
+                  "value": ""
+                }
+              ],
+              "name": "service_type",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "constraints": [
+                {
+                  "kind": "MIN",
+                  "value": "0"
+                }
+              ],
+              "name": "amount",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "currency",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "issued_at",
+              "required": true,
+              "type": "DateTime"
+            }
+          ],
+          "invariants": [],
+          "name": "InvoiceLine",
+          "relationships": [],
+          "storage_mode": "table"
+        },
+        {
+          "commands": [],
+          "doc": "Read-only aggregation across VesselTraffic, CargoOps, and billing",
+          "fields": [
+            {
+              "name": "id",
+              "required": true,
+              "type": "UUID"
+            },
+            {
+              "name": "vessel_name",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "imo_number",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "berth_code",
+              "type": "String"
+            },
+            {
+              "name": "arrival_time",
+              "type": "DateTime"
+            },
+            {
+              "name": "departure_time",
+              "type": "DateTime"
+            },
+            {
+              "name": "container_count",
+              "required": true,
+              "type": "Integer"
+            },
+            {
+              "name": "hazmat_permits",
+              "required": true,
+              "type": "Integer"
+            },
+            {
+              "name": "total_billed",
+              "required": true,
+              "type": "Decimal"
+            }
+          ],
+          "invariants": [],
+          "name": "PortCall",
+          "relationships": [],
+          "storage_mode": "table"
+        }
+      ],
+      "events": [
+        {
+          "doc": "Vessel position update from radar translation",
+          "fields": [
+            {
+              "name": "mmsi",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "latitude",
+              "required": true,
+              "type": "Decimal"
+            },
+            {
+              "name": "longitude",
+              "required": true,
+              "type": "Decimal"
+            }
+          ],
+          "kind": "domain",
+          "name": "VesselPositionUpdated"
+        },
+        {
+          "doc": "Hazmat permit approved by port authority",
+          "fields": [
+            {
+              "name": "permit_number",
+              "required": true,
+              "type": "String"
+            },
+            {
+              "name": "vessel_id",
+              "required": true,
+              "type": "UUID"
+            }
+          ],
+          "kind": "domain",
+          "name": "HazmatPermitApproved"
+        }
+      ],
+      "name": "HarbourControl",
+      "owner": "HarbourAuthorityTeam",
+      "relationship_graph": [],
+      "services": [],
+      "specifications": [],
+      "strong_types": [
+        {
+          "base_type": "TEXT ",
+          "doc": "Hazmat permit number (e.g. HP-2026-000123)",
+          "name": "PermitNumber"
+        },
+        {
+          "base_type": "TEXT ",
+          "doc": "Safety zone code (e.g. SZ-NQ01)",
+          "name": "ZoneCode"
+        }
+      ],
+      "value_objects": [],
+      "vision": "Port safety, compliance, and regulatory reporting",
+      "wardley": {
+        "stage": "COMMODITY"
+      }
+    }
+  ],
+  "cross_context_relationships": [],
+  "ddd_glossary": [],
+  "metadata": {
+    "generator": "muscomp",
+    "project": "MuscoviteHarbor",
+    "schema_version": "2.0",
+    "version": "0.2.0"
+  }
+}

@@ -1,0 +1,30 @@
+erDiagram
+    Passenger {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        BookingReference booking_ref NOT_NULL,UK
+        String passenger_type NOT_NULL
+        UUID voyage_id NOT_NULL
+        String status NOT_NULL
+    }
+    Gate {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        GateCode code NOT_NULL,UK
+        String name NOT_NULL
+        Integer capacity NOT_NULL
+        String status NOT_NULL
+        UUID voyage_id
+    }
+    BoardingPass {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID passenger_id NOT_NULL
+        UUID gate_id
+        String boarding_group NOT_NULL
+        String seat_number
+        DateTime issued_at NOT_NULL
+        DateTime scanned_at
+    }
+    BoardingPass ||--o| Passenger : "BoardingPass"
+    BoardingPass ||--o| Gate : "BoardingPass"

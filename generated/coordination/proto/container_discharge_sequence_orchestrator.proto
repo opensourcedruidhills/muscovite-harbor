@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package coordination.container_discharge_sequence;
+
+import "google/protobuf/empty.proto";
+
+message CranePickRequest {
+  string correlation_id = 1;
+}
+
+message CranePickResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message YardPlacementRequest {
+  string correlation_id = 1;
+}
+
+message YardPlacementResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message CustomsCheckRequest {
+  string correlation_id = 1;
+}
+
+message CustomsCheckResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message HandoffDispatchRequest {
+  string correlation_id = 1;
+}
+
+message HandoffDispatchResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+service ContainerDischargeSequenceOrchestrator {
+  rpc CranePick(CranePickRequest) returns (CranePickResponse);
+  rpc YardPlacement(YardPlacementRequest) returns (YardPlacementResponse);
+  rpc CustomsCheck(CustomsCheckRequest) returns (CustomsCheckResponse);
+  rpc HandoffDispatch(HandoffDispatchRequest) returns (HandoffDispatchResponse);
+}

@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package coordination.vessel_arrival_sequence;
+
+import "google/protobuf/empty.proto";
+
+message OrderPilotRequest {
+  string correlation_id = 1;
+}
+
+message OrderPilotResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message AssignTugsRequest {
+  string correlation_id = 1;
+}
+
+message AssignTugsResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message AllocateBerthRequest {
+  string correlation_id = 1;
+}
+
+message AllocateBerthResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message ActivateCargoPlanRequest {
+  string correlation_id = 1;
+}
+
+message ActivateCargoPlanResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message OpenGatesRequest {
+  string correlation_id = 1;
+}
+
+message OpenGatesResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+service VesselArrivalSequenceOrchestrator {
+  rpc OrderPilot(OrderPilotRequest) returns (OrderPilotResponse);
+  rpc AssignTugs(AssignTugsRequest) returns (AssignTugsResponse);
+  rpc AllocateBerth(AllocateBerthRequest) returns (AllocateBerthResponse);
+  rpc ActivateCargoPlan(ActivateCargoPlanRequest) returns (ActivateCargoPlanResponse);
+  rpc OpenGates(OpenGatesRequest) returns (OpenGatesResponse);
+}

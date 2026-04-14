@@ -1,0 +1,42 @@
+erDiagram
+    SafetyZone {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        ZoneCode zone_code NOT_NULL,UK
+        String zone_name NOT_NULL
+        String security_level NOT_NULL
+        Integer max_hazmat_class NOT_NULL
+        Boolean is_restricted NOT_NULL
+    }
+    HazmatPermit {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        PermitNumber permit_number NOT_NULL,UK
+        UUID vessel_id NOT_NULL
+        Integer imo_class NOT_NULL
+        Decimal quantity_kg NOT_NULL
+        Boolean approved NOT_NULL
+        DateTime valid_from NOT_NULL
+        DateTime valid_until NOT_NULL
+    }
+    InvoiceLine {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID vessel_id NOT_NULL
+        String service_type NOT_NULL
+        Decimal amount NOT_NULL
+        String currency NOT_NULL
+        DateTime issued_at NOT_NULL
+    }
+    PortCall {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        String vessel_name NOT_NULL
+        String imo_number NOT_NULL
+        String berth_code
+        DateTime arrival_time
+        DateTime departure_time
+        Integer container_count NOT_NULL
+        Integer hazmat_permits NOT_NULL
+        Decimal total_billed NOT_NULL
+    }

@@ -1,0 +1,39 @@
+erDiagram
+    Pallet {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        PalletId pallet_id NOT_NULL,UK
+        UUID container_id NOT_NULL
+        Decimal weight_kg NOT_NULL
+        Decimal length_cm NOT_NULL
+        Decimal width_cm NOT_NULL
+        Decimal height_cm NOT_NULL
+        HSCode hs_code NOT_NULL
+    }
+    Parcel {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        TrackingNumber tracking_number NOT_NULL,UK
+        UUID pallet_id NOT_NULL
+        Decimal weight_kg NOT_NULL
+        HSCode hs_code NOT_NULL
+        String description NOT_NULL
+    }
+    DeliveryUnit {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        TrackingNumber tracking_number NOT_NULL
+        String destination NOT_NULL
+        String carrier NOT_NULL
+        DateTime dispatched_at
+    }
+    BreakBulkItem {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID container_id NOT_NULL
+        String item_type NOT_NULL
+        Decimal weight_kg NOT_NULL
+        Boolean requires_crane NOT_NULL
+    }
+    Parcel ||--o| Pallet : "Parcel"
+    DeliveryUnit ||--o| Parcel : "DeliveryUnit"

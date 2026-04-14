@@ -1,0 +1,58 @@
+= NATS Subject Reference — MuscoviteHarbor
+:toc: left
+:toclevels: 2
+
+== Subjects
+
+[cols="3,1,1,2", options="header"]
+|===
+| Subject | Context | Event Type | Description
+
+| `muscovite.muscovite_harbor.vessel_traffic.events.vessel_announced` | vessel_traffic | vessel_announced | A vessel has announced its arrival
+| `muscovite.muscovite_harbor.vessel_traffic.events.vessel_announced.dlq` | vessel_traffic | vessel_announced.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.vessel_traffic.events.berth_allocated` | vessel_traffic | berth_allocated | A berth has been allocated to a voyage
+| `muscovite.muscovite_harbor.vessel_traffic.events.berth_allocated.dlq` | vessel_traffic | berth_allocated.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.vessel_traffic.events.pilot_dispatched` | vessel_traffic | pilot_dispatched | Pilot dispatched to meet inbound vessel
+| `muscovite.muscovite_harbor.vessel_traffic.events.pilot_dispatched.dlq` | vessel_traffic | pilot_dispatched.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.vessel_traffic.events.vessel_moored_event` | vessel_traffic | vessel_moored_event | Vessel has been moored at berth
+| `muscovite.muscovite_harbor.vessel_traffic.events.vessel_moored_event.dlq` | vessel_traffic | vessel_moored_event.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.vessel_traffic.events.vessel_departed_event` | vessel_traffic | vessel_departed_event | Vessel has departed harbour
+| `muscovite.muscovite_harbor.vessel_traffic.events.vessel_departed_event.dlq` | vessel_traffic | vessel_departed_event.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.cargo_operations.events.container_placed` | cargo_operations | container_placed | Container placed in yard slot
+| `muscovite.muscovite_harbor.cargo_operations.events.container_placed.dlq` | cargo_operations | container_placed.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.cargo_operations.events.container_picked` | cargo_operations | container_picked | Container picked from yard slot
+| `muscovite.muscovite_harbor.cargo_operations.events.container_picked.dlq` | cargo_operations | container_picked.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.cargo_operations.events.container_moved` | cargo_operations | container_moved | Container relocated between yard slots
+| `muscovite.muscovite_harbor.cargo_operations.events.container_moved.dlq` | cargo_operations | container_moved.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.cargo_operations.events.reefer_alarm` | cargo_operations | reefer_alarm | Reefer temperature out of range
+| `muscovite.muscovite_harbor.cargo_operations.events.reefer_alarm.dlq` | cargo_operations | reefer_alarm.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.cargo_operations.events.damage_reported` | cargo_operations | damage_reported | Damage reported on container
+| `muscovite.muscovite_harbor.cargo_operations.events.damage_reported.dlq` | cargo_operations | damage_reported.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.passenger_terminal.events.passenger_checked_in` | passenger_terminal | passenger_checked_in | Passenger completed check-in
+| `muscovite.muscovite_harbor.passenger_terminal.events.passenger_checked_in.dlq` | passenger_terminal | passenger_checked_in.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.passenger_terminal.events.boarding_pass_issued` | passenger_terminal | boarding_pass_issued | Boarding pass issued to passenger
+| `muscovite.muscovite_harbor.passenger_terminal.events.boarding_pass_issued.dlq` | passenger_terminal | boarding_pass_issued.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.passenger_terminal.events.gate_status_changed` | passenger_terminal | gate_status_changed | Gate status transition
+| `muscovite.muscovite_harbor.passenger_terminal.events.gate_status_changed.dlq` | passenger_terminal | gate_status_changed.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.intermodal_transfer.events.yard_exit_reserved` | intermodal_transfer | yard_exit_reserved | Yard exit slot reserved for container
+| `muscovite.muscovite_harbor.intermodal_transfer.events.yard_exit_reserved.dlq` | intermodal_transfer | yard_exit_reserved.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.intermodal_transfer.events.gate_checkout_completed` | intermodal_transfer | gate_checkout_completed | Container cleared gate checkout
+| `muscovite.muscovite_harbor.intermodal_transfer.events.gate_checkout_completed.dlq` | intermodal_transfer | gate_checkout_completed.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.intermodal_transfer.events.transport_loaded` | intermodal_transfer | transport_loaded | Container loaded onto outbound transport
+| `muscovite.muscovite_harbor.intermodal_transfer.events.transport_loaded.dlq` | intermodal_transfer | transport_loaded.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.intermodal_transfer.events.departure_confirmed` | intermodal_transfer | departure_confirmed | Outbound transport has departed
+| `muscovite.muscovite_harbor.intermodal_transfer.events.departure_confirmed.dlq` | intermodal_transfer | departure_confirmed.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.intermodal_transfer.events.handoff_failed` | intermodal_transfer | handoff_failed | Handoff failed — requires compensation
+| `muscovite.muscovite_harbor.intermodal_transfer.events.handoff_failed.dlq` | intermodal_transfer | handoff_failed.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.cargo_decomposition.events.container_unpacked` | cargo_decomposition | container_unpacked | Container has been fully unpacked into pallets
+| `muscovite.muscovite_harbor.cargo_decomposition.events.container_unpacked.dlq` | cargo_decomposition | container_unpacked.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.cargo_decomposition.events.pallet_weight_verified` | cargo_decomposition | pallet_weight_verified | Pallet weight verified against manifest
+| `muscovite.muscovite_harbor.cargo_decomposition.events.pallet_weight_verified.dlq` | cargo_decomposition | pallet_weight_verified.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.cargo_decomposition.events.parcel_dispatched` | cargo_decomposition | parcel_dispatched | Parcel dispatched for last-mile delivery
+| `muscovite.muscovite_harbor.cargo_decomposition.events.parcel_dispatched.dlq` | cargo_decomposition | parcel_dispatched.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.harbour_control.events.vessel_position_updated` | harbour_control | vessel_position_updated | Vessel position update from radar translation
+| `muscovite.muscovite_harbor.harbour_control.events.vessel_position_updated.dlq` | harbour_control | vessel_position_updated.dlq | Dead-letter queue
+| `muscovite.muscovite_harbor.harbour_control.events.hazmat_permit_approved` | harbour_control | hazmat_permit_approved | Hazmat permit approved by port authority
+| `muscovite.muscovite_harbor.harbour_control.events.hazmat_permit_approved.dlq` | harbour_control | hazmat_permit_approved.dlq | Dead-letter queue
+
+|===

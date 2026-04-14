@@ -35,7 +35,7 @@ echo "--- Lint check ---"
 # Full regeneration
 echo ""
 echo "--- Full generation ---"
-"$MUSCOMP" --project project.mus --cpp-dba --cpp-dba-test --grpc --qt-frontend widgets --test --full
+"$MUSCOMP" --project project.mus --cpp-dba --cpp-dba-test --grpc --qt-frontend widgets --postgres --docs --test-data --full
 
 # Show what changed
 echo ""

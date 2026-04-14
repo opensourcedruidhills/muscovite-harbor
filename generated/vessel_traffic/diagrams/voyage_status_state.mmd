@@ -1,0 +1,13 @@
+stateDiagram-v2
+    [*] --> ANNOUNCED
+    ANNOUNCED --> PILOT_ORDERED : OrderPilot
+    PILOT_ORDERED --> APPROACHING : VesselApproaching
+    APPROACHING --> BERTHING : BeginBerthing
+    BERTHING --> MOORED : VesselMoored
+    MOORED --> CARGO_OPS : BeginCargoOps
+    CARGO_OPS --> DEPARTURE_PREP : CargoComplete
+    DEPARTURE_PREP --> UNMOORED : CastOff
+    UNMOORED --> DEPARTED : VesselDeparted
+    APPROACHING --> ANNOUNCED : AbortApproach
+    BERTHING --> APPROACHING : AbortBerthing
+    DEPARTED --> [*]

@@ -1,0 +1,6 @@
+stateDiagram-v2
+    [*] --> CHECKED_IN
+    CHECKED_IN --> SECURITY_CLEARED : PassSecurity
+    SECURITY_CLEARED --> BOARDED : BoardVessel
+    BOARDED --> DISEMBARKED : Disembark
+    DISEMBARKED --> [*]

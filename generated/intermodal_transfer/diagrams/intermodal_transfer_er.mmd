@@ -1,0 +1,42 @@
+erDiagram
+    TransferSlot {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        SlotReference reference NOT_NULL,UK
+        UUID container_id NOT_NULL
+        String transport_mode NOT_NULL
+        DateTime scheduled_at NOT_NULL
+        String status NOT_NULL
+    }
+    TruckVisit {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        TruckPlate truck_plate NOT_NULL
+        String carrier_name NOT_NULL
+        UUID slot_id NOT_NULL
+        DateTime arrived_at
+        DateTime departed_at
+    }
+    RailWagon {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        String wagon_number NOT_NULL,UK
+        Decimal max_weight_kg NOT_NULL
+        UUID slot_id
+    }
+    BargeBooking {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        String barge_name NOT_NULL
+        Integer capacity_teu NOT_NULL
+        DateTime departure_at NOT_NULL
+        String status NOT_NULL
+    }
+    ChassisUnit {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        String chassis_number NOT_NULL,UK
+        String chassis_type NOT_NULL
+        Boolean is_available NOT_NULL
+    }
+    TruckVisit ||--o| TransferSlot : "TruckVisit"

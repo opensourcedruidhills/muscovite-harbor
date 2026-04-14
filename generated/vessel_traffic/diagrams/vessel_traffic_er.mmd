@@ -1,0 +1,66 @@
+erDiagram
+    Vessel {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        IMONumber imo_number NOT_NULL,UK
+        MMSI mmsi NOT_NULL,UK
+        CallSign call_sign NOT_NULL
+        String name NOT_NULL
+        String vessel_type NOT_NULL
+        String flag_state NOT_NULL
+        Boolean is_active NOT_NULL
+    }
+    Berth {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        BerthCode code NOT_NULL,UK
+        String name NOT_NULL
+        Decimal max_loa_metres NOT_NULL
+        Decimal max_draft_metres NOT_NULL
+        Decimal max_beam_metres NOT_NULL
+        Boolean has_crane_access NOT_NULL
+        Boolean has_reefer_plugs NOT_NULL
+        Boolean is_active NOT_NULL
+    }
+    Voyage {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID vessel_id NOT_NULL
+        UUID berth_id
+        String voyage_number NOT_NULL,UK
+        DateTime eta NOT_NULL
+        DateTime ata
+        DateTime etd
+        DateTime atd
+        String cargo_category NOT_NULL
+        String status NOT_NULL
+    }
+    PilotAssignment {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID voyage_id NOT_NULL
+        String pilot_name NOT_NULL
+        String pilot_zone NOT_NULL
+        DateTime boarding_time
+        DateTime disembark_time
+    }
+    TugBooking {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID voyage_id NOT_NULL
+        String tug_name NOT_NULL
+        Decimal bollard_pull_t NOT_NULL
+        Boolean is_confirmed NOT_NULL
+    }
+    TideWindow {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID berth_id NOT_NULL
+        Decimal tide_height_metres NOT_NULL
+        Decimal available_draft NOT_NULL
+    }
+    Voyage ||--o| Vessel : "Voyage"
+    Voyage ||--o| Berth : "Voyage"
+    PilotAssignment ||--o| Voyage : "PilotAssignment"
+    TugBooking ||--o| Voyage : "TugBooking"
+    TideWindow ||--o| Berth : "TideWindow"

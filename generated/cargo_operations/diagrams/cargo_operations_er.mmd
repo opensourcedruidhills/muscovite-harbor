@@ -1,0 +1,55 @@
+erDiagram
+    Container {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        ContainerNumber container_number NOT_NULL,UK
+        String size_category NOT_NULL
+        String hazmat_class
+        UUID voyage_id NOT_NULL
+        UUID yard_slot_id
+        String status NOT_NULL
+    }
+    YardSlot {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        YardSlotCode code NOT_NULL,UK
+        Decimal max_weight_kg NOT_NULL
+        Integer max_tier NOT_NULL
+        Boolean has_power NOT_NULL
+        Boolean is_occupied NOT_NULL
+    }
+    Crane {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        String name NOT_NULL
+        String crane_type NOT_NULL
+        Decimal max_lift_kg NOT_NULL
+        Boolean is_active NOT_NULL
+    }
+    ReeferUnit {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID container_id NOT_NULL
+        Decimal target_temp_c NOT_NULL
+        Decimal current_temp_c
+        Boolean is_powered NOT_NULL
+    }
+    LoadPlan {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID voyage_id NOT_NULL
+        DateTime created_at NOT_NULL
+        String status NOT_NULL
+    }
+    DischargeSequence {
+        UUID id PK,NOT_NULL
+        UUID id NOT_NULL
+        UUID load_plan_id NOT_NULL
+        UUID container_id NOT_NULL
+        Integer sequence_order NOT_NULL
+        UUID crane_id
+    }
+    ReeferUnit ||--o| Container : "ReeferUnit"
+    DischargeSequence ||--o| LoadPlan : "DischargeSequence"
+    DischargeSequence ||--o| Container : "DischargeSequence"
+    DischargeSequence ||--o| Crane : "DischargeSequence"
