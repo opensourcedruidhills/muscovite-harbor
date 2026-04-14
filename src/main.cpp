@@ -3,7 +3,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include "version.hpp"
+#include "harbor/version.hpp"
 
 auto main() -> int {
     spdlog::info("Muscovite Harbor {} ({})", harbor::kVersion, harbor::kGitSha);

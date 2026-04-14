@@ -4,7 +4,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
-#include "version.hpp"
+#include "harbor/version.hpp"
 
 SCENARIO("harbor version is set") {
     GIVEN("the harbor binary") {
