@@ -1,0 +1,240 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+-- Copyright (c) 2026 Johannes Lochmann
+
+CONTEXT HarbourControl @uuid "bb000060-0001-4000-8000-000000000001"
+    OWNER HarbourAuthorityTeam
+    VISION "Port safety, compliance, and regulatory reporting"
+    @wardley(COMMODITY) {
+
+    -- ====================================================================
+    -- Grounding
+    -- ====================================================================
+
+    GROUNDING {
+        DOMAIN "Port authority oversight, safety, and compliance";
+        KEY_CONCEPTS ["safety zone", "hazmat clearance", "port authority",
+                      "vessel traffic service", "ISPS compliance", "billing"];
+        DIALECT MARITIME;
+        PRECISION_LEVEL regulatory;
+        CONSTRAINTS ["ISPS security zone requirements", "IMO hazmat segregation",
+                     "maritime law vessel movement logging"];
+        DOC "Anchors AI generation to harbour control regulatory domain";
+    }
+
+    -- ====================================================================
+    -- Strong Types
+    -- ====================================================================
+
+    STRONG_TYPE PermitNumber TEXT @uuid "bb000060-0010-4000-8000-000000000001"
+        CHECK valid_format: "value ~ '^HP-[0-9]{4}-[0-9]{6}$'"
+        DOC "Hazmat permit number (e.g. HP-2026-000123)";
+
+    STRONG_TYPE ZoneCode TEXT @uuid "bb000060-0010-4000-8000-000000000002"
+        CHECK valid_format: "value ~ '^SZ-[A-Z]{2}[0-9]{2}$'"
+        DOC "Safety zone code (e.g. SZ-NQ01)";
+
+    -- ====================================================================
+    -- Entities
+    -- ====================================================================
+
+    ENTITY SafetyZone @uuid "bb000060-0040-4000-8000-000000000001" IDENTIFIED_BY id (
+        id              UUID        NOT_NULL @uuid "bb000060-0040-4000-8000-000000000010",
+        zone_code       ZoneCode    NOT_NULL @uuid "bb000060-0040-4000-8000-000000000011" @UNIQUE,
+        zone_name       TEXT        NOT_NULL @uuid "bb000060-0040-4000-8000-000000000012" @NOT_EMPTY,
+        security_level  TEXT        NOT_NULL DEFAULT 'NORMAL' @uuid "bb000060-0040-4000-8000-000000000013",
+        max_hazmat_class INTEGER    NOT_NULL DEFAULT 9 @uuid "bb000060-0040-4000-8000-000000000014"
+            @MIN(0) @MAX(9),
+        is_restricted   BOOLEAN     NOT_NULL DEFAULT FALSE @uuid "bb000060-0040-4000-8000-000000000015"
+    )
+    SEED "safety_zones" {
+        ("bb000060-0040-4000-8000-100000000001", "SZ-NQ01", "North Quay Zone", "NORMAL", 9, FALSE),
+        ("bb000060-0040-4000-8000-100000000002", "SZ-SC01", "South Container Zone", "ELEVATED", 7, FALSE),
+        ("bb000060-0040-4000-8000-100000000003", "SZ-HZ01", "Hazmat Holding Zone", "HIGH", 3, TRUE),
+        ("bb000060-0040-4000-8000-100000000004", "SZ-PT01", "Passenger Terminal Zone", "ELEVATED", 0, TRUE)
+    }
+    DOC "Designated safety zone within the port area";
+
+    ENTITY HazmatPermit @uuid "bb000060-0040-4000-8000-000000000002" IDENTIFIED_BY id (
+        id              UUID            NOT_NULL @uuid "bb000060-0040-4000-8000-000000000020",
+        permit_number   PermitNumber    NOT_NULL @uuid "bb000060-0040-4000-8000-000000000021" @UNIQUE,
+        vessel_id       UUID            NOT_NULL @uuid "bb000060-0040-4000-8000-000000000022",
+        imo_class       INTEGER         NOT_NULL @uuid "bb000060-0040-4000-8000-000000000023"
+            @MIN(1) @MAX(9),
+        quantity_kg     DECIMAL         NOT_NULL @uuid "bb000060-0040-4000-8000-000000000024"
+            @MIN(0) @unit(KILOGRAM),
+        approved        BOOLEAN         NOT_NULL DEFAULT FALSE @uuid "bb000060-0040-4000-8000-000000000025",
+        valid_from      TIMESTAMPTZ     NOT_NULL @uuid "bb000060-0040-4000-8000-000000000026",
+        valid_until     TIMESTAMPTZ     NOT_NULL @uuid "bb000060-0040-4000-8000-000000000027"
+    )
+    DOC "Hazmat handling permit issued by port authority";
+
+    ENTITY InvoiceLine @uuid "bb000060-0040-4000-8000-000000000003" IDENTIFIED_BY id (
+        id              UUID        NOT_NULL @uuid "bb000060-0040-4000-8000-000000000030",
+        vessel_id       UUID        NOT_NULL @uuid "bb000060-0040-4000-8000-000000000031",
+        service_type    TEXT        NOT_NULL @uuid "bb000060-0040-4000-8000-000000000032" @NOT_EMPTY,
+        amount          DECIMAL     NOT_NULL @uuid "bb000060-0040-4000-8000-000000000033"
+            @MIN(0),
+        currency        TEXT        NOT_NULL DEFAULT 'EUR' @uuid "bb000060-0040-4000-8000-000000000034",
+        issued_at       TIMESTAMPTZ NOT_NULL @uuid "bb000060-0040-4000-8000-000000000035"
+    )
+    DOC "Port services invoice line item";
+
+    -- ====================================================================
+    -- View Entity (read-only cross-context aggregation)
+    -- ====================================================================
+
+    VIEW_ENTITY PortCall @uuid "bb000060-0050-4000-8000-000000000001" IDENTIFIED_BY id (
+        id                  UUID        NOT_NULL @uuid "bb000060-0050-4000-8000-000000000010",
+        vessel_name         TEXT        NOT_NULL @uuid "bb000060-0050-4000-8000-000000000011",
+        imo_number          TEXT        NOT_NULL @uuid "bb000060-0050-4000-8000-000000000012",
+        berth_code          TEXT                 @uuid "bb000060-0050-4000-8000-000000000013",
+        arrival_time        TIMESTAMPTZ          @uuid "bb000060-0050-4000-8000-000000000014",
+        departure_time      TIMESTAMPTZ          @uuid "bb000060-0050-4000-8000-000000000015",
+        container_count     INTEGER     NOT_NULL DEFAULT 0 @uuid "bb000060-0050-4000-8000-000000000016",
+        hazmat_permits      INTEGER     NOT_NULL DEFAULT 0 @uuid "bb000060-0050-4000-8000-000000000017",
+        total_billed        DECIMAL     NOT_NULL DEFAULT 0 @uuid "bb000060-0050-4000-8000-000000000018"
+    )
+    DOC "Read-only aggregation across VesselTraffic, CargoOps, and billing";
+
+    -- ====================================================================
+    -- Foreign Context (Anti-Corruption Layer)
+    -- ====================================================================
+
+    FOREIGN CONTEXT VTSRadar @uuid "bb000060-0060-4000-8000-000000000001" {
+        FOREIGN_TYPE RadarTrack @uuid "bb000060-0060-4000-8000-000000000010" (
+            mmsi    TEXT NOT_NULL @uuid "bb000060-0060-4000-8000-000000000011",
+            lat     DECIMAL NOT_NULL @uuid "bb000060-0060-4000-8000-000000000012",
+            lon     DECIMAL NOT_NULL @uuid "bb000060-0060-4000-8000-000000000013",
+            heading DECIMAL NOT_NULL @uuid "bb000060-0060-4000-8000-000000000014",
+            speed   DECIMAL NOT_NULL @uuid "bb000060-0060-4000-8000-000000000015"
+        )
+        DOC "Raw radar track from VTS system";
+
+        TRANSLATE VesselPosition FROM RadarTrack @uuid "bb000060-0060-4000-8000-000000000020" {
+            mmsi <- RadarTrack.mmsi,
+            latitude <- RadarTrack.lat,
+            longitude <- RadarTrack.lon,
+            heading_degrees <- RadarTrack.heading,
+            speed_knots <- RadarTrack.speed
+        }
+    }
+    DOC "Vessel Traffic Service radar feed — government external system";
+
+    -- ====================================================================
+    -- Fishbone (Root Cause Analysis)
+    -- ====================================================================
+
+    FISHBONE PortDelayRootCause @uuid "bb000060-0070-4000-8000-000000000001" {
+        EFFECT "Vessel turnaround exceeds 48h SLO";
+
+        CAUSE_CATEGORY Weather @ORDER 1 {
+            CAUSE StormDelay {
+                SEVERITY high
+                DOC "Storm or high wind causing berthing suspension";
+            }
+            CAUSE TideWindow {
+                SEVERITY medium
+                DOC "Missed tide window requiring wait for next cycle";
+            }
+        }
+
+        CAUSE_CATEGORY Tug @ORDER 2 {
+            CAUSE TugUnavailable {
+                SEVERITY high
+                DOC "No tug available for scheduled vessel move";
+            }
+        }
+
+        CAUSE_CATEGORY Pilot @ORDER 3 {
+            CAUSE PilotShortage {
+                SEVERITY medium
+                DOC "Insufficient pilots for concurrent vessel movements";
+            }
+        }
+
+        CAUSE_CATEGORY Berth @ORDER 4 {
+            CAUSE BerthConflict {
+                SEVERITY high
+                DOC "Berth occupied past scheduled departure";
+            }
+        }
+
+        CAUSE_CATEGORY Customs @ORDER 5 {
+            CAUSE CustomsHold {
+                SEVERITY medium
+                DOC "Cargo held for customs inspection delaying departure";
+            }
+        }
+
+        CAUSE_CATEGORY Crane @ORDER 6 {
+            CAUSE CraneBreakdown {
+                SEVERITY critical
+                DOC "Crane malfunction halting cargo operations";
+            }
+        }
+    }
+
+    -- ====================================================================
+    -- Context Deployment
+    -- ====================================================================
+
+    DEPLOYMENT STATE current "Production deployment topology" {
+        vessel_tracking PROVIDED_BY "ExternalVTSSystem" {
+            protocol "gRPC"
+            endpoint "vts.portauthority.gov:443"
+        }
+        DOC "VTS radar feed from government system";
+
+        billing PROVIDED_BY "InternalBilling" {
+            protocol "REST"
+            endpoint "billing.harbour.internal:8080"
+        }
+        DOC "Internal billing and invoicing service";
+
+        hazmat_clearance PROVIDED_BY "PortAuthorityGateway" {
+            protocol "SOAP"
+            endpoint "permits.portauthority.gov/hazmat"
+        }
+        DOC "Port authority hazmat permit system";
+    }
+
+    -- ====================================================================
+    -- Domain Events
+    -- ====================================================================
+
+    EVENT VesselPositionUpdated @uuid "bb000060-0080-4000-8000-000000000001" (
+        mmsi        TEXT    NOT_NULL @uuid "bb000060-0080-4000-8000-000000000010",
+        latitude    DECIMAL NOT_NULL @uuid "bb000060-0080-4000-8000-000000000011",
+        longitude   DECIMAL NOT_NULL @uuid "bb000060-0080-4000-8000-000000000012"
+    ) DOC "Vessel position update from radar translation";
+
+    EVENT HazmatPermitApproved @uuid "bb000060-0080-4000-8000-000000000002" (
+        permit_number TEXT NOT_NULL @uuid "bb000060-0080-4000-8000-000000000020",
+        vessel_id     UUID NOT_NULL @uuid "bb000060-0080-4000-8000-000000000021"
+    ) DOC "Hazmat permit approved by port authority";
+
+    -- ====================================================================
+    -- Observe
+    -- ====================================================================
+
+    OBSERVE {
+        METRIC vessel_turnaround_hours {
+            TYPE histogram;
+            UNIT "hours";
+            THRESHOLD "SLO < 48";
+            DOC "Total time from arrival to departure";
+        }
+        METRIC gate_throughput_per_hour {
+            TYPE gauge;
+            UNIT "containers/hour";
+            THRESHOLD "SLO > 25";
+            DOC "Gate processing throughput across all gates";
+        }
+        ALERT hazmat_zone_breach {
+            WHEN "hazmat_class > zone.max_hazmat_class";
+            SEVERITY critical;
+            DOC "Hazmat cargo in restricted zone";
+        }
+    }
+
+}

@@ -1,0 +1,228 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+-- Copyright (c) 2026 Johannes Lochmann
+
+CONTEXT CargoDecomposition @uuid "bb000050-0001-4000-8000-000000000001"
+    OWNER LogisticsTeam
+    VISION "Container to parcel breakdown and last-mile dispatch"
+    @wardley(COMMODITY) {
+
+    -- ====================================================================
+    -- Grounding
+    -- ====================================================================
+
+    GROUNDING {
+        DOMAIN "Container cargo decomposition and last-mile dispatch";
+        KEY_CONCEPTS ["pallet", "parcel", "break bulk", "harmonised code",
+                      "delivery unit", "weight check", "customs declaration"];
+        DIALECT LOGISTICS;
+        PRECISION_LEVEL operational;
+        CONSTRAINTS ["total pallet weight <= container max payload",
+                     "HS codes vs restricted goods list"];
+        DOC "Anchors AI generation to cargo decomposition domain";
+    }
+
+    -- ====================================================================
+    -- Strong Types
+    -- ====================================================================
+
+    STRONG_TYPE PalletId TEXT @uuid "bb000050-0010-4000-8000-000000000001"
+        CHECK valid_format: "value ~ '^PLT-[A-Z0-9]{8}$'"
+        DOC "Pallet identifier (e.g. PLT-ABC12345)";
+
+    STRONG_TYPE TrackingNumber TEXT @uuid "bb000050-0010-4000-8000-000000000002"
+        CHECK valid_format: "value ~ '^TRK-[0-9]{12}$'"
+        DOC "Parcel tracking number";
+
+    STRONG_TYPE HSCode TEXT @uuid "bb000050-0010-4000-8000-000000000003"
+        CHECK valid_format: "value ~ '^[0-9]{4}\\.[0-9]{2}(\\.[0-9]{2})?$'"
+        DOC "Harmonised System tariff classification code";
+
+    -- ====================================================================
+    -- Value Objects
+    -- ====================================================================
+
+    VALUE_OBJECT Dimensions @uuid "bb000050-0020-4000-8000-000000000001"
+        @inline (
+        length_cm   DECIMAL NOT_NULL @uuid "bb000050-0020-4000-8000-000000000010"
+            @MIN(0) @MAX(10000) @unit(CENTIMETER),
+        width_cm    DECIMAL NOT_NULL @uuid "bb000050-0020-4000-8000-000000000011"
+            @MIN(0) @MAX(10000) @unit(CENTIMETER),
+        height_cm   DECIMAL NOT_NULL @uuid "bb000050-0020-4000-8000-000000000012"
+            @MIN(0) @MAX(10000) @unit(CENTIMETER)
+    ) DOC "Physical dimensions of a cargo item";
+
+    VALUE_OBJECT Weight @uuid "bb000050-0020-4000-8000-000000000002"
+        @shared (
+        value_kg    DECIMAL NOT_NULL @uuid "bb000050-0020-4000-8000-000000000020"
+            @MIN(0) @MAX(50000) @unit(KILOGRAM)
+    ) DOC "Weight measurement in kilograms";
+
+    -- ====================================================================
+    -- Entities
+    -- ====================================================================
+
+    ENTITY Pallet @uuid "bb000050-0040-4000-8000-000000000001" IDENTIFIED_BY id (
+        id              UUID        NOT_NULL @uuid "bb000050-0040-4000-8000-000000000010",
+        pallet_id       PalletId    NOT_NULL @uuid "bb000050-0040-4000-8000-000000000011" @UNIQUE,
+        container_id    UUID        NOT_NULL @uuid "bb000050-0040-4000-8000-000000000012",
+        weight_kg       DECIMAL     NOT_NULL @uuid "bb000050-0040-4000-8000-000000000013"
+            @MIN(0) @MAX(2000) @unit(KILOGRAM),
+        length_cm       DECIMAL     NOT_NULL @uuid "bb000050-0040-4000-8000-000000000014"
+            @MIN(0) @unit(CENTIMETER),
+        width_cm        DECIMAL     NOT_NULL @uuid "bb000050-0040-4000-8000-000000000015"
+            @MIN(0) @unit(CENTIMETER),
+        height_cm       DECIMAL     NOT_NULL @uuid "bb000050-0040-4000-8000-000000000016"
+            @MIN(0) @unit(CENTIMETER),
+        hs_code         HSCode      NOT_NULL @uuid "bb000050-0040-4000-8000-000000000017"
+    )
+    SEED "sample_pallets" {
+        ("bb000050-0040-4000-8000-100000000001", "PLT-SMPL0001", "00000000-0000-0000-0000-000000000001", 450.0, 120.0, 100.0, 150.0, "0302.11"),
+        ("bb000050-0040-4000-8000-100000000002", "PLT-SMPL0002", "00000000-0000-0000-0000-000000000001", 380.0, 120.0, 100.0, 120.0, "8471.30")
+    }
+    INSTRUCT VALIDATION PalletWeightCheck {
+        INTENT: "Verify total pallet weight does not exceed container max payload and cross-check HS codes against restricted goods list"
+        INPUTS: { Pallet.weight_kg, Pallet.hs_code }
+        OUTPUT: PalletWeightVerified
+        STRATEGY: fail_fast
+    }
+    DOC "A pallet extracted from a container";
+
+    ENTITY Parcel @uuid "bb000050-0040-4000-8000-000000000002" IDENTIFIED_BY id (
+        id              UUID            NOT_NULL @uuid "bb000050-0040-4000-8000-000000000020",
+        tracking_number TrackingNumber  NOT_NULL @uuid "bb000050-0040-4000-8000-000000000021" @UNIQUE,
+        pallet_id       UUID            NOT_NULL @uuid "bb000050-0040-4000-8000-000000000022",
+        weight_kg       DECIMAL         NOT_NULL @uuid "bb000050-0040-4000-8000-000000000023"
+            @MIN(0) @MAX(500) @unit(KILOGRAM),
+        hs_code         HSCode          NOT_NULL @uuid "bb000050-0040-4000-8000-000000000024",
+        description     TEXT            NOT_NULL @uuid "bb000050-0040-4000-8000-000000000025" @NOT_EMPTY
+    )
+    RELATIONSHIPS {
+        Parcel -> Pallet REQUIRED ONE VIA pallet_id;
+    }
+    DOC "An individual parcel within a pallet";
+
+    ENTITY DeliveryUnit @uuid "bb000050-0040-4000-8000-000000000003" IDENTIFIED_BY id (
+        id              UUID            NOT_NULL @uuid "bb000050-0040-4000-8000-000000000030",
+        tracking_number TrackingNumber  NOT_NULL @uuid "bb000050-0040-4000-8000-000000000031",
+        destination     TEXT            NOT_NULL @uuid "bb000050-0040-4000-8000-000000000032" @NOT_EMPTY,
+        carrier         TEXT            NOT_NULL @uuid "bb000050-0040-4000-8000-000000000033" @NOT_EMPTY,
+        dispatched_at   TIMESTAMPTZ              @uuid "bb000050-0040-4000-8000-000000000034"
+    )
+    RELATIONSHIPS {
+        DeliveryUnit -> Parcel REQUIRED ONE VIA tracking_number;
+    }
+    DOC "Last-mile delivery unit dispatched from terminal";
+
+    ENTITY BreakBulkItem @uuid "bb000050-0040-4000-8000-000000000004" IDENTIFIED_BY id (
+        id              UUID    NOT_NULL @uuid "bb000050-0040-4000-8000-000000000040",
+        container_id    UUID    NOT_NULL @uuid "bb000050-0040-4000-8000-000000000041",
+        item_type       TEXT    NOT_NULL @uuid "bb000050-0040-4000-8000-000000000042" @NOT_EMPTY,
+        weight_kg       DECIMAL NOT_NULL @uuid "bb000050-0040-4000-8000-000000000043"
+            @MIN(0) @unit(KILOGRAM),
+        requires_crane  BOOLEAN NOT_NULL DEFAULT FALSE @uuid "bb000050-0040-4000-8000-000000000044"
+    )
+    DOC "Non-containerised cargo item requiring special handling";
+
+    -- ====================================================================
+    -- Aggregates
+    -- ====================================================================
+
+    AGGREGATE ContainerUnpack @uuid "bb000050-0050-4000-8000-000000000001" ROOT Pallet
+        (CONTAINS Parcel)
+        DOC "Unpacking a container into pallets and parcels";
+
+    AGGREGATE PalletDispatch @uuid "bb000050-0050-4000-8000-000000000002" ROOT Parcel
+        (CONTAINS DeliveryUnit)
+        DOC "Dispatching parcels from a pallet to last-mile delivery";
+
+    -- ====================================================================
+    -- Domain Events
+    -- ====================================================================
+
+    EVENT ContainerUnpacked @uuid "bb000050-0070-4000-8000-000000000001" (
+        container_id UUID    NOT_NULL @uuid "bb000050-0070-4000-8000-000000000010",
+        pallet_count INTEGER NOT_NULL @uuid "bb000050-0070-4000-8000-000000000011"
+    ) DOC "Container has been fully unpacked into pallets";
+
+    EVENT PalletWeightVerified @uuid "bb000050-0070-4000-8000-000000000002" (
+        pallet_id   UUID    NOT_NULL @uuid "bb000050-0070-4000-8000-000000000020",
+        verified_kg DECIMAL NOT_NULL @uuid "bb000050-0070-4000-8000-000000000021"
+    ) DOC "Pallet weight verified against manifest";
+
+    EVENT ParcelDispatched @uuid "bb000050-0070-4000-8000-000000000003" (
+        tracking_number TEXT NOT_NULL @uuid "bb000050-0070-4000-8000-000000000030",
+        carrier         TEXT NOT_NULL @uuid "bb000050-0070-4000-8000-000000000031"
+    ) DOC "Parcel dispatched for last-mile delivery";
+
+    -- ====================================================================
+    -- Mapping (brownfield integration)
+    -- ====================================================================
+
+    MAPPING LegacyManifestToDecomposition @uuid "bb000050-0090-4000-8000-000000000001" {
+        FROM "old_manifest" INTO ContainerUnpack;
+        FIELD old_weight -> weight_kg COERCE_DECIMAL;
+        FIELD old_item_code -> hs_code COPY;
+        FIELD old_desc -> description COPY;
+        DOC "Maps legacy shipping manifest to decomposition model";
+    }
+
+    -- ====================================================================
+    -- Legacy View
+    -- ====================================================================
+
+    LEGACY_VIEW OldManifestSummary @uuid "bb000050-00a0-4000-8000-000000000001" {
+        SOURCE_TABLES legacy_shipments, legacy_items;
+        MATERIALIZED false;
+        DOC "Summary view over legacy manifest tables";
+        BODY """
+            SELECT s.shipment_id, s.vessel_name,
+                   COUNT(i.item_id) AS item_count,
+                   SUM(i.weight_lbs) AS total_weight_lbs
+            FROM legacy_shipments s
+            JOIN legacy_items i ON i.shipment_id = s.shipment_id
+            GROUP BY s.shipment_id, s.vessel_name
+        """;
+    }
+
+    -- ====================================================================
+    -- Legacy Procedure
+    -- ====================================================================
+
+    LEGACY_PROCEDURE CalculateFreightRate @uuid "bb000050-00b0-4000-8000-000000000001" {
+        PARAMS (
+            shipment_id INTEGER IN,
+            rate DECIMAL OUT
+        );
+        RETURNS DECIMAL;
+        REFERENCES legacy_shipments, legacy_rates;
+        CLASSIFICATION "business_rule";
+        DOC "Legacy stored procedure for freight rate calculation";
+        BODY """
+            SELECT r.base_rate * s.weight_factor
+            INTO rate
+            FROM legacy_rates r
+            JOIN legacy_shipments s ON s.rate_class = r.class_id
+            WHERE s.shipment_id = $1
+        """;
+    }
+
+    -- ====================================================================
+    -- Observe
+    -- ====================================================================
+
+    OBSERVE {
+        METRIC parcels_dispatched_per_hour {
+            TYPE gauge;
+            UNIT "parcels/hour";
+            THRESHOLD "SLO > 100";
+            DOC "Last-mile dispatch throughput";
+        }
+        METRIC weight_discrepancy_rate {
+            TYPE gauge;
+            UNIT "percent";
+            THRESHOLD "SLO < 2";
+            DOC "Rate of weight verification failures";
+        }
+    }
+
+}

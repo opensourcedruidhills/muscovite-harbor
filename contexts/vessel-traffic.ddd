@@ -1,0 +1,457 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+-- Copyright (c) 2026 Johannes Lochmann
+
+CONTEXT VesselTraffic @uuid "bb000010-0001-4000-8000-000000000001"
+    OWNER VesselOpsTeam
+    VISION "Safe and efficient vessel movement through the harbour"
+    @wardley(CUSTOM) {
+
+    -- ====================================================================
+    -- Grounding
+    -- ====================================================================
+
+    GROUNDING {
+        DOMAIN "Maritime vessel traffic management";
+        KEY_CONCEPTS ["vessel call", "berth allocation", "pilot dispatch",
+                      "tug assignment", "tide window", "draft clearance"];
+        DIALECT MARITIME;
+        PRECISION_LEVEL operational;
+        CONSTRAINTS ["SOLAS vessel safety", "port authority regulations",
+                     "tide-dependent navigation"];
+        DOC "Anchors AI generation to maritime VTS domain terminology";
+    }
+
+    -- ====================================================================
+    -- Concurrency
+    -- ====================================================================
+
+    CONCURRENCY {
+        ADVISORY;
+        LOCK_TIMEOUT "30s";
+    }
+
+    -- ====================================================================
+    -- Strong Types
+    -- ====================================================================
+
+    STRONG_TYPE IMONumber TEXT @uuid "bb000010-0010-4000-8000-000000000001"
+        CHECK valid_format: "value ~ '^[0-9]{7}$'"
+        DOC "IMO vessel identification number (7 digits)";
+
+    STRONG_TYPE MMSI TEXT @uuid "bb000010-0010-4000-8000-000000000002"
+        CHECK valid_format: "value ~ '^[0-9]{9}$'"
+        DOC "Maritime Mobile Service Identity (9 digits)";
+
+    STRONG_TYPE CallSign TEXT @uuid "bb000010-0010-4000-8000-000000000003"
+        CHECK valid_format: "value ~ '^[A-Z0-9]{3,7}$'"
+        DOC "International radio call sign";
+
+    STRONG_TYPE BerthCode TEXT @uuid "bb000010-0010-4000-8000-000000000004"
+        CHECK valid_format: "value ~ '^[A-Z]{1,3}-[0-9]{1,4}$'"
+        DOC "Berth identifier (e.g. NQ-12, SC-3)";
+
+    -- ====================================================================
+    -- Value Objects
+    -- ====================================================================
+
+    VALUE_OBJECT Dimensions @uuid "bb000010-0020-4000-8000-000000000001" @inline (
+        loa_metres   DECIMAL NOT_NULL @uuid "bb000010-0020-4000-8000-000000000011"
+            @MIN(1) @MAX(500) DOC "Length overall in metres",
+        beam_metres  DECIMAL NOT_NULL @uuid "bb000010-0020-4000-8000-000000000012"
+            @MIN(1) @MAX(80) DOC "Beam (width) in metres",
+        draft_metres DECIMAL NOT_NULL @uuid "bb000010-0020-4000-8000-000000000013"
+            @MIN(0.5) @MAX(25) DOC "Current draft in metres"
+    )
+    CHECK valid_proportions: loa_metres > beam_metres
+    DOC "Physical dimensions of a vessel";
+
+    VALUE_OBJECT GeoPosition @uuid "bb000010-0020-4000-8000-000000000002" (
+        latitude  DECIMAL NOT_NULL @uuid "bb000010-0020-4000-8000-000000000021"
+            @MIN(-90) @MAX(90),
+        longitude DECIMAL NOT_NULL @uuid "bb000010-0020-4000-8000-000000000022"
+            @MIN(-180) @MAX(180)
+    )
+    DOC "WGS84 geographic coordinates";
+
+    VALUE_OBJECT TimeWindow @uuid "bb000010-0020-4000-8000-000000000003" @inline (
+        window_start TIMESTAMPTZ NOT_NULL @uuid "bb000010-0020-4000-8000-000000000031",
+        window_end   TIMESTAMPTZ NOT_NULL @uuid "bb000010-0020-4000-8000-000000000032"
+    )
+    CHECK valid_range: window_end > window_start
+    DOC "A bounded time interval";
+
+    -- ====================================================================
+    -- Lookup Tables
+    -- ====================================================================
+
+    LOOKUP_TABLE VesselType @uuid "bb000010-0030-4000-8000-000000000001"
+        PLURAL "vessel_types"
+        SEED_VALUES [
+            ("CONTAINER"),
+            ("BULK_CARRIER"),
+            ("TANKER"),
+            ("RO_RO"),
+            ("PASSENGER"),
+            ("GENERAL_CARGO"),
+            ("LNG_CARRIER"),
+            ("CRUISE")
+        ]
+        DOC "Classification of vessel types";
+
+    LOOKUP_TABLE CargoCategory @uuid "bb000010-0030-4000-8000-000000000002"
+        PLURAL "cargo_categories"
+        SEED_VALUES [
+            ("DRY_BULK"),
+            ("LIQUID_BULK"),
+            ("CONTAINERISED"),
+            ("BREAK_BULK"),
+            ("RO_RO_CARGO"),
+            ("PASSENGER"),
+            ("HAZMAT")
+        ]
+        DOC "High-level cargo classification";
+
+    LOOKUP_TABLE PilotZone @uuid "bb000010-0030-4000-8000-000000000003"
+        PLURAL "pilot_zones"
+        (zone_description TEXT NOT_NULL)
+        SEED_VALUES [
+            ("APPROACH", "Open water approach channel"),
+            ("INNER", "Inner harbour basin"),
+            ("TURNING", "Turning basin area"),
+            ("BERTH", "Final berthing manoeuvre")
+        ]
+        DOC "Pilotage zones within harbour limits";
+
+    -- ====================================================================
+    -- Entities
+    -- ====================================================================
+
+    ENTITY Vessel @uuid "bb000010-0040-4000-8000-000000000001" IDENTIFIED_BY id (
+        id          UUID            NOT_NULL @uuid "bb000010-0040-4000-8000-000000000010",
+        imo_number  IMONumber       NOT_NULL @uuid "bb000010-0040-4000-8000-000000000011" @UNIQUE,
+        mmsi        MMSI            NOT_NULL @uuid "bb000010-0040-4000-8000-000000000012" @UNIQUE,
+        call_sign   CallSign        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000013",
+        name        TEXT            NOT_NULL @uuid "bb000010-0040-4000-8000-000000000014" @NOT_EMPTY,
+        vessel_type TEXT            NOT_NULL @uuid "bb000010-0040-4000-8000-000000000015",
+        flag_state  TEXT            NOT_NULL @uuid "bb000010-0040-4000-8000-000000000016",
+        is_active   BOOLEAN         NOT_NULL DEFAULT TRUE @uuid "bb000010-0040-4000-8000-000000000017"
+    )
+    USES Dimensions
+    DISPLAY_FORMAT (
+        SHORT: "{name} ({imo_number})",
+        FULL: "{name} [{call_sign}] IMO:{imo_number} MMSI:{mmsi}"
+    )
+    DOC "A registered vessel in the harbour traffic system";
+
+    ENTITY Berth @uuid "bb000010-0040-4000-8000-000000000002" IDENTIFIED_BY id (
+        id              UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000020",
+        code            BerthCode   NOT_NULL @uuid "bb000010-0040-4000-8000-000000000021" @UNIQUE,
+        name            TEXT        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000022" @NOT_EMPTY,
+        max_loa_metres  DECIMAL     NOT_NULL @uuid "bb000010-0040-4000-8000-000000000023"
+            @MIN(10) @MAX(500) DOC "Maximum vessel LOA this berth can accommodate",
+        max_draft_metres DECIMAL    NOT_NULL @uuid "bb000010-0040-4000-8000-000000000024"
+            @MIN(1) @MAX(25) DOC "Maximum draft at lowest astronomical tide",
+        max_beam_metres DECIMAL     NOT_NULL @uuid "bb000010-0040-4000-8000-000000000025"
+            @MIN(5) @MAX(80),
+        has_crane_access BOOLEAN    NOT_NULL DEFAULT FALSE @uuid "bb000010-0040-4000-8000-000000000026",
+        has_reefer_plugs BOOLEAN    NOT_NULL DEFAULT FALSE @uuid "bb000010-0040-4000-8000-000000000027",
+        is_active       BOOLEAN     NOT_NULL DEFAULT TRUE @uuid "bb000010-0040-4000-8000-000000000028"
+    )
+    HAS position GeoPosition
+    SEED "berth_registry" {
+        ("bb000010-0040-4000-8000-100000000001", "NQ-01", "North Quay Berth 1", 350, 14.5, 50, TRUE, TRUE, TRUE),
+        ("bb000010-0040-4000-8000-100000000002", "NQ-02", "North Quay Berth 2", 280, 12.0, 45, TRUE, FALSE, TRUE),
+        ("bb000010-0040-4000-8000-100000000003", "SC-01", "South Container Berth 1", 400, 16.0, 60, TRUE, TRUE, TRUE),
+        ("bb000010-0040-4000-8000-100000000004", "SC-02", "South Container Berth 2", 400, 16.0, 60, TRUE, TRUE, TRUE),
+        ("bb000010-0040-4000-8000-100000000005", "PT-01", "Passenger Terminal Berth", 330, 10.5, 40, FALSE, FALSE, TRUE),
+        ("bb000010-0040-4000-8000-100000000006", "BK-01", "Bulk Cargo Berth", 250, 13.0, 35, FALSE, FALSE, TRUE)
+    }
+    DISPLAY_FORMAT (
+        SHORT: "{code} — {name}",
+        FULL: "{code} {name} (LOA≤{max_loa_metres}m, Draft≤{max_draft_metres}m)"
+    )
+    DOC "A physical berth where vessels moor";
+
+    ENTITY Voyage @uuid "bb000010-0040-4000-8000-000000000003" IDENTIFIED_BY id (
+        id              UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000030",
+        vessel_id       UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000031",
+        berth_id        UUID                 @uuid "bb000010-0040-4000-8000-000000000032",
+        voyage_number   TEXT        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000033" @NOT_EMPTY @UNIQUE,
+        eta             TIMESTAMPTZ NOT_NULL @uuid "bb000010-0040-4000-8000-000000000034",
+        ata             TIMESTAMPTZ          @uuid "bb000010-0040-4000-8000-000000000035",
+        etd             TIMESTAMPTZ          @uuid "bb000010-0040-4000-8000-000000000036",
+        atd             TIMESTAMPTZ          @uuid "bb000010-0040-4000-8000-000000000037",
+        cargo_category  TEXT        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000038",
+        status          TEXT        NOT_NULL DEFAULT 'ANNOUNCED' @uuid "bb000010-0040-4000-8000-000000000039"
+    )
+    DISPLAY_FORMAT (
+        SHORT: "{voyage_number} ETA:{eta}",
+        FULL: "Voyage {voyage_number} — ETA:{eta} ETD:{etd} Status:{status}"
+    )
+    DOC "A single vessel call at the harbour"
+    RELATIONSHIPS {
+        Voyage -> Vessel REQUIRED ONE VIA vessel_id;
+        Voyage -> Berth OPTIONAL ONE VIA berth_id;
+    };
+
+    ENTITY PilotAssignment @uuid "bb000010-0040-4000-8000-000000000004" IDENTIFIED_BY id (
+        id              UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000040",
+        voyage_id       UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000041",
+        pilot_name      TEXT        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000042" @NOT_EMPTY,
+        pilot_zone      TEXT        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000043",
+        boarding_time   TIMESTAMPTZ          @uuid "bb000010-0040-4000-8000-000000000044",
+        disembark_time  TIMESTAMPTZ          @uuid "bb000010-0040-4000-8000-000000000045"
+    )
+    DOC "Assignment of a pilot to a voyage"
+    RELATIONSHIPS {
+        PilotAssignment -> Voyage REQUIRED ONE VIA voyage_id;
+    };
+
+    ENTITY TugBooking @uuid "bb000010-0040-4000-8000-000000000005" IDENTIFIED_BY id (
+        id              UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000050",
+        voyage_id       UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000051",
+        tug_name        TEXT        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000052" @NOT_EMPTY,
+        bollard_pull_t  DECIMAL     NOT_NULL @uuid "bb000010-0040-4000-8000-000000000053"
+            @MIN(5) @MAX(200) DOC "Bollard pull in tonnes",
+        is_confirmed    BOOLEAN     NOT_NULL DEFAULT FALSE @uuid "bb000010-0040-4000-8000-000000000054"
+    )
+    DOC "Booking of a tug for vessel manoeuvring"
+    RELATIONSHIPS {
+        TugBooking -> Voyage REQUIRED ONE VIA voyage_id;
+    };
+
+    ENTITY TideWindow @uuid "bb000010-0040-4000-8000-000000000006" IDENTIFIED_BY id (
+        id                  UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000060",
+        berth_id            UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000061",
+        tide_height_metres  DECIMAL     NOT_NULL @uuid "bb000010-0040-4000-8000-000000000062"
+            @MIN(-2) @MAX(15) DOC "Predicted tide height above chart datum",
+        available_draft     DECIMAL     NOT_NULL @uuid "bb000010-0040-4000-8000-000000000063"
+            @MIN(0) DOC "Effective navigable draft = berth depth + tide height"
+    )
+    USES TimeWindow
+    BITEMPORAL {
+        VALID_TIME valid_from, valid_to;
+        SYSTEM_TIME AUTO;
+        GRANULARITY SECOND;
+        STRATEGY SNAPSHOT;
+    }
+    DOC "A tidal window with navigable draft at a specific berth"
+    RELATIONSHIPS {
+        TideWindow -> Berth REQUIRED ONE VIA berth_id;
+    };
+
+    -- ====================================================================
+    -- Aggregate
+    -- ====================================================================
+
+    AGGREGATE VesselCall @uuid "bb000010-0050-4000-8000-000000000001" ROOT Voyage
+        (CONTAINS PilotAssignment, TugBooking)
+        GRPC_DEADLINE "10s"
+        DOC "A complete vessel call: voyage + pilot + tugs";
+
+    -- ====================================================================
+    -- State Machine
+    -- ====================================================================
+
+    STATE_MACHINE VoyageStatus @uuid "bb000010-0060-4000-8000-000000000001"
+        FOR Voyage ENFORCE_AT DB_LEVEL {
+
+        INITIAL ANNOUNCED;
+        TERMINAL DEPARTED;
+
+        STATE ANNOUNCED DOC "Vessel has announced ETA";
+        STATE PILOT_ORDERED DOC "Pilot dispatched to boarding station";
+        STATE APPROACHING DOC "Vessel entering harbour approach channel";
+        STATE BERTHING DOC "Vessel manoeuvring to berth with tug assist";
+        STATE MOORED DOC "Vessel secured at berth, gangway deployed";
+        STATE CARGO_OPS DOC "Cargo operations in progress";
+        STATE DEPARTURE_PREP DOC "Pre-departure checks, pilot re-boarding";
+        STATE UNMOORED DOC "Lines cast off, departing berth";
+        STATE DEPARTED DOC "Vessel has cleared harbour limits";
+
+        TRANSITION ANNOUNCED -> PILOT_ORDERED ON OrderPilot
+            DOC "Pilot requested for inbound vessel";
+        TRANSITION PILOT_ORDERED -> APPROACHING ON VesselApproaching
+            DOC "Vessel detected on approach by VTS radar";
+        TRANSITION APPROACHING -> BERTHING ON BeginBerthing
+            GUARD "tide_window_open"
+            DOC "Tidal window confirmed, begin berthing manoeuvre";
+        TRANSITION BERTHING -> MOORED ON VesselMoored
+            DOC "All lines fast, vessel secured";
+        TRANSITION MOORED -> CARGO_OPS ON BeginCargoOps
+            DOC "Gangway deployed, cargo plan activated";
+        TRANSITION CARGO_OPS -> DEPARTURE_PREP ON CargoComplete
+            DOC "All cargo operations finished";
+        TRANSITION DEPARTURE_PREP -> UNMOORED ON CastOff
+            GUARD "departure_clearance"
+            DOC "Port authority clearance received";
+        TRANSITION UNMOORED -> DEPARTED ON VesselDeparted
+            DOC "Vessel has cleared harbour limits";
+
+        -- Emergency / out-of-sequence
+        TRANSITION APPROACHING -> ANNOUNCED ON AbortApproach
+            DOC "Vessel diverted or anchored — reset to announced";
+        TRANSITION BERTHING -> APPROACHING ON AbortBerthing
+            DOC "Berthing failed — vessel returns to approach";
+    }
+
+    -- ====================================================================
+    -- Domain Events
+    -- ====================================================================
+
+    EVENT VesselAnnounced @uuid "bb000010-0070-4000-8000-000000000001" (
+        voyage_id UUID NOT_NULL @uuid "bb000010-0070-4000-8000-000000000010",
+        vessel_id UUID NOT_NULL @uuid "bb000010-0070-4000-8000-000000000011",
+        eta       TIMESTAMPTZ NOT_NULL @uuid "bb000010-0070-4000-8000-000000000012"
+    ) DOC "A vessel has announced its arrival";
+
+    EVENT BerthAllocated @uuid "bb000010-0070-4000-8000-000000000002" (
+        voyage_id UUID NOT_NULL @uuid "bb000010-0070-4000-8000-000000000020",
+        berth_id  UUID NOT_NULL @uuid "bb000010-0070-4000-8000-000000000021"
+    ) DOC "A berth has been allocated to a voyage";
+
+    EVENT PilotDispatched @uuid "bb000010-0070-4000-8000-000000000003" (
+        voyage_id   UUID NOT_NULL @uuid "bb000010-0070-4000-8000-000000000030",
+        pilot_name  TEXT NOT_NULL @uuid "bb000010-0070-4000-8000-000000000031"
+    ) DOC "Pilot dispatched to meet inbound vessel";
+
+    EVENT VesselMooredEvent @uuid "bb000010-0070-4000-8000-000000000004" (
+        voyage_id UUID NOT_NULL @uuid "bb000010-0070-4000-8000-000000000040",
+        berth_id  UUID NOT_NULL @uuid "bb000010-0070-4000-8000-000000000041",
+        moored_at TIMESTAMPTZ NOT_NULL @uuid "bb000010-0070-4000-8000-000000000042"
+    ) DOC "Vessel has been moored at berth";
+
+    EVENT VesselDepartedEvent @uuid "bb000010-0070-4000-8000-000000000005" (
+        voyage_id    UUID NOT_NULL @uuid "bb000010-0070-4000-8000-000000000050",
+        departed_at  TIMESTAMPTZ NOT_NULL @uuid "bb000010-0070-4000-8000-000000000051"
+    ) DOC "Vessel has departed harbour";
+
+    -- ====================================================================
+    -- Commands
+    -- ====================================================================
+
+    COMMAND AnnounceVessel ON Voyage (
+        vessel_id       UUID NOT_NULL @uuid "bb000010-0080-4000-8000-000000000010",
+        eta             TIMESTAMPTZ NOT_NULL @uuid "bb000010-0080-4000-8000-000000000011",
+        cargo_category  TEXT NOT_NULL @uuid "bb000010-0080-4000-8000-000000000012"
+    )
+    REQUIRES vessel_exists: "vessel_id IS NOT NULL"
+    DECIDE {
+        LET vn = "CONCAT('V-', TO_CHAR(NOW(), 'YYYYMMDD'), '-', SUBSTR(MD5(RANDOM()::TEXT),1,6))";
+        EMIT VesselAnnounced(voyage_id: id, vessel_id: vessel_id, eta: eta);
+    }
+    EMITS VesselAnnounced;
+    -- Register an inbound vessel call
+
+    COMMAND AllocateBerth ON Voyage (
+        berth_id UUID NOT_NULL @uuid "bb000010-0080-4000-8000-000000000020"
+    )
+    REQUIRES voyage_announced: "status = 'ANNOUNCED'"
+    REQUIRES berth_available: "NOT EXISTS (SELECT 1 FROM voyage WHERE berth_id = berth_id AND status NOT IN ('DEPARTED'))"
+    DECIDE {
+        EMIT BerthAllocated(voyage_id: id, berth_id: berth_id);
+    }
+    EMITS BerthAllocated;
+    -- Allocate a berth to an announced voyage
+
+    -- ====================================================================
+    -- Effects
+    -- ====================================================================
+
+    EFFECT DispatchPilot (
+        voyage_id  UUID NOT_NULL @uuid "bb000010-0090-4000-8000-000000000010",
+        pilot_zone TEXT NOT_NULL @uuid "bb000010-0090-4000-8000-000000000011"
+    ) DOC "Side-effect: notify pilot station to dispatch pilot";
+
+    EFFECT DispatchTugs (
+        voyage_id      UUID NOT_NULL @uuid "bb000010-0090-4000-8000-000000000020",
+        tug_count      INTEGER NOT_NULL @uuid "bb000010-0090-4000-8000-000000000021"
+    ) DOC "Side-effect: request tugs from tug operator";
+
+    -- ====================================================================
+    -- Specification
+    -- ====================================================================
+
+    SPECIFICATION AvailableBerths FOR Berth
+        (min_draft DECIMAL, min_loa DECIMAL, needs_crane BOOLEAN, from_time TIMESTAMPTZ, to_time TIMESTAMPTZ)
+        WHERE max_draft_metres >= min_draft AND max_loa_metres >= min_loa AND is_active = TRUE
+        DOC "Find berths matching vessel requirements within a time window";
+
+    SPECIFICATION VesselsByETA FOR Voyage
+        (from_eta TIMESTAMPTZ, to_eta TIMESTAMPTZ)
+        WHERE eta BETWEEN from_eta AND to_eta AND status != 'DEPARTED'
+        DOC "Find voyages with ETA in given range";
+
+    -- ====================================================================
+    -- Repository
+    -- ====================================================================
+
+    REPOSITORY VesselCallRepository FOR Voyage (
+        findByETA (from_eta TIMESTAMPTZ, to_eta TIMESTAMPTZ) -> Voyage,
+        findConflictingBerths (berth_id UUID, from_time TIMESTAMPTZ, to_time TIMESTAMPTZ) -> Voyage,
+        findActiveByVessel (vessel_id UUID) -> Voyage
+    );
+
+    -- ====================================================================
+    -- Policy
+    -- ====================================================================
+
+    POLICY AutoDispatchPilot WHEN VesselAnnounced
+        WHERE "eta < NOW() + INTERVAL '6 hours'"
+        THEN INVOKE DispatchPilot(voyage_id = "voyage_id", pilot_zone = "APPROACH")
+        RETRY 3
+        TIMEOUT "15m"
+        DOC "Auto-dispatch pilot for imminent arrivals";
+
+    -- ====================================================================
+    -- Projection
+    -- ====================================================================
+
+    PROJECTION BerthOccupancyBoard @uuid "bb000010-00a0-4000-8000-000000000001" (
+        berth_code  BerthCode NOT_NULL @uuid "bb000010-00a0-4000-8000-000000000010",
+        berth_name  TEXT      NOT_NULL @uuid "bb000010-00a0-4000-8000-000000000011",
+        vessel_name TEXT               @uuid "bb000010-00a0-4000-8000-000000000012",
+        voyage_number TEXT             @uuid "bb000010-00a0-4000-8000-000000000013",
+        status      TEXT               @uuid "bb000010-00a0-4000-8000-000000000014",
+        eta         TIMESTAMPTZ        @uuid "bb000010-00a0-4000-8000-000000000015",
+        etd         TIMESTAMPTZ        @uuid "bb000010-00a0-4000-8000-000000000016"
+    )
+    REFRESH LIVE
+    DOC "Real-time berth occupancy display for harbour control room";
+
+    PROJECTION VesselMovementLog @uuid "bb000010-00a0-4000-8000-000000000002" (
+        voyage_number TEXT      NOT_NULL @uuid "bb000010-00a0-4000-8000-000000000020",
+        vessel_name   TEXT      NOT_NULL @uuid "bb000010-00a0-4000-8000-000000000021",
+        event_type    TEXT      NOT_NULL @uuid "bb000010-00a0-4000-8000-000000000022",
+        event_time    TIMESTAMPTZ NOT_NULL @uuid "bb000010-00a0-4000-8000-000000000023",
+        details       TEXT               @uuid "bb000010-00a0-4000-8000-000000000024"
+    )
+    REFRESH ON_EVENT VesselAnnounced, BerthAllocated, VesselMooredEvent, VesselDepartedEvent
+    DOC "Audit log of all vessel movements (maritime law compliance)";
+
+    -- ====================================================================
+    -- Observe
+    -- ====================================================================
+
+    OBSERVE {
+        METRIC vessel_turnaround_hours {
+            TYPE histogram;
+            UNIT "hours";
+            THRESHOLD "SLO < 48";
+            DOC "Time from vessel arrival to departure";
+        }
+        METRIC berth_utilisation_pct {
+            TYPE gauge;
+            UNIT "percent";
+            THRESHOLD "SLO > 60";
+            DOC "Percentage of berths occupied";
+        }
+        ALERT HighTurnaround {
+            WHEN "vessel_turnaround_hours > 72";
+            SEVERITY critical;
+            TEAM VesselOpsTeam;
+            DOC "Vessel exceeding 72h turnaround";
+        }
+    }
+
+}
