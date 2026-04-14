@@ -524,3 +524,24 @@ COORDINATION ContainerDischargeSequence @uuid "bb000003-0001-4000-8000-000000000
         COMPLETES
         DOC "Schedule container for truck/rail/barge pickup";
 }
+
+-- ============================================================================
+-- Capability Scheme — Port Infrastructure Tiers
+-- ============================================================================
+
+CAPABILITY_SCHEME PortCapabilityTiers {
+    CAPABILITY BASIC_BERTHING
+        DOC "Alongside berthing for vessels up to 150m LOA";
+    CAPABILITY CONTAINER_HANDLING
+        DOC "Gantry crane and yard stacking operations";
+    CAPABILITY REEFER_MONITORING
+        DOC "Temperature-controlled container power and telemetry";
+    CAPABILITY HAZMAT_HANDLING
+        DOC "IMO-certified dangerous goods storage and segregation";
+    CAPABILITY PASSENGER_TERMINAL
+        DOC "Passenger embarkation/disembarkation facilities";
+    CAPABILITY INTERMODAL_RAIL
+        DOC "Rail siding and container transloading capability";
+    CAPABILITY VTS_RADAR
+        DOC "Vessel Traffic Service radar and AIS coverage";
+}
