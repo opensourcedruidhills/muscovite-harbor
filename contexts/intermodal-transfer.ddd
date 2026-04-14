@@ -1,0 +1,265 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+-- Copyright (c) 2026 Johannes Lochmann
+
+CONTEXT IntermodalTransfer @uuid "bb000040-0001-4000-8000-000000000001"
+    OWNER LogisticsTeam
+    VISION "Optimise multimodal transport handoffs"
+    @wardley(PRODUCT) {
+
+    -- ====================================================================
+    -- Grounding
+    -- ====================================================================
+
+    GROUNDING {
+        DOMAIN "Intermodal container transport logistics";
+        KEY_CONCEPTS ["transfer slot", "truck visit", "rail wagon",
+                      "barge booking", "chassis pool", "gate checkout"];
+        DIALECT LOGISTICS;
+        PRECISION_LEVEL operational;
+        CONSTRAINTS ["customs export clearance", "weight bridge limits",
+                     "carrier slot windows"];
+        DOC "Anchors AI generation to intermodal transfer domain";
+    }
+
+    -- ====================================================================
+    -- Strong Types
+    -- ====================================================================
+
+    STRONG_TYPE SlotReference TEXT @uuid "bb000040-0010-4000-8000-000000000001"
+        CHECK valid_format: "value ~ '^TS-[0-9]{8}-[0-9]{4}$'"
+        DOC "Transfer slot reference (e.g. TS-20260415-0001)";
+
+    STRONG_TYPE TruckPlate TEXT @uuid "bb000040-0010-4000-8000-000000000002"
+        CHECK valid_format: "value ~ '^[A-Z0-9-]{3,12}$'"
+        DOC "Truck licence plate number";
+
+    -- ====================================================================
+    -- Entities
+    -- ====================================================================
+
+    ENTITY TransferSlot @uuid "bb000040-0040-4000-8000-000000000001" IDENTIFIED_BY id (
+        id              UUID            NOT_NULL @uuid "bb000040-0040-4000-8000-000000000010",
+        reference       SlotReference   NOT_NULL @uuid "bb000040-0040-4000-8000-000000000011" @UNIQUE,
+        container_id    UUID            NOT_NULL @uuid "bb000040-0040-4000-8000-000000000012",
+        transport_mode  TEXT            NOT_NULL @uuid "bb000040-0040-4000-8000-000000000013",
+        scheduled_at    TIMESTAMPTZ     NOT_NULL @uuid "bb000040-0040-4000-8000-000000000014",
+        status          TEXT            NOT_NULL DEFAULT 'RESERVED' @uuid "bb000040-0040-4000-8000-000000000015"
+    )
+    DOC "A time slot for container transfer to outbound transport";
+
+    ENTITY TruckVisit @uuid "bb000040-0040-4000-8000-000000000002" IDENTIFIED_BY id (
+        id              UUID        NOT_NULL @uuid "bb000040-0040-4000-8000-000000000020",
+        truck_plate     TruckPlate  NOT_NULL @uuid "bb000040-0040-4000-8000-000000000021",
+        carrier_name    TEXT        NOT_NULL @uuid "bb000040-0040-4000-8000-000000000022" @NOT_EMPTY,
+        slot_id         UUID        NOT_NULL @uuid "bb000040-0040-4000-8000-000000000023",
+        arrived_at      TIMESTAMPTZ          @uuid "bb000040-0040-4000-8000-000000000024",
+        departed_at     TIMESTAMPTZ          @uuid "bb000040-0040-4000-8000-000000000025"
+    )
+    RELATIONSHIPS {
+        TruckVisit -> TransferSlot REQUIRED ONE VIA slot_id;
+    }
+    DOC "A truck arriving for container pickup";
+
+    ENTITY RailWagon @uuid "bb000040-0040-4000-8000-000000000003" IDENTIFIED_BY id (
+        id              UUID    NOT_NULL @uuid "bb000040-0040-4000-8000-000000000030",
+        wagon_number    TEXT    NOT_NULL @uuid "bb000040-0040-4000-8000-000000000031" @NOT_EMPTY @UNIQUE,
+        max_weight_kg   DECIMAL NOT_NULL @uuid "bb000040-0040-4000-8000-000000000032"
+            @MIN(0) @MAX(80000),
+        slot_id         UUID             @uuid "bb000040-0040-4000-8000-000000000033"
+    )
+    DOC "A rail wagon for container transport";
+
+    ENTITY BargeBooking @uuid "bb000040-0040-4000-8000-000000000004" IDENTIFIED_BY id (
+        id              UUID        NOT_NULL @uuid "bb000040-0040-4000-8000-000000000040",
+        barge_name      TEXT        NOT_NULL @uuid "bb000040-0040-4000-8000-000000000041" @NOT_EMPTY,
+        capacity_teu    INTEGER     NOT_NULL @uuid "bb000040-0040-4000-8000-000000000042"
+            @MIN(1) @MAX(500),
+        departure_at    TIMESTAMPTZ NOT_NULL @uuid "bb000040-0040-4000-8000-000000000043",
+        status          TEXT        NOT_NULL DEFAULT 'BOOKED' @uuid "bb000040-0040-4000-8000-000000000044"
+    )
+    DOC "Booking for barge transport of containers";
+
+    ENTITY ChassisUnit @uuid "bb000040-0040-4000-8000-000000000005" IDENTIFIED_BY id (
+        id              UUID    NOT_NULL @uuid "bb000040-0040-4000-8000-000000000050",
+        chassis_number  TEXT    NOT_NULL @uuid "bb000040-0040-4000-8000-000000000051" @NOT_EMPTY @UNIQUE,
+        chassis_type    TEXT    NOT_NULL @uuid "bb000040-0040-4000-8000-000000000052",
+        is_available    BOOLEAN NOT_NULL DEFAULT TRUE @uuid "bb000040-0040-4000-8000-000000000053"
+    )
+    DOC "Chassis for container road transport";
+
+    -- ====================================================================
+    -- Aggregate
+    -- ====================================================================
+
+    AGGREGATE IntermodalHandoff @uuid "bb000040-0050-4000-8000-000000000001" ROOT TransferSlot
+        (CONTAINS TruckVisit)
+        DOC "Container handoff from terminal to outbound transport";
+
+    -- ====================================================================
+    -- Domain Events
+    -- ====================================================================
+
+    EVENT YardExitReserved @uuid "bb000040-0070-4000-8000-000000000001" (
+        slot_id      UUID NOT_NULL @uuid "bb000040-0070-4000-8000-000000000010",
+        container_id UUID NOT_NULL @uuid "bb000040-0070-4000-8000-000000000011"
+    ) DOC "Yard exit slot reserved for container";
+
+    EVENT GateCheckoutCompleted @uuid "bb000040-0070-4000-8000-000000000002" (
+        slot_id      UUID NOT_NULL @uuid "bb000040-0070-4000-8000-000000000020",
+        truck_plate  TEXT NOT_NULL @uuid "bb000040-0070-4000-8000-000000000021"
+    ) DOC "Container cleared gate checkout";
+
+    EVENT TransportLoaded @uuid "bb000040-0070-4000-8000-000000000003" (
+        slot_id         UUID NOT_NULL @uuid "bb000040-0070-4000-8000-000000000030",
+        transport_mode  TEXT NOT_NULL @uuid "bb000040-0070-4000-8000-000000000031"
+    ) DOC "Container loaded onto outbound transport";
+
+    EVENT DepartureConfirmed @uuid "bb000040-0070-4000-8000-000000000004" (
+        slot_id      UUID NOT_NULL @uuid "bb000040-0070-4000-8000-000000000040",
+        departed_at  TIMESTAMPTZ NOT_NULL @uuid "bb000040-0070-4000-8000-000000000041"
+    ) DOC "Outbound transport has departed";
+
+    EVENT HandoffFailed @uuid "bb000040-0070-4000-8000-000000000005" (
+        slot_id UUID NOT_NULL @uuid "bb000040-0070-4000-8000-000000000050",
+        reason  TEXT NOT_NULL @uuid "bb000040-0070-4000-8000-000000000051"
+    ) DOC "Handoff failed — requires compensation";
+
+    -- ====================================================================
+    -- Saga
+    -- ====================================================================
+
+    SAGA ContainerHandoff @uuid "bb000040-0080-4000-8000-000000000001"
+        TRIGGERED_BY YardExitReserved
+        CORRELATE_BY slot_id {
+
+        STEP ReserveYardExit
+            INVOKE ReserveYardExit(slot_id = "slot_id")
+            ON FAILURE ReserveYardExit -> COMPENSATE -> FAILED
+            DOC "Reserve yard exit lane for container";
+
+        STEP CheckoutGate
+            INVOKE CheckoutGate(slot_id = "slot_id")
+            ON SUCCESS CheckoutGate -> COMPLETED
+            ON FAILURE CheckoutGate -> COMPENSATE -> FAILED
+            DOC "Process container through gate checkpoint";
+
+        STEP LoadTransport
+            INVOKE LoadTransport(slot_id = "slot_id")
+            ON FAILURE LoadTransport -> COMPENSATE -> FAILED
+            ON TIMEOUT LoadTransport -> COMPENSATE -> FAILED
+            TIMEOUT "15m"
+            DOC "Load container onto truck/rail/barge";
+
+        STEP ConfirmDeparture
+            INVOKE ConfirmDeparture(slot_id = "slot_id")
+            ON SUCCESS ConfirmDeparture -> COMPLETED
+            ON FAILURE ConfirmDeparture -> COMPENSATE -> FAILED
+            DOC "Confirm transport has departed and bill carrier";
+
+    }
+    ON COMPLETED EMIT DepartureConfirmed(slot_id = "slot_id", departed_at = "NOW()")
+    ON FAILED EMIT HandoffFailed(slot_id = "slot_id", reason = "Saga compensation triggered")
+    DOC "4-step container handoff saga with full compensation";
+
+    -- ====================================================================
+    -- Flow
+    -- ====================================================================
+
+    FLOW YardToTruck @uuid "bb000040-0080-4000-8000-000000000002"
+        DOC "Choreography: container from yard to truck" {
+        MoveToGate: COMMAND MoveContainer EMITS ContainerAtGate;
+        WeighBridge: EVENT ContainerAtGate EMITS ContainerWeighed;
+        GateRelease: EVENT ContainerWeighed EMITS GateReleased COMPLETES;
+    }
+
+    FLOW YardToRail @uuid "bb000040-0080-4000-8000-000000000003"
+        DOC "Choreography: container from yard to rail wagon" {
+        MoveToRailHead: COMMAND MoveToRailHead EMITS ContainerAtRailHead;
+        CraneToWagon: EVENT ContainerAtRailHead EMITS ContainerOnWagon;
+        TrainDepart: EVENT ContainerOnWagon EMITS TrainDeparted COMPLETES;
+    }
+
+    -- ====================================================================
+    -- Domain Service
+    -- ====================================================================
+
+    SERVICE OptimalTransportSelector (
+        recommend (container_id UUID, urgency TEXT, destination TEXT) -> TEXT
+            DOC "Recommend optimal transport mode for container"
+    ) DOC "Selects best transport mode based on urgency, destination, and availability";
+
+    -- ====================================================================
+    -- Lifecycle Scheme
+    -- ====================================================================
+
+    LIFECYCLE_SCHEME GateAutomation {
+        STATE pilot DOC "Manual gate processing";
+        STATE canary DOC "10% automated gate processing";
+        STATE generally_available DOC "Fully automated gate processing";
+        STATE sunset DOC "Phasing out manual fallback";
+        INITIAL pilot;
+        TERMINAL sunset;
+        TRANSITION pilot -> canary;
+        TRANSITION canary -> generally_available;
+        TRANSITION generally_available -> sunset;
+    }
+
+    -- ====================================================================
+    -- Feature Flag
+    -- ====================================================================
+
+    FEATURE_FLAG automated_gate_checkout @uuid "bb000040-00a0-4000-8000-000000000001" {
+        LIFECYCLE GateAutomation;
+        STATE pilot;
+        OWNER LogisticsTeam;
+        DOWNSTREAM_CONSUMERS {
+            "gate-controller" DOC "Physical gate hardware controller";
+            "weighbridge-system" DOC "Automated weighbridge integration";
+        }
+        DOC "Automated gate checkout processing";
+    }
+
+    -- ====================================================================
+    -- Work Stream
+    -- ====================================================================
+
+    WORK_STREAM GateProcessing @uuid "bb000040-00b0-4000-8000-000000000001" {
+        DOC "Kanban board for gate processing workflow";
+        ITEM QueuedContainers @uuid "bb000040-00b0-4000-8000-000000000010" {
+            STATION queued;
+            DOC "Containers waiting for gate processing";
+        }
+        ITEM WeighingContainers @uuid "bb000040-00b0-4000-8000-000000000020" {
+            STATION weighing;
+            DOC "Containers currently on weighbridge";
+        }
+        ITEM ClearedContainers @uuid "bb000040-00b0-4000-8000-000000000030" {
+            STATION cleared;
+            DOC "Containers cleared through gate";
+        }
+        ITEM DepartedContainers @uuid "bb000040-00b0-4000-8000-000000000040" {
+            STATION departed;
+            DOC "Containers that have left terminal";
+        }
+    }
+
+    -- ====================================================================
+    -- Observe
+    -- ====================================================================
+
+    OBSERVE {
+        METRIC gate_throughput_per_hour {
+            TYPE gauge;
+            UNIT "containers/hour";
+            THRESHOLD "SLO > 25";
+            DOC "Gate processing throughput";
+        }
+        METRIC handoff_completion_rate {
+            TYPE gauge;
+            UNIT "percent";
+            THRESHOLD "SLO > 95";
+            DOC "Percentage of handoffs completed without compensation";
+        }
+    }
+
+}

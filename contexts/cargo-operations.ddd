@@ -1,0 +1,317 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+-- Copyright (c) 2026 Johannes Lochmann
+
+CONTEXT CargoOperations @uuid "bb000020-0001-4000-8000-000000000001"
+    OWNER CargoTeam
+    VISION "Track every container from quayside to final destination"
+    @wardley(PRODUCT) {
+
+    -- ====================================================================
+    -- Grounding
+    -- ====================================================================
+
+    GROUNDING {
+        DOMAIN "Container terminal cargo operations";
+        KEY_CONCEPTS ["container", "yard slot", "crane", "reefer unit",
+                      "load plan", "discharge sequence", "TEU", "bay-row-tier"];
+        DIALECT LOGISTICS;
+        PRECISION_LEVEL operational;
+        CONSTRAINTS ["IMO hazmat segregation", "stack weight limits",
+                     "reefer power slot availability"];
+        DOC "Anchors AI generation to container terminal operations domain";
+    }
+
+    -- ====================================================================
+    -- Strong Types
+    -- ====================================================================
+
+    STRONG_TYPE ContainerNumber TEXT @uuid "bb000020-0010-4000-8000-000000000001"
+        CHECK valid_format: "value ~ '^[A-Z]{4}[0-9]{7}$'"
+        DOC "ISO 6346 container number (4 letters + 7 digits)";
+
+    STRONG_TYPE YardSlotCode TEXT @uuid "bb000020-0010-4000-8000-000000000002"
+        CHECK valid_format: "value ~ '^[A-Z][0-9]{2}-[0-9]{2}-[0-9]{2}$'"
+        DOC "Yard slot address: bay-row-tier (e.g. A01-03-02)";
+
+    -- ====================================================================
+    -- Value Objects
+    -- ====================================================================
+
+    VALUE_OBJECT ContainerDimensions @uuid "bb000020-0020-4000-8000-000000000001" @inline (
+        length_ft   INTEGER NOT_NULL @uuid "bb000020-0020-4000-8000-000000000011"
+            @MIN(20) @MAX(45) DOC "Container length: 20, 40, or 45 feet",
+        weight_kg   DECIMAL NOT_NULL @uuid "bb000020-0020-4000-8000-000000000012"
+            @MIN(0) @MAX(30500) DOC "Gross weight in kilograms",
+        is_reefer   BOOLEAN NOT_NULL DEFAULT FALSE @uuid "bb000020-0020-4000-8000-000000000013"
+    )
+    DOC "Physical container specifications";
+
+    -- ====================================================================
+    -- Lookup Tables
+    -- ====================================================================
+
+    LOOKUP_TABLE ContainerSize @uuid "bb000020-0030-4000-8000-000000000001"
+        PLURAL "container_sizes"
+        SEED_VALUES [
+            ("20FT"),
+            ("40FT"),
+            ("45FT")
+        ]
+        DOC "Standard container sizes";
+
+    LOOKUP_TABLE HazmatClass @uuid "bb000020-0030-4000-8000-000000000002"
+        PLURAL "hazmat_classes"
+        (description TEXT NOT_NULL)
+        SEED_VALUES [
+            ("CLASS_1", "Explosives"),
+            ("CLASS_2", "Gases"),
+            ("CLASS_3", "Flammable liquids"),
+            ("CLASS_4", "Flammable solids"),
+            ("CLASS_5", "Oxidizers"),
+            ("CLASS_6", "Toxic substances"),
+            ("CLASS_7", "Radioactive material"),
+            ("CLASS_8", "Corrosives"),
+            ("CLASS_9", "Miscellaneous dangerous goods")
+        ]
+        DOC "IMO hazardous materials classification";
+
+    -- ====================================================================
+    -- Entities
+    -- ====================================================================
+
+    ENTITY Container @uuid "bb000020-0040-4000-8000-000000000001" IDENTIFIED_BY id (
+        id              UUID                NOT_NULL @uuid "bb000020-0040-4000-8000-000000000010",
+        container_number ContainerNumber    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000011" @UNIQUE,
+        size_category   TEXT                NOT_NULL @uuid "bb000020-0040-4000-8000-000000000012",
+        hazmat_class    TEXT                         @uuid "bb000020-0040-4000-8000-000000000013",
+        voyage_id       UUID                NOT_NULL @uuid "bb000020-0040-4000-8000-000000000014",
+        yard_slot_id    UUID                         @uuid "bb000020-0040-4000-8000-000000000015",
+        status          TEXT                NOT_NULL DEFAULT 'ON_VESSEL' @uuid "bb000020-0040-4000-8000-000000000016"
+    )
+    USES ContainerDimensions
+    DISPLAY_FORMAT (
+        SHORT: "{container_number} ({size_category})",
+        FULL: "{container_number} {size_category} {weight_kg}kg [{status}]"
+    )
+    DOC "A shipping container in terminal operations";
+
+    ENTITY YardSlot @uuid "bb000020-0040-4000-8000-000000000002" IDENTIFIED_BY id (
+        id              UUID            NOT_NULL @uuid "bb000020-0040-4000-8000-000000000020",
+        code            YardSlotCode    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000021" @UNIQUE,
+        max_weight_kg   DECIMAL         NOT_NULL @uuid "bb000020-0040-4000-8000-000000000022"
+            @MIN(0) @MAX(100000),
+        max_tier        INTEGER         NOT_NULL @uuid "bb000020-0040-4000-8000-000000000023"
+            @MIN(1) @MAX(6) DOC "Maximum stacking height",
+        has_power       BOOLEAN         NOT_NULL DEFAULT FALSE @uuid "bb000020-0040-4000-8000-000000000024"
+            DOC "Has reefer power connection",
+        is_occupied     BOOLEAN         NOT_NULL DEFAULT FALSE @uuid "bb000020-0040-4000-8000-000000000025"
+    )
+    DOC "A position in the container yard (bay-row-tier)";
+
+    ENTITY Crane @uuid "bb000020-0040-4000-8000-000000000003" IDENTIFIED_BY id (
+        id          UUID    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000030",
+        name        TEXT    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000031" @NOT_EMPTY,
+        crane_type  TEXT    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000032",
+        max_lift_kg DECIMAL NOT_NULL @uuid "bb000020-0040-4000-8000-000000000033"
+            @MIN(1000) @MAX(100000),
+        is_active   BOOLEAN NOT_NULL DEFAULT TRUE @uuid "bb000020-0040-4000-8000-000000000034"
+    )
+    DOC "A crane for container handling";
+
+    ENTITY ReeferUnit @uuid "bb000020-0040-4000-8000-000000000004" IDENTIFIED_BY id (
+        id              UUID    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000040",
+        container_id    UUID    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000041",
+        target_temp_c   DECIMAL NOT_NULL @uuid "bb000020-0040-4000-8000-000000000042"
+            @MIN(-30) @MAX(30) DOC "Target temperature in Celsius",
+        current_temp_c  DECIMAL          @uuid "bb000020-0040-4000-8000-000000000043"
+            @MIN(-40) @MAX(50),
+        is_powered      BOOLEAN NOT_NULL DEFAULT FALSE @uuid "bb000020-0040-4000-8000-000000000044"
+    )
+    RELATIONSHIPS {
+        ReeferUnit -> Container REQUIRED ONE VIA container_id;
+    }
+    DOC "Refrigeration monitoring unit for a reefer container";
+
+    ENTITY LoadPlan @uuid "bb000020-0040-4000-8000-000000000005" IDENTIFIED_BY id (
+        id          UUID    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000050",
+        voyage_id   UUID    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000051",
+        created_at  TIMESTAMPTZ NOT_NULL @uuid "bb000020-0040-4000-8000-000000000052" @NOT_IN_FUTURE,
+        status      TEXT    NOT_NULL DEFAULT 'DRAFT' @uuid "bb000020-0040-4000-8000-000000000053"
+    )
+    DOC "Plan for loading/discharging containers for a voyage";
+
+    ENTITY DischargeSequence @uuid "bb000020-0040-4000-8000-000000000006" IDENTIFIED_BY id (
+        id              UUID    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000060",
+        load_plan_id    UUID    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000061",
+        container_id    UUID    NOT_NULL @uuid "bb000020-0040-4000-8000-000000000062",
+        sequence_order  INTEGER NOT_NULL @uuid "bb000020-0040-4000-8000-000000000063" @MIN(1),
+        crane_id        UUID             @uuid "bb000020-0040-4000-8000-000000000064"
+    )
+    RELATIONSHIPS {
+        DischargeSequence -> LoadPlan REQUIRED ONE VIA load_plan_id;
+        DischargeSequence -> Container REQUIRED ONE VIA container_id;
+        DischargeSequence -> Crane OPTIONAL ONE VIA crane_id;
+    }
+    DOC "Ordered sequence for container discharge";
+
+    -- ====================================================================
+    -- Aggregates
+    -- ====================================================================
+
+    AGGREGATE ContainerStack @uuid "bb000020-0050-4000-8000-000000000001" ROOT Container
+        EVENT_SOURCED
+        DOC "Event-sourced container position tracking — append-only audit trail";
+
+    AGGREGATE LoadPlanExecution @uuid "bb000020-0050-4000-8000-000000000002" ROOT LoadPlan
+        (CONTAINS DischargeSequence)
+        DOC "Load plan with its discharge sequence";
+
+    -- ====================================================================
+    -- Sourced Events
+    -- ====================================================================
+
+    SOURCED_EVENT ContainerPlaced @uuid "bb000020-0070-4000-8000-000000000001" (
+        container_id UUID NOT_NULL @uuid "bb000020-0070-4000-8000-000000000010",
+        yard_slot_id UUID NOT_NULL @uuid "bb000020-0070-4000-8000-000000000011",
+        tier         INTEGER NOT_NULL @uuid "bb000020-0070-4000-8000-000000000012",
+        placed_at    TIMESTAMPTZ NOT_NULL @uuid "bb000020-0070-4000-8000-000000000013"
+    ) APPLIES_TO Container
+    DOC "Container placed in yard slot";
+
+    SOURCED_EVENT ContainerPicked @uuid "bb000020-0070-4000-8000-000000000002" (
+        container_id UUID NOT_NULL @uuid "bb000020-0070-4000-8000-000000000020",
+        yard_slot_id UUID NOT_NULL @uuid "bb000020-0070-4000-8000-000000000021",
+        picked_at    TIMESTAMPTZ NOT_NULL @uuid "bb000020-0070-4000-8000-000000000022"
+    ) APPLIES_TO Container
+    DOC "Container picked from yard slot";
+
+    SOURCED_EVENT ContainerMoved @uuid "bb000020-0070-4000-8000-000000000003" (
+        container_id    UUID NOT_NULL @uuid "bb000020-0070-4000-8000-000000000030",
+        from_slot_id    UUID NOT_NULL @uuid "bb000020-0070-4000-8000-000000000031",
+        to_slot_id      UUID NOT_NULL @uuid "bb000020-0070-4000-8000-000000000032",
+        moved_at        TIMESTAMPTZ NOT_NULL @uuid "bb000020-0070-4000-8000-000000000033"
+    ) APPLIES_TO Container
+    DOC "Container relocated between yard slots";
+
+    SOURCED_EVENT ReeferAlarm @uuid "bb000020-0070-4000-8000-000000000004" (
+        container_id    UUID NOT_NULL @uuid "bb000020-0070-4000-8000-000000000040",
+        current_temp_c  DECIMAL NOT_NULL @uuid "bb000020-0070-4000-8000-000000000041",
+        target_temp_c   DECIMAL NOT_NULL @uuid "bb000020-0070-4000-8000-000000000042",
+        alarm_at        TIMESTAMPTZ NOT_NULL @uuid "bb000020-0070-4000-8000-000000000043"
+    ) APPLIES_TO Container
+    DOC "Reefer temperature out of range";
+
+    SOURCED_EVENT DamageReported @uuid "bb000020-0070-4000-8000-000000000005" (
+        container_id    UUID NOT_NULL @uuid "bb000020-0070-4000-8000-000000000050",
+        description     TEXT NOT_NULL @uuid "bb000020-0070-4000-8000-000000000051",
+        reported_at     TIMESTAMPTZ NOT_NULL @uuid "bb000020-0070-4000-8000-000000000052"
+    ) APPLIES_TO Container
+    DOC "Damage reported on container";
+
+    -- ====================================================================
+    -- Commands
+    -- ====================================================================
+
+    COMMAND PlaceContainer ON Container (
+        slot_id     UUID NOT_NULL @uuid "bb000020-0080-4000-8000-000000000010",
+        tier        INTEGER NOT_NULL @uuid "bb000020-0080-4000-8000-000000000011"
+    )
+    REQUIRES slot_empty: "yard_slot_id IS NULL"
+    REQUIRES weight_ok: "weight_kg <= 30500"
+    DECIDE {
+        LET t = tier;
+        EMIT ContainerPlaced(container_id: id, yard_slot_id: slot_id, tier: t, placed_at: NOW());
+    }
+    EMITS ContainerPlaced;
+
+    COMMAND PickContainer ON Container (
+        picked_by UUID NOT_NULL @uuid "bb000020-0080-4000-8000-000000000020"
+    )
+    REQUIRES is_top: "status = 'IN_YARD'"
+    DECIDE {
+        EMIT ContainerPicked(container_id: id, yard_slot_id: yard_slot_id, picked_at: NOW());
+    }
+    EMITS ContainerPicked;
+
+    -- ====================================================================
+    -- Effects
+    -- ====================================================================
+
+    EFFECT DispatchCrane (
+        crane_id     UUID NOT_NULL @uuid "bb000020-0090-4000-8000-000000000010",
+        container_id UUID NOT_NULL @uuid "bb000020-0090-4000-8000-000000000011"
+    ) DOC "Dispatch crane to handle container";
+
+    EFFECT ActivateReeferPower (
+        container_id UUID NOT_NULL @uuid "bb000020-0090-4000-8000-000000000020",
+        slot_id      UUID NOT_NULL @uuid "bb000020-0090-4000-8000-000000000021"
+    ) DOC "Connect reefer container to power slot";
+
+    EFFECT NotifyCustoms (
+        container_id UUID NOT_NULL @uuid "bb000020-0090-4000-8000-000000000030"
+    ) DOC "Notify customs of container status change";
+
+    -- ====================================================================
+    -- Policy
+    -- ====================================================================
+
+    POLICY ReeferTempAlert WHEN ReeferAlarm
+        WHERE "current_temp_c > target_temp_c + 5 OR current_temp_c < target_temp_c - 5"
+        THEN NOTIFY OpsTeam(container_id = "container_id")
+        RETRY 3
+        TIMEOUT "5m"
+        DOC "Alert operations when reefer temperature exceeds tolerance";
+
+    -- ====================================================================
+    -- Extension Point
+    -- ====================================================================
+
+    EXTENSION_POINT HazmatSegregationValidator @uuid "bb000020-00b0-4000-8000-000000000001" {
+        CLASS: VALIDATOR;
+        TARGET: Container;
+        TRIGGER: ONCOMMIT;
+        LAYER: BACKEND;
+        DOC "Pluggable IMO hazmat segregation rule engine";
+    }
+
+    -- ====================================================================
+    -- Modules
+    -- ====================================================================
+
+    MODULE YardManagement @uuid "bb000020-00c0-4000-8000-000000000001"
+        DOC "Yard slot allocation and container positioning" {
+    }
+
+    MODULE CraneScheduling @uuid "bb000020-00c0-4000-8000-000000000002"
+        DOC "Crane assignment and cycle optimisation" {
+    }
+
+    MODULE ReeferMonitoring @uuid "bb000020-00c0-4000-8000-000000000003"
+        DOC "Temperature monitoring and alarm handling for reefer containers" {
+    }
+
+    -- ====================================================================
+    -- Observe
+    -- ====================================================================
+
+    OBSERVE {
+        METRIC crane_cycle_time_seconds {
+            TYPE histogram;
+            UNIT "seconds";
+            THRESHOLD "SLO < 120";
+            DOC "Time for one crane pick-move-place cycle";
+        }
+        METRIC reefer_alarm_count {
+            TYPE counter;
+            UNIT "alarms";
+            DOC "Total reefer temperature alarms";
+        }
+        ALERT CraneSLOBreach {
+            WHEN "crane_cycle_time_seconds > 180";
+            SEVERITY critical;
+            TEAM CargoTeam;
+            DOC "Crane cycle time exceeding SLO";
+        }
+    }
+
+}
