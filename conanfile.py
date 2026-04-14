@@ -28,14 +28,14 @@ class MuscoviteHarborConan(ConanFile):
 
         # Direct dependencies (also pulled transitively by muscovite,
         # but declared explicitly for version pinning)
-        self.requires("spdlog/1.15.0")
+        self.requires("spdlog/1.15.3")
         self.requires("nlohmann_json/3.11.3")
         self.requires("libpqxx/8.0.0")
         self.requires("libpq/17.7")
 
-        # gRPC stack
-        self.requires("grpc/1.70.0")
-        self.requires("protobuf/5.29.3")
+        # gRPC stack (range-pinned to match muscovite framework)
+        self.requires("grpc/[>=1.70.0 <2]")
+        self.requires("protobuf/[>=5.27.0 <7]")
 
         # Testing
         self.requires("doctest/2.4.11")
