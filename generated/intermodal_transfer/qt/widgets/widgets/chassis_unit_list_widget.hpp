@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/chassis_unit_model.hpp"
+#include "../models/chassis_unit_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

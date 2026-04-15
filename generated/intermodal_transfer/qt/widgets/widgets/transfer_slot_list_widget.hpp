@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/transfer_slot_model.hpp"
+#include "../models/transfer_slot_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

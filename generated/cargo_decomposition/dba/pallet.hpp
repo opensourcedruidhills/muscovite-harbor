@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
+#include <muscovite/dba/decimal.hpp>
 #include <string>
 
 namespace cargo_decomposition {
@@ -13,7 +14,6 @@ struct Pallet {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     PalletId pallet_id{};
     boost::uuids::uuid container_id{};
     muscovite::dba::Decimal weight_kg{};
@@ -23,7 +23,6 @@ struct Pallet {
     HSCode hs_code{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_pallet_id() const noexcept -> const PalletId& { return pallet_id; }
     [[nodiscard]] auto get_container_id() const noexcept -> const boost::uuids::uuid& { return container_id; }
     [[nodiscard]] auto get_weight_kg() const noexcept -> const muscovite::dba::Decimal& { return weight_kg; }

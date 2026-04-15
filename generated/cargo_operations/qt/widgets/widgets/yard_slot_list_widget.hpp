@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/yard_slot_model.hpp"
+#include "../models/yard_slot_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

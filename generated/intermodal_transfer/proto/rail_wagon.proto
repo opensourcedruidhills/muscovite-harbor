@@ -18,24 +18,22 @@ import "google/protobuf/timestamp.proto";
 
 message RailWagon {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string wagon_number = 3;
-  muscovite.common.Decimal max_weight_kg = 4;
-  muscovite.common.UUID slot_id = 5;
-  google.protobuf.Timestamp created_at = 6;
-  optional string created_by = 7;
-  google.protobuf.Timestamp updated_at = 8;
-  optional string updated_by = 9;
-  optional string created_by_name = 10;
-  optional string updated_by_name = 11;
+  string wagon_number = 2;
+  string max_weight_kg = 3;
+  string slot_id = 4;
+  google.protobuf.Timestamp created_at = 5;
+  optional string created_by = 6;
+  google.protobuf.Timestamp updated_at = 7;
+  optional string updated_by = 8;
+  optional string created_by_name = 9;
+  optional string updated_by_name = 10;
 }
 
 message CreateRailWagonRequest {
-  muscovite.common.UUID id = 1;
-  string wagon_number = 2;
-  muscovite.common.Decimal max_weight_kg = 3;
-  muscovite.common.UUID slot_id = 4;
-  optional string idempotency_key = 5;
+  string wagon_number = 1;
+  string max_weight_kg = 2;
+  string slot_id = 3;
+  optional string idempotency_key = 4;
 }
 
 message CreateRailWagonResponse {
@@ -52,11 +50,10 @@ message GetRailWagonResponse {
 
 message UpdateRailWagonRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string wagon_number = 3;
-  muscovite.common.Decimal max_weight_kg = 4;
-  muscovite.common.UUID slot_id = 5;
-  optional string idempotency_key = 6;
+  string wagon_number = 2;
+  string max_weight_kg = 3;
+  string slot_id = 4;
+  optional string idempotency_key = 5;
 }
 
 message UpdateRailWagonResponse {

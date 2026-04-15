@@ -33,24 +33,24 @@ message StreamEventsRequest {
 message VesselAnnounced {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID voyage_id = 3;
-  muscovite.common.UUID vessel_id = 4;
-  muscovite.common.Timestamp eta = 5;
+  string voyage_id = 3;
+  string vessel_id = 4;
+  google.protobuf.Timestamp eta = 5;
   google.protobuf.Timestamp occurred_at = 6;
 }
 
 message BerthAllocated {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID voyage_id = 3;
-  muscovite.common.UUID berth_id = 4;
+  string voyage_id = 3;
+  string berth_id = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }
 
 message PilotDispatched {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID voyage_id = 3;
+  string voyage_id = 3;
   string pilot_name = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }
@@ -58,17 +58,17 @@ message PilotDispatched {
 message VesselMooredEvent {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID voyage_id = 3;
-  muscovite.common.UUID berth_id = 4;
-  muscovite.common.Timestamp moored_at = 5;
+  string voyage_id = 3;
+  string berth_id = 4;
+  google.protobuf.Timestamp moored_at = 5;
   google.protobuf.Timestamp occurred_at = 6;
 }
 
 message VesselDepartedEvent {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID voyage_id = 3;
-  muscovite.common.Timestamp departed_at = 4;
+  string voyage_id = 3;
+  google.protobuf.Timestamp departed_at = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }
 

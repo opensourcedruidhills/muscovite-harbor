@@ -14,6 +14,7 @@
 #include <QAbstractTableModel>
 #include <QVariant>
 #include <vector>
+#include <QDateTime>
 
 namespace muscovite_harbor::widgets {
 

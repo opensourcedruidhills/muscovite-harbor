@@ -19,39 +19,18 @@ add_compile_definitions(_GLIBCXX_ASSERTIONS)
 include(cmake/Version.cmake)
 
 # ── Framework resolution ─────────────────────────────────────────
-# Four-tier discovery:
-#   1. In-tree target (monorepo subproject)
-#   2. find_package(muscovite) — installed package
-#   3. MUSCOVITE_DIR env var override
-#   4. FetchContent fallback from GitHub
-find_package(muscovite QUIET)
-if(NOT muscovite_FOUND)
-    if(DEFINED ENV{MUSCOVITE_DIR})
-        list(PREPEND CMAKE_PREFIX_PATH $ENV{MUSCOVITE_DIR})
-    endif()
-    find_package(muscovite-cpp QUIET)
-    if(NOT muscovite-cpp_FOUND)
-        include(FetchContent)
-        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/MUSCOVITE_CPP_VERSION")
-            file(READ "${CMAKE_CURRENT_SOURCE_DIR}/MUSCOVITE_CPP_VERSION" _mcpp_version)
-            string(STRIP "${_mcpp_version}" _mcpp_version)
-        else()
-            message(WARNING "MUSCOVITE_CPP_VERSION not found, using main branch")
-            set(_mcpp_version "main")
-        endif()
-        FetchContent_Declare(muscovite-cpp
-            GIT_REPOSITORY https://github.com/opensourcedruidhills/muscovite.git
-            GIT_TAG ${_mcpp_version}
-            GIT_SHALLOW TRUE)
-        FetchContent_MakeAvailable(muscovite-cpp)
-    endif()
-endif()
+# Muscovite comes from Conan. After find_package, these CMake variables
+# are available:
+#   MUSCOVITE_GRAMMAR_DIR  — directory containing muscovite.peg
+#   MUSCOVITE_DOC_DIR      — GROUND-TRUTH.md, IR-CHEATSHEET.md
+#   MUSCOVITE_TOOLS_DIR    — relocatable lint-ddd.sh
+#   MUSCOVITE_MUSCOMP_DIR  — muscomp binary (if installed)
+find_package(muscovite REQUIRED)
 
 # ── Dependencies ────────────────────────────────────────────────
-find_package(spdlog REQUIRED)
-find_package(nlohmann_json REQUIRED)
+# spdlog, nlohmann_json, libpqxx, etc. are pulled transitively by
+# muscovite via Conan. Only declare non-transitive deps here.
 find_package(doctest REQUIRED)
-find_package(libpqxx REQUIRED)
 
 # ── Proto / gRPC (if generated) ──────────────────────────────────
 find_package(gRPC QUIET)

@@ -18,28 +18,26 @@ import "google/protobuf/timestamp.proto";
 
 message DeliveryUnit {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string tracking_number = 3;
-  string destination = 4;
-  string carrier = 5;
-  muscovite.common.Timestamp dispatched_at = 6;
-  string delivery_unit_id = 7;
-  google.protobuf.Timestamp created_at = 8;
-  optional string created_by = 9;
-  google.protobuf.Timestamp updated_at = 10;
-  optional string updated_by = 11;
-  optional string created_by_name = 12;
-  optional string updated_by_name = 13;
-}
-
-message CreateDeliveryUnitRequest {
-  muscovite.common.UUID id = 1;
   string tracking_number = 2;
   string destination = 3;
   string carrier = 4;
-  muscovite.common.Timestamp dispatched_at = 5;
+  google.protobuf.Timestamp dispatched_at = 5;
   string delivery_unit_id = 6;
-  optional string idempotency_key = 7;
+  google.protobuf.Timestamp created_at = 7;
+  optional string created_by = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  optional string updated_by = 10;
+  optional string created_by_name = 11;
+  optional string updated_by_name = 12;
+}
+
+message CreateDeliveryUnitRequest {
+  string tracking_number = 1;
+  string destination = 2;
+  string carrier = 3;
+  google.protobuf.Timestamp dispatched_at = 4;
+  string delivery_unit_id = 5;
+  optional string idempotency_key = 6;
 }
 
 message CreateDeliveryUnitResponse {
@@ -56,13 +54,12 @@ message GetDeliveryUnitResponse {
 
 message UpdateDeliveryUnitRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string tracking_number = 3;
-  string destination = 4;
-  string carrier = 5;
-  muscovite.common.Timestamp dispatched_at = 6;
-  string delivery_unit_id = 7;
-  optional string idempotency_key = 8;
+  string tracking_number = 2;
+  string destination = 3;
+  string carrier = 4;
+  google.protobuf.Timestamp dispatched_at = 5;
+  string delivery_unit_id = 6;
+  optional string idempotency_key = 7;
 }
 
 message UpdateDeliveryUnitResponse {

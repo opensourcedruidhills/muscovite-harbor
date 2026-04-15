@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/crane_model.hpp"
+#include "../models/crane_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

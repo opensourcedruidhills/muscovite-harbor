@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/pallet_model.hpp"
+#include "../models/pallet_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

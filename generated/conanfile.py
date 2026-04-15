@@ -13,11 +13,8 @@ class MuscoviteHarborConan(ConanFile):
     generators = "CMakeDeps", "CMakeToolchain"
 
     def requirements(self):
-        self.requires("spdlog/1.15.0")
-        self.requires("nlohmann_json/3.11.3")
+        self.requires("muscovite/0.2.0")
         self.requires("doctest/2.4.11")
-        self.requires("grpc/1.67.1")
-        self.requires("protobuf/5.27.0")
 
     def layout(self):
         cmake_layout(self)

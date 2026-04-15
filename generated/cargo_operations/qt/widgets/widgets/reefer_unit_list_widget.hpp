@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/reefer_unit_model.hpp"
+#include "../models/reefer_unit_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

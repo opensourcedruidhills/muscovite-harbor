@@ -18,7 +18,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/voyage_model.hpp"
+#include "../models/voyage_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

@@ -3,6 +3,7 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include <muscovite/dba/timestamp.hpp>
 
 namespace vessel_traffic {
 

@@ -18,30 +18,28 @@ import "google/protobuf/timestamp.proto";
 
 message YardSlot {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string code = 3;
-  muscovite.common.Decimal max_weight_kg = 4;
+  string code = 2;
+  string max_weight_kg = 3;
   // Maximum stacking height
-  int32 max_tier = 5;
+  int32 max_tier = 4;
   // Has reefer power connection
-  bool has_power = 6;
-  bool is_occupied = 7;
-  google.protobuf.Timestamp created_at = 8;
-  optional string created_by = 9;
-  google.protobuf.Timestamp updated_at = 10;
-  optional string updated_by = 11;
-  optional string created_by_name = 12;
-  optional string updated_by_name = 13;
+  bool has_power = 5;
+  bool is_occupied = 6;
+  google.protobuf.Timestamp created_at = 7;
+  optional string created_by = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  optional string updated_by = 10;
+  optional string created_by_name = 11;
+  optional string updated_by_name = 12;
 }
 
 message CreateYardSlotRequest {
-  muscovite.common.UUID id = 1;
-  string code = 2;
-  muscovite.common.Decimal max_weight_kg = 3;
-  int32 max_tier = 4;
-  bool has_power = 5;
-  bool is_occupied = 6;
-  optional string idempotency_key = 7;
+  string code = 1;
+  string max_weight_kg = 2;
+  int32 max_tier = 3;
+  bool has_power = 4;
+  bool is_occupied = 5;
+  optional string idempotency_key = 6;
 }
 
 message CreateYardSlotResponse {
@@ -58,13 +56,12 @@ message GetYardSlotResponse {
 
 message UpdateYardSlotRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string code = 3;
-  muscovite.common.Decimal max_weight_kg = 4;
-  int32 max_tier = 5;
-  bool has_power = 6;
-  bool is_occupied = 7;
-  optional string idempotency_key = 8;
+  string code = 2;
+  string max_weight_kg = 3;
+  int32 max_tier = 4;
+  bool has_power = 5;
+  bool is_occupied = 6;
+  optional string idempotency_key = 7;
 }
 
 message UpdateYardSlotResponse {

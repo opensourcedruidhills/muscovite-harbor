@@ -14,7 +14,6 @@ struct Container {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     ContainerNumber container_number{};
     std::string size_category{};
     std::string hazmat_class{};
@@ -23,7 +22,6 @@ struct Container {
     std::string status{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_container_number() const noexcept -> const ContainerNumber& { return container_number; }
     [[nodiscard]] auto get_size_category() const noexcept -> const std::string& { return size_category; }
     [[nodiscard]] auto get_hazmat_class() const noexcept -> const std::string& { return hazmat_class; }

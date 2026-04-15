@@ -18,29 +18,27 @@ import "google/protobuf/timestamp.proto";
 
 message TugBooking {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID voyage_id = 3;
-  string tug_name = 4;
+  string voyage_id = 2;
+  string tug_name = 3;
   // Bollard pull in tonnes
-  muscovite.common.Decimal bollard_pull_t = 5;
-  bool is_confirmed = 6;
-  string tug_booking_id = 7;
-  google.protobuf.Timestamp created_at = 8;
-  optional string created_by = 9;
-  google.protobuf.Timestamp updated_at = 10;
-  optional string updated_by = 11;
-  optional string created_by_name = 12;
-  optional string updated_by_name = 13;
+  string bollard_pull_t = 4;
+  bool is_confirmed = 5;
+  string tug_booking_id = 6;
+  google.protobuf.Timestamp created_at = 7;
+  optional string created_by = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  optional string updated_by = 10;
+  optional string created_by_name = 11;
+  optional string updated_by_name = 12;
 }
 
 message CreateTugBookingRequest {
-  muscovite.common.UUID id = 1;
-  muscovite.common.UUID voyage_id = 2;
-  string tug_name = 3;
-  muscovite.common.Decimal bollard_pull_t = 4;
-  bool is_confirmed = 5;
-  string tug_booking_id = 6;
-  optional string idempotency_key = 7;
+  string voyage_id = 1;
+  string tug_name = 2;
+  string bollard_pull_t = 3;
+  bool is_confirmed = 4;
+  string tug_booking_id = 5;
+  optional string idempotency_key = 6;
 }
 
 message CreateTugBookingResponse {
@@ -57,13 +55,12 @@ message GetTugBookingResponse {
 
 message UpdateTugBookingRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID voyage_id = 3;
-  string tug_name = 4;
-  muscovite.common.Decimal bollard_pull_t = 5;
-  bool is_confirmed = 6;
-  string tug_booking_id = 7;
-  optional string idempotency_key = 8;
+  string voyage_id = 2;
+  string tug_name = 3;
+  string bollard_pull_t = 4;
+  bool is_confirmed = 5;
+  string tug_booking_id = 6;
+  optional string idempotency_key = 7;
 }
 
 message UpdateTugBookingResponse {

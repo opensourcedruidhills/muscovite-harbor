@@ -18,32 +18,30 @@ import "google/protobuf/timestamp.proto";
 
 message DischargeSequence {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID load_plan_id = 3;
-  muscovite.common.UUID container_id = 4;
-  int32 sequence_order = 5;
-  muscovite.common.UUID crane_id = 6;
-  string discharge_sequence_id = 7;
-  string discharge_sequence_id = 8;
-  optional string discharge_sequence_id = 9;
-  google.protobuf.Timestamp created_at = 10;
-  optional string created_by = 11;
-  google.protobuf.Timestamp updated_at = 12;
-  optional string updated_by = 13;
-  optional string created_by_name = 14;
-  optional string updated_by_name = 15;
-}
-
-message CreateDischargeSequenceRequest {
-  muscovite.common.UUID id = 1;
-  muscovite.common.UUID load_plan_id = 2;
-  muscovite.common.UUID container_id = 3;
+  string load_plan_id = 2;
+  string container_id = 3;
   int32 sequence_order = 4;
-  muscovite.common.UUID crane_id = 5;
+  string crane_id = 5;
   string discharge_sequence_id = 6;
   string discharge_sequence_id = 7;
   optional string discharge_sequence_id = 8;
-  optional string idempotency_key = 9;
+  google.protobuf.Timestamp created_at = 9;
+  optional string created_by = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  optional string updated_by = 12;
+  optional string created_by_name = 13;
+  optional string updated_by_name = 14;
+}
+
+message CreateDischargeSequenceRequest {
+  string load_plan_id = 1;
+  string container_id = 2;
+  int32 sequence_order = 3;
+  string crane_id = 4;
+  string discharge_sequence_id = 5;
+  string discharge_sequence_id = 6;
+  optional string discharge_sequence_id = 7;
+  optional string idempotency_key = 8;
 }
 
 message CreateDischargeSequenceResponse {
@@ -60,15 +58,14 @@ message GetDischargeSequenceResponse {
 
 message UpdateDischargeSequenceRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID load_plan_id = 3;
-  muscovite.common.UUID container_id = 4;
-  int32 sequence_order = 5;
-  muscovite.common.UUID crane_id = 6;
+  string load_plan_id = 2;
+  string container_id = 3;
+  int32 sequence_order = 4;
+  string crane_id = 5;
+  string discharge_sequence_id = 6;
   string discharge_sequence_id = 7;
-  string discharge_sequence_id = 8;
-  optional string discharge_sequence_id = 9;
-  optional string idempotency_key = 10;
+  optional string discharge_sequence_id = 8;
+  optional string idempotency_key = 9;
 }
 
 message UpdateDischargeSequenceResponse {

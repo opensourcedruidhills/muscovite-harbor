@@ -18,28 +18,26 @@ import "google/protobuf/timestamp.proto";
 
 message TransferSlot {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string reference = 3;
-  muscovite.common.UUID container_id = 4;
-  string transport_mode = 5;
-  muscovite.common.Timestamp scheduled_at = 6;
-  string status = 7;
-  google.protobuf.Timestamp created_at = 8;
-  optional string created_by = 9;
-  google.protobuf.Timestamp updated_at = 10;
-  optional string updated_by = 11;
-  optional string created_by_name = 12;
-  optional string updated_by_name = 13;
+  string reference = 2;
+  string container_id = 3;
+  string transport_mode = 4;
+  google.protobuf.Timestamp scheduled_at = 5;
+  string status = 6;
+  google.protobuf.Timestamp created_at = 7;
+  optional string created_by = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  optional string updated_by = 10;
+  optional string created_by_name = 11;
+  optional string updated_by_name = 12;
 }
 
 message CreateTransferSlotRequest {
-  muscovite.common.UUID id = 1;
-  string reference = 2;
-  muscovite.common.UUID container_id = 3;
-  string transport_mode = 4;
-  muscovite.common.Timestamp scheduled_at = 5;
-  string status = 6;
-  optional string idempotency_key = 7;
+  string reference = 1;
+  string container_id = 2;
+  string transport_mode = 3;
+  google.protobuf.Timestamp scheduled_at = 4;
+  string status = 5;
+  optional string idempotency_key = 6;
 }
 
 message CreateTransferSlotResponse {
@@ -56,13 +54,12 @@ message GetTransferSlotResponse {
 
 message UpdateTransferSlotRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string reference = 3;
-  muscovite.common.UUID container_id = 4;
-  string transport_mode = 5;
-  muscovite.common.Timestamp scheduled_at = 6;
-  string status = 7;
-  optional string idempotency_key = 8;
+  string reference = 2;
+  string container_id = 3;
+  string transport_mode = 4;
+  google.protobuf.Timestamp scheduled_at = 5;
+  string status = 6;
+  optional string idempotency_key = 7;
 }
 
 message UpdateTransferSlotResponse {

@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
+#include <muscovite/dba/timestamp.hpp>
 #include <string>
 #include <string>
 
@@ -14,7 +15,6 @@ struct Voyage {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     boost::uuids::uuid vessel_id{};
     boost::uuids::uuid berth_id{};
     std::string voyage_number{};
@@ -26,7 +26,6 @@ struct Voyage {
     std::string status{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_vessel_id() const noexcept -> const boost::uuids::uuid& { return vessel_id; }
     [[nodiscard]] auto get_berth_id() const noexcept -> const boost::uuids::uuid& { return berth_id; }
     [[nodiscard]] auto get_voyage_number() const noexcept -> const std::string& { return voyage_number; }

@@ -33,15 +33,15 @@ message StreamEventsRequest {
 message YardExitReserved {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID slot_id = 3;
-  muscovite.common.UUID container_id = 4;
+  string slot_id = 3;
+  string container_id = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }
 
 message GateCheckoutCompleted {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID slot_id = 3;
+  string slot_id = 3;
   string truck_plate = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }
@@ -49,7 +49,7 @@ message GateCheckoutCompleted {
 message TransportLoaded {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID slot_id = 3;
+  string slot_id = 3;
   string transport_mode = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }
@@ -57,15 +57,15 @@ message TransportLoaded {
 message DepartureConfirmed {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID slot_id = 3;
-  muscovite.common.Timestamp departed_at = 4;
+  string slot_id = 3;
+  google.protobuf.Timestamp departed_at = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }
 
 message HandoffFailed {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID slot_id = 3;
+  string slot_id = 3;
   string reason = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }

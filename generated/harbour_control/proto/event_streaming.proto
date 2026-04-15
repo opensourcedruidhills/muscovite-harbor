@@ -34,8 +34,8 @@ message VesselPositionUpdated {
   string event_id = 1;
   string event_type = 2;
   string mmsi = 3;
-  muscovite.common.Decimal latitude = 4;
-  muscovite.common.Decimal longitude = 5;
+  string latitude = 4;
+  string longitude = 5;
   google.protobuf.Timestamp occurred_at = 6;
 }
 
@@ -43,7 +43,7 @@ message HazmatPermitApproved {
   string event_id = 1;
   string event_type = 2;
   string permit_number = 3;
-  muscovite.common.UUID vessel_id = 4;
+  string vessel_id = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }
 

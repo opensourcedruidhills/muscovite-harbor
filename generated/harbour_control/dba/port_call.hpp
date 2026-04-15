@@ -5,6 +5,8 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <muscovite/dba/decimal.hpp>
+#include <muscovite/dba/timestamp.hpp>
 #include <string>
 #include <string>
 
@@ -15,7 +17,6 @@ struct PortCall {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     std::string vessel_name{};
     std::string imo_number{};
     std::string berth_code{};
@@ -26,7 +27,6 @@ struct PortCall {
     muscovite::dba::Decimal total_billed{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_vessel_name() const noexcept -> const std::string& { return vessel_name; }
     [[nodiscard]] auto get_imo_number() const noexcept -> const std::string& { return imo_number; }
     [[nodiscard]] auto get_berth_code() const noexcept -> const std::string& { return berth_code; }

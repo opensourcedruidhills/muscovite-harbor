@@ -18,28 +18,26 @@ import "google/protobuf/timestamp.proto";
 
 message TideWindow {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID berth_id = 3;
+  string berth_id = 2;
   // Predicted tide height above chart datum
-  muscovite.common.Decimal tide_height_metres = 4;
+  string tide_height_metres = 3;
   // Effective navigable draft = berth depth + tide height
-  muscovite.common.Decimal available_draft = 5;
-  string tide_window_id = 6;
-  google.protobuf.Timestamp created_at = 7;
-  optional string created_by = 8;
-  google.protobuf.Timestamp updated_at = 9;
-  optional string updated_by = 10;
-  optional string created_by_name = 11;
-  optional string updated_by_name = 12;
+  string available_draft = 4;
+  string tide_window_id = 5;
+  google.protobuf.Timestamp created_at = 6;
+  optional string created_by = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  optional string updated_by = 9;
+  optional string created_by_name = 10;
+  optional string updated_by_name = 11;
 }
 
 message CreateTideWindowRequest {
-  muscovite.common.UUID id = 1;
-  muscovite.common.UUID berth_id = 2;
-  muscovite.common.Decimal tide_height_metres = 3;
-  muscovite.common.Decimal available_draft = 4;
-  string tide_window_id = 5;
-  optional string idempotency_key = 6;
+  string berth_id = 1;
+  string tide_height_metres = 2;
+  string available_draft = 3;
+  string tide_window_id = 4;
+  optional string idempotency_key = 5;
 }
 
 message CreateTideWindowResponse {
@@ -58,12 +56,11 @@ message GetTideWindowResponse {
 
 message UpdateTideWindowRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID berth_id = 3;
-  muscovite.common.Decimal tide_height_metres = 4;
-  muscovite.common.Decimal available_draft = 5;
-  string tide_window_id = 6;
-  optional string idempotency_key = 7;
+  string berth_id = 2;
+  string tide_height_metres = 3;
+  string available_draft = 4;
+  string tide_window_id = 5;
+  optional string idempotency_key = 6;
 }
 
 message UpdateTideWindowResponse {

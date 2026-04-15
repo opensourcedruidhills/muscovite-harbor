@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
+#include <muscovite/dba/decimal.hpp>
 #include <string>
 #include <string>
 
@@ -14,14 +15,12 @@ struct Crane {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     std::string name{};
     std::string crane_type{};
     muscovite::dba::Decimal max_lift_kg{};
     bool is_active{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_name() const noexcept -> const std::string& { return name; }
     [[nodiscard]] auto get_crane_type() const noexcept -> const std::string& { return crane_type; }
     [[nodiscard]] auto get_max_lift_kg() const noexcept -> const muscovite::dba::Decimal& { return max_lift_kg; }

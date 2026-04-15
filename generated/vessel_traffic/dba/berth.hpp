@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
+#include <muscovite/dba/decimal.hpp>
 #include <string>
 #include <string>
 
@@ -14,7 +15,6 @@ struct Berth {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     BerthCode code{};
     std::string name{};
     muscovite::dba::Decimal max_loa_metres{};
@@ -25,7 +25,6 @@ struct Berth {
     bool is_active{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_code() const noexcept -> const BerthCode& { return code; }
     [[nodiscard]] auto get_name() const noexcept -> const std::string& { return name; }
     [[nodiscard]] auto get_max_loa_metres() const noexcept -> const muscovite::dba::Decimal& { return max_loa_metres; }

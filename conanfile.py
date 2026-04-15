@@ -12,9 +12,13 @@ from conan.tools.cmake import cmake_layout
 class MuscoviteHarborConan(ConanFile):
     """Muscovite Harbor — Port & Maritime Operations Management.
 
-    Pure consumer of the Muscovite framework. Domain model is defined
-    in .mus/.ddd files and compiled by muscomp into generated C++, SQL,
-    Proto, and QML artifacts.
+    Pure consumer of the Muscovite framework via Conan. Domain model is
+    defined in .mus/.ddd files and compiled by muscomp into generated C++,
+    SQL, Proto, and QML artifacts.
+
+    All transitive dependencies (spdlog, grpc, protobuf, libpqxx, etc.)
+    are pulled automatically through the muscovite package. Only declare
+    direct dependencies here that are NOT part of muscovite.
     """
 
     name = "muscovite_harbor"
@@ -23,21 +27,13 @@ class MuscoviteHarborConan(ConanFile):
     generators = "CMakeDeps", "CMakeToolchain"
 
     def requirements(self):
-        # Muscovite framework (C++ runtime libraries)
-        self.requires("muscovite/2.23.0")
+        # Muscovite framework — ships C++ runtime libraries, PEG grammar,
+        # reference docs, and relocatable lint tool.
+        # All transitive deps (spdlog, grpc, protobuf, libpqxx, etc.)
+        # are resolved automatically by Conan.
+        self.requires("muscovite/2.24.0")
 
-        # Direct dependencies (also pulled transitively by muscovite,
-        # but declared explicitly for version pinning)
-        self.requires("spdlog/1.15.3")
-        self.requires("nlohmann_json/3.11.3")
-        self.requires("libpqxx/8.0.0")
-        self.requires("libpq/17.7")
-
-        # gRPC stack (range-pinned to match muscovite framework)
-        self.requires("grpc/[>=1.70.0 <2]")
-        self.requires("protobuf/[>=5.27.0 <7]")
-
-        # Testing
+        # Testing (not shipped by muscovite)
         self.requires("doctest/2.4.11")
 
     def layout(self):

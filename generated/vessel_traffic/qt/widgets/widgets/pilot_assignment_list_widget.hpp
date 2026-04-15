@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/pilot_assignment_model.hpp"
+#include "../models/pilot_assignment_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

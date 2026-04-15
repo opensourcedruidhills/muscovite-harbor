@@ -33,7 +33,7 @@ message StreamEventsRequest {
 message ContainerUnpacked {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID container_id = 3;
+  string container_id = 3;
   int32 pallet_count = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }
@@ -41,8 +41,8 @@ message ContainerUnpacked {
 message PalletWeightVerified {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID pallet_id = 3;
-  muscovite.common.Decimal verified_kg = 4;
+  string pallet_id = 3;
+  string verified_kg = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }
 

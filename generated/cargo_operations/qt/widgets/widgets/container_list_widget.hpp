@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/container_model.hpp"
+#include "../models/container_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

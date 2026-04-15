@@ -13,32 +13,36 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_compile_definitions(_GLIBCXX_ASSERTIONS)
 
 # ── Framework resolution ─────────────────────────────────────────
-find_package(muscovite QUIET)
-if(NOT muscovite_FOUND)
-    if(DEFINED ENV{MUSCOVITE_DIR})
-        list(PREPEND CMAKE_PREFIX_PATH $ENV{MUSCOVITE_DIR})
-    endif()
-    find_package(muscovite-cpp QUIET)
-    if(NOT muscovite-cpp_FOUND)
-        include(FetchContent)
-        FetchContent_Declare(muscovite-cpp
-            GIT_REPOSITORY https://github.com/jolo/muscovite-cpp.git
-            GIT_TAG ${MUSCOVITE_CPP_VERSION})
-        FetchContent_MakeAvailable(muscovite-cpp)
-    endif()
-endif()
+find_package(muscovite CONFIG REQUIRED COMPONENTS dba grpc qt qt-models qt-widgets)
 
-# ── Dependencies ────────────────────────────────────────────────
-find_package(spdlog REQUIRED)
-find_package(nlohmann_json REQUIRED)
+# ── Dependencies (provided transitively by muscovite) ───────────
 find_package(doctest REQUIRED)
-find_package(gRPC CONFIG REQUIRED)
-find_package(Protobuf CONFIG REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
-# ── Sources ───────────────────────────────────────────────────────
-add_subdirectory(src)
+# ── Per-context targets (FTR-1392) ────────────────────────────────
+add_subdirectory(vessel_traffic)
+add_subdirectory(cargo_operations)
+add_subdirectory(passenger_terminal)
+add_subdirectory(intermodal_transfer)
+add_subdirectory(cargo_decomposition)
+add_subdirectory(harbour_control)
 
 # ── Tests ─────────────────────────────────────────────────────────
 enable_testing()
-add_subdirectory(tests)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/vessel_traffic/tests)
+    add_subdirectory(vessel_traffic/tests)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cargo_operations/tests)
+    add_subdirectory(cargo_operations/tests)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/passenger_terminal/tests)
+    add_subdirectory(passenger_terminal/tests)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/intermodal_transfer/tests)
+    add_subdirectory(intermodal_transfer/tests)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cargo_decomposition/tests)
+    add_subdirectory(cargo_decomposition/tests)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/harbour_control/tests)
+    add_subdirectory(harbour_control/tests)
+endif()

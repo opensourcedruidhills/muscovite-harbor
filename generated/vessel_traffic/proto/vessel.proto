@@ -18,24 +18,6 @@ import "google/protobuf/timestamp.proto";
 
 message Vessel {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string imo_number = 3;
-  string mmsi = 4;
-  string call_sign = 5;
-  string name = 6;
-  string vessel_type = 7;
-  string flag_state = 8;
-  bool is_active = 9;
-  google.protobuf.Timestamp created_at = 10;
-  optional string created_by = 11;
-  google.protobuf.Timestamp updated_at = 12;
-  optional string updated_by = 13;
-  optional string created_by_name = 14;
-  optional string updated_by_name = 15;
-}
-
-message CreateVesselRequest {
-  muscovite.common.UUID id = 1;
   string imo_number = 2;
   string mmsi = 3;
   string call_sign = 4;
@@ -43,7 +25,23 @@ message CreateVesselRequest {
   string vessel_type = 6;
   string flag_state = 7;
   bool is_active = 8;
-  optional string idempotency_key = 9;
+  google.protobuf.Timestamp created_at = 9;
+  optional string created_by = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  optional string updated_by = 12;
+  optional string created_by_name = 13;
+  optional string updated_by_name = 14;
+}
+
+message CreateVesselRequest {
+  string imo_number = 1;
+  string mmsi = 2;
+  string call_sign = 3;
+  string name = 4;
+  string vessel_type = 5;
+  string flag_state = 6;
+  bool is_active = 7;
+  optional string idempotency_key = 8;
 }
 
 message CreateVesselResponse {
@@ -60,15 +58,14 @@ message GetVesselResponse {
 
 message UpdateVesselRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string imo_number = 3;
-  string mmsi = 4;
-  string call_sign = 5;
-  string name = 6;
-  string vessel_type = 7;
-  string flag_state = 8;
-  bool is_active = 9;
-  optional string idempotency_key = 10;
+  string imo_number = 2;
+  string mmsi = 3;
+  string call_sign = 4;
+  string name = 5;
+  string vessel_type = 6;
+  string flag_state = 7;
+  bool is_active = 8;
+  optional string idempotency_key = 9;
 }
 
 message UpdateVesselResponse {

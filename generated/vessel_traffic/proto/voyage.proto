@@ -18,40 +18,38 @@ import "google/protobuf/timestamp.proto";
 
 message Voyage {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID vessel_id = 3;
-  muscovite.common.UUID berth_id = 4;
-  string voyage_number = 5;
-  muscovite.common.Timestamp eta = 6;
-  muscovite.common.Timestamp ata = 7;
-  muscovite.common.Timestamp etd = 8;
-  muscovite.common.Timestamp atd = 9;
-  string cargo_category = 10;
-  string status = 11;
-  string voyage_id = 12;
-  optional string voyage_id = 13;
-  google.protobuf.Timestamp created_at = 14;
-  optional string created_by = 15;
-  google.protobuf.Timestamp updated_at = 16;
-  optional string updated_by = 17;
-  optional string created_by_name = 18;
-  optional string updated_by_name = 19;
-}
-
-message CreateVoyageRequest {
-  muscovite.common.UUID id = 1;
-  muscovite.common.UUID vessel_id = 2;
-  muscovite.common.UUID berth_id = 3;
+  string vessel_id = 2;
+  string berth_id = 3;
   string voyage_number = 4;
-  muscovite.common.Timestamp eta = 5;
-  muscovite.common.Timestamp ata = 6;
-  muscovite.common.Timestamp etd = 7;
-  muscovite.common.Timestamp atd = 8;
+  google.protobuf.Timestamp eta = 5;
+  google.protobuf.Timestamp ata = 6;
+  google.protobuf.Timestamp etd = 7;
+  google.protobuf.Timestamp atd = 8;
   string cargo_category = 9;
   string status = 10;
   string voyage_id = 11;
   optional string voyage_id = 12;
-  optional string idempotency_key = 13;
+  google.protobuf.Timestamp created_at = 13;
+  optional string created_by = 14;
+  google.protobuf.Timestamp updated_at = 15;
+  optional string updated_by = 16;
+  optional string created_by_name = 17;
+  optional string updated_by_name = 18;
+}
+
+message CreateVoyageRequest {
+  string vessel_id = 1;
+  string berth_id = 2;
+  string voyage_number = 3;
+  google.protobuf.Timestamp eta = 4;
+  google.protobuf.Timestamp ata = 5;
+  google.protobuf.Timestamp etd = 6;
+  google.protobuf.Timestamp atd = 7;
+  string cargo_category = 8;
+  string status = 9;
+  string voyage_id = 10;
+  optional string voyage_id = 11;
+  optional string idempotency_key = 12;
 }
 
 message CreateVoyageResponse {
@@ -68,19 +66,18 @@ message GetVoyageResponse {
 
 message UpdateVoyageRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID vessel_id = 3;
-  muscovite.common.UUID berth_id = 4;
-  string voyage_number = 5;
-  muscovite.common.Timestamp eta = 6;
-  muscovite.common.Timestamp ata = 7;
-  muscovite.common.Timestamp etd = 8;
-  muscovite.common.Timestamp atd = 9;
-  string cargo_category = 10;
-  string status = 11;
-  string voyage_id = 12;
-  optional string voyage_id = 13;
-  optional string idempotency_key = 14;
+  string vessel_id = 2;
+  string berth_id = 3;
+  string voyage_number = 4;
+  google.protobuf.Timestamp eta = 5;
+  google.protobuf.Timestamp ata = 6;
+  google.protobuf.Timestamp etd = 7;
+  google.protobuf.Timestamp atd = 8;
+  string cargo_category = 9;
+  string status = 10;
+  string voyage_id = 11;
+  optional string voyage_id = 12;
+  optional string idempotency_key = 13;
 }
 
 message UpdateVoyageResponse {

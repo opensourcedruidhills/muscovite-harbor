@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
+#include <muscovite/dba/decimal.hpp>
 #include <string>
 #include <string>
 
@@ -14,7 +15,6 @@ struct Parcel {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     TrackingNumber tracking_number{};
     boost::uuids::uuid pallet_id{};
     muscovite::dba::Decimal weight_kg{};
@@ -22,7 +22,6 @@ struct Parcel {
     std::string description{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_tracking_number() const noexcept -> const TrackingNumber& { return tracking_number; }
     [[nodiscard]] auto get_pallet_id() const noexcept -> const boost::uuids::uuid& { return pallet_id; }
     [[nodiscard]] auto get_weight_kg() const noexcept -> const muscovite::dba::Decimal& { return weight_kg; }

@@ -18,29 +18,27 @@ import "google/protobuf/timestamp.proto";
 
 message ReeferUnit {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID container_id = 3;
+  string container_id = 2;
   // Target temperature in Celsius
-  muscovite.common.Decimal target_temp_c = 4;
-  muscovite.common.Decimal current_temp_c = 5;
-  bool is_powered = 6;
-  string reefer_unit_id = 7;
-  google.protobuf.Timestamp created_at = 8;
-  optional string created_by = 9;
-  google.protobuf.Timestamp updated_at = 10;
-  optional string updated_by = 11;
-  optional string created_by_name = 12;
-  optional string updated_by_name = 13;
+  string target_temp_c = 3;
+  string current_temp_c = 4;
+  bool is_powered = 5;
+  string reefer_unit_id = 6;
+  google.protobuf.Timestamp created_at = 7;
+  optional string created_by = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  optional string updated_by = 10;
+  optional string created_by_name = 11;
+  optional string updated_by_name = 12;
 }
 
 message CreateReeferUnitRequest {
-  muscovite.common.UUID id = 1;
-  muscovite.common.UUID container_id = 2;
-  muscovite.common.Decimal target_temp_c = 3;
-  muscovite.common.Decimal current_temp_c = 4;
-  bool is_powered = 5;
-  string reefer_unit_id = 6;
-  optional string idempotency_key = 7;
+  string container_id = 1;
+  string target_temp_c = 2;
+  string current_temp_c = 3;
+  bool is_powered = 4;
+  string reefer_unit_id = 5;
+  optional string idempotency_key = 6;
 }
 
 message CreateReeferUnitResponse {
@@ -57,13 +55,12 @@ message GetReeferUnitResponse {
 
 message UpdateReeferUnitRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID container_id = 3;
-  muscovite.common.Decimal target_temp_c = 4;
-  muscovite.common.Decimal current_temp_c = 5;
-  bool is_powered = 6;
-  string reefer_unit_id = 7;
-  optional string idempotency_key = 8;
+  string container_id = 2;
+  string target_temp_c = 3;
+  string current_temp_c = 4;
+  bool is_powered = 5;
+  string reefer_unit_id = 6;
+  optional string idempotency_key = 7;
 }
 
 message UpdateReeferUnitResponse {

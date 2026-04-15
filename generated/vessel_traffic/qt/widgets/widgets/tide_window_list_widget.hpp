@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/tide_window_model.hpp"
+#include "../models/tide_window_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

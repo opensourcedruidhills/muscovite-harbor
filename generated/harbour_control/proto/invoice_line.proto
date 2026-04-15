@@ -18,28 +18,26 @@ import "google/protobuf/timestamp.proto";
 
 message InvoiceLine {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID vessel_id = 3;
-  string service_type = 4;
-  muscovite.common.Decimal amount = 5;
-  string currency = 6;
-  muscovite.common.Timestamp issued_at = 7;
-  google.protobuf.Timestamp created_at = 8;
-  optional string created_by = 9;
-  google.protobuf.Timestamp updated_at = 10;
-  optional string updated_by = 11;
-  optional string created_by_name = 12;
-  optional string updated_by_name = 13;
+  string vessel_id = 2;
+  string service_type = 3;
+  string amount = 4;
+  string currency = 5;
+  google.protobuf.Timestamp issued_at = 6;
+  google.protobuf.Timestamp created_at = 7;
+  optional string created_by = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  optional string updated_by = 10;
+  optional string created_by_name = 11;
+  optional string updated_by_name = 12;
 }
 
 message CreateInvoiceLineRequest {
-  muscovite.common.UUID id = 1;
-  muscovite.common.UUID vessel_id = 2;
-  string service_type = 3;
-  muscovite.common.Decimal amount = 4;
-  string currency = 5;
-  muscovite.common.Timestamp issued_at = 6;
-  optional string idempotency_key = 7;
+  string vessel_id = 1;
+  string service_type = 2;
+  string amount = 3;
+  string currency = 4;
+  google.protobuf.Timestamp issued_at = 5;
+  optional string idempotency_key = 6;
 }
 
 message CreateInvoiceLineResponse {
@@ -56,13 +54,12 @@ message GetInvoiceLineResponse {
 
 message UpdateInvoiceLineRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  muscovite.common.UUID vessel_id = 3;
-  string service_type = 4;
-  muscovite.common.Decimal amount = 5;
-  string currency = 6;
-  muscovite.common.Timestamp issued_at = 7;
-  optional string idempotency_key = 8;
+  string vessel_id = 2;
+  string service_type = 3;
+  string amount = 4;
+  string currency = 5;
+  google.protobuf.Timestamp issued_at = 6;
+  optional string idempotency_key = 7;
 }
 
 message UpdateInvoiceLineResponse {

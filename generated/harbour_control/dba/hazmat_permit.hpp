@@ -5,6 +5,8 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <muscovite/dba/decimal.hpp>
+#include <muscovite/dba/timestamp.hpp>
 #include <string>
 
 namespace harbour_control {
@@ -14,7 +16,6 @@ struct HazmatPermit {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     PermitNumber permit_number{};
     boost::uuids::uuid vessel_id{};
     std::int32_t imo_class{};
@@ -24,7 +25,6 @@ struct HazmatPermit {
     muscovite::dba::Timestamp valid_until{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_permit_number() const noexcept -> const PermitNumber& { return permit_number; }
     [[nodiscard]] auto get_vessel_id() const noexcept -> const boost::uuids::uuid& { return vessel_id; }
     [[nodiscard]] auto get_imo_class() const noexcept -> std::int32_t { return imo_class; }

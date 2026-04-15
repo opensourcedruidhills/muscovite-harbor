@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/barge_booking_model.hpp"
+#include "../models/barge_booking_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

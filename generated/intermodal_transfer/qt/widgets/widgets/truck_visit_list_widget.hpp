@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/truck_visit_model.hpp"
+#include "../models/truck_visit_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

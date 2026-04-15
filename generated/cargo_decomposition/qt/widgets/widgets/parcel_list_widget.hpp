@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/parcel_model.hpp"
+#include "../models/parcel_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

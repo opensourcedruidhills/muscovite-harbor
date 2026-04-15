@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
+#include <muscovite/dba/timestamp.hpp>
 #include <string>
 #include <string>
 
@@ -14,7 +15,6 @@ struct TransferSlot {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     SlotReference reference{};
     boost::uuids::uuid container_id{};
     std::string transport_mode{};
@@ -22,7 +22,6 @@ struct TransferSlot {
     std::string status{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_reference() const noexcept -> const SlotReference& { return reference; }
     [[nodiscard]] auto get_container_id() const noexcept -> const boost::uuids::uuid& { return container_id; }
     [[nodiscard]] auto get_transport_mode() const noexcept -> const std::string& { return transport_mode; }

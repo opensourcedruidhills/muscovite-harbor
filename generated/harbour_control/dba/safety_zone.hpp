@@ -15,7 +15,6 @@ struct SafetyZone {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     ZoneCode zone_code{};
     std::string zone_name{};
     std::string security_level{};
@@ -23,7 +22,6 @@ struct SafetyZone {
     bool is_restricted{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_zone_code() const noexcept -> const ZoneCode& { return zone_code; }
     [[nodiscard]] auto get_zone_name() const noexcept -> const std::string& { return zone_name; }
     [[nodiscard]] auto get_security_level() const noexcept -> const std::string& { return security_level; }

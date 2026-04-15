@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/boarding_pass_model.hpp"
+#include "../models/boarding_pass_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

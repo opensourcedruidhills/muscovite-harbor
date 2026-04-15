@@ -242,9 +242,8 @@ CREATE TABLE vessel_traffic.outbox (
     payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     published_at TIMESTAMPTZ,
-    CONSTRAINT pk_outbox PRIMARY KEY (id)
-) PARTITION BY RANGE (created_at)
-WITH (fillfactor = 100);
+    CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE vessel_traffic.dead_letter_queue (
     id UUID NOT NULL DEFAULT uuidv7(),
@@ -254,9 +253,8 @@ CREATE TABLE vessel_traffic.dead_letter_queue (
     error_message TEXT NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id)
-) PARTITION BY RANGE (created_at)
-WITH (fillfactor = 100);
+    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE vessel_traffic.idempotency_keys (
     key TEXT NOT NULL,
@@ -614,9 +612,8 @@ CREATE TABLE passenger_terminal.outbox (
     payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     published_at TIMESTAMPTZ,
-    CONSTRAINT pk_outbox PRIMARY KEY (id)
-) PARTITION BY RANGE (created_at)
-WITH (fillfactor = 100);
+    CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE passenger_terminal.dead_letter_queue (
     id UUID NOT NULL DEFAULT uuidv7(),
@@ -626,9 +623,8 @@ CREATE TABLE passenger_terminal.dead_letter_queue (
     error_message TEXT NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id)
-) PARTITION BY RANGE (created_at)
-WITH (fillfactor = 100);
+    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE passenger_terminal.idempotency_keys (
     key TEXT NOT NULL,
@@ -825,9 +821,8 @@ CREATE TABLE intermodal_transfer.outbox (
     payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     published_at TIMESTAMPTZ,
-    CONSTRAINT pk_outbox PRIMARY KEY (id)
-) PARTITION BY RANGE (created_at)
-WITH (fillfactor = 100);
+    CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE intermodal_transfer.dead_letter_queue (
     id UUID NOT NULL DEFAULT uuidv7(),
@@ -837,9 +832,8 @@ CREATE TABLE intermodal_transfer.dead_letter_queue (
     error_message TEXT NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id)
-) PARTITION BY RANGE (created_at)
-WITH (fillfactor = 100);
+    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE intermodal_transfer.idempotency_keys (
     key TEXT NOT NULL,
@@ -1013,9 +1007,8 @@ CREATE TABLE cargo_decomposition.outbox (
     payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     published_at TIMESTAMPTZ,
-    CONSTRAINT pk_outbox PRIMARY KEY (id)
-) PARTITION BY RANGE (created_at)
-WITH (fillfactor = 100);
+    CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE cargo_decomposition.dead_letter_queue (
     id UUID NOT NULL DEFAULT uuidv7(),
@@ -1025,9 +1018,8 @@ CREATE TABLE cargo_decomposition.dead_letter_queue (
     error_message TEXT NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id)
-) PARTITION BY RANGE (created_at)
-WITH (fillfactor = 100);
+    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE cargo_decomposition.idempotency_keys (
     key TEXT NOT NULL,
@@ -1181,9 +1173,8 @@ CREATE TABLE harbour_control.outbox (
     payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     published_at TIMESTAMPTZ,
-    CONSTRAINT pk_outbox PRIMARY KEY (id)
-) PARTITION BY RANGE (created_at)
-WITH (fillfactor = 100);
+    CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE harbour_control.dead_letter_queue (
     id UUID NOT NULL DEFAULT uuidv7(),
@@ -1193,9 +1184,8 @@ CREATE TABLE harbour_control.dead_letter_queue (
     error_message TEXT NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id)
-) PARTITION BY RANGE (created_at)
-WITH (fillfactor = 100);
+    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
 
 CREATE TABLE harbour_control.idempotency_keys (
     key TEXT NOT NULL,

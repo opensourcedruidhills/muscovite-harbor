@@ -5,6 +5,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
+#include <muscovite/dba/decimal.hpp>
 #include <string>
 
 namespace cargo_operations {
@@ -14,7 +15,6 @@ struct YardSlot {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     YardSlotCode code{};
     muscovite::dba::Decimal max_weight_kg{};
     std::int32_t max_tier{};
@@ -22,7 +22,6 @@ struct YardSlot {
     bool is_occupied{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_code() const noexcept -> const YardSlotCode& { return code; }
     [[nodiscard]] auto get_max_weight_kg() const noexcept -> const muscovite::dba::Decimal& { return max_weight_kg; }
     [[nodiscard]] auto get_max_tier() const noexcept -> std::int32_t { return max_tier; }

@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/discharge_sequence_model.hpp"
+#include "../models/discharge_sequence_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

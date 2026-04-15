@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/hazmat_permit_model.hpp"
+#include "../models/hazmat_permit_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
+#include <muscovite/dba/decimal.hpp>
 #include <string>
 
 namespace cargo_operations {
@@ -13,14 +14,12 @@ struct ReeferUnit {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     boost::uuids::uuid container_id{};
     muscovite::dba::Decimal target_temp_c{};
     muscovite::dba::Decimal current_temp_c{};
     bool is_powered{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_container_id() const noexcept -> const boost::uuids::uuid& { return container_id; }
     [[nodiscard]] auto get_target_temp_c() const noexcept -> const muscovite::dba::Decimal& { return target_temp_c; }
     [[nodiscard]] auto get_current_temp_c() const noexcept -> const muscovite::dba::Decimal& { return current_temp_c; }

@@ -15,7 +15,6 @@ struct Gate {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     GateCode code{};
     std::string name{};
     std::int32_t capacity{};
@@ -23,7 +22,6 @@ struct Gate {
     boost::uuids::uuid voyage_id{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_code() const noexcept -> const GateCode& { return code; }
     [[nodiscard]] auto get_name() const noexcept -> const std::string& { return name; }
     [[nodiscard]] auto get_capacity() const noexcept -> std::int32_t { return capacity; }

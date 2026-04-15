@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/safety_zone_model.hpp"
+#include "../models/safety_zone_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

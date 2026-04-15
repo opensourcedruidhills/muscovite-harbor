@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/tug_booking_model.hpp"
+#include "../models/tug_booking_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

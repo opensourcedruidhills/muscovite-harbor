@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/rail_wagon_model.hpp"
+#include "../models/rail_wagon_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

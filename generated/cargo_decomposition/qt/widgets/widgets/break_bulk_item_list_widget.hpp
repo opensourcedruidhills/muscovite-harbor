@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/break_bulk_item_model.hpp"
+#include "../models/break_bulk_item_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

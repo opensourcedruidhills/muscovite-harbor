@@ -33,25 +33,25 @@ message StreamEventsRequest {
 message PassengerCheckedIn {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID passenger_id = 3;
-  muscovite.common.UUID voyage_id = 4;
-  muscovite.common.Timestamp checked_in_at = 5;
+  string passenger_id = 3;
+  string voyage_id = 4;
+  google.protobuf.Timestamp checked_in_at = 5;
   google.protobuf.Timestamp occurred_at = 6;
 }
 
 message BoardingPassIssued {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID boarding_pass_id = 3;
-  muscovite.common.UUID passenger_id = 4;
-  muscovite.common.UUID gate_id = 5;
+  string boarding_pass_id = 3;
+  string passenger_id = 4;
+  string gate_id = 5;
   google.protobuf.Timestamp occurred_at = 6;
 }
 
 message GateStatusChanged {
   string event_id = 1;
   string event_type = 2;
-  muscovite.common.UUID gate_id = 3;
+  string gate_id = 3;
   string new_status = 4;
   google.protobuf.Timestamp occurred_at = 5;
 }

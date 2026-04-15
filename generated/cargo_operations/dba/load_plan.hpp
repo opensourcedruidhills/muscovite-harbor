@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
+#include <muscovite/dba/timestamp.hpp>
 #include <string>
 #include <string>
 
@@ -14,13 +15,11 @@ struct LoadPlan {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    boost::uuids::uuid id{};
     boost::uuids::uuid voyage_id{};
     muscovite::dba::Timestamp created_at{};
     std::string status{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_id() const noexcept -> const boost::uuids::uuid& { return id; }
     [[nodiscard]] auto get_voyage_id() const noexcept -> const boost::uuids::uuid& { return voyage_id; }
     [[nodiscard]] auto get_created_at() const noexcept -> const muscovite::dba::Timestamp& { return created_at; }
     [[nodiscard]] auto get_status() const noexcept -> const std::string& { return status; }

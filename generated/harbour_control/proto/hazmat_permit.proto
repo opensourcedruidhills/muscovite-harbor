@@ -18,32 +18,30 @@ import "google/protobuf/timestamp.proto";
 
 message HazmatPermit {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string permit_number = 3;
-  muscovite.common.UUID vessel_id = 4;
-  int32 imo_class = 5;
-  muscovite.common.Decimal quantity_kg = 6;
-  bool approved = 7;
-  muscovite.common.Timestamp valid_from = 8;
-  muscovite.common.Timestamp valid_until = 9;
-  google.protobuf.Timestamp created_at = 10;
-  optional string created_by = 11;
-  google.protobuf.Timestamp updated_at = 12;
-  optional string updated_by = 13;
-  optional string created_by_name = 14;
-  optional string updated_by_name = 15;
+  string permit_number = 2;
+  string vessel_id = 3;
+  int32 imo_class = 4;
+  string quantity_kg = 5;
+  bool approved = 6;
+  google.protobuf.Timestamp valid_from = 7;
+  google.protobuf.Timestamp valid_until = 8;
+  google.protobuf.Timestamp created_at = 9;
+  optional string created_by = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  optional string updated_by = 12;
+  optional string created_by_name = 13;
+  optional string updated_by_name = 14;
 }
 
 message CreateHazmatPermitRequest {
-  muscovite.common.UUID id = 1;
-  string permit_number = 2;
-  muscovite.common.UUID vessel_id = 3;
-  int32 imo_class = 4;
-  muscovite.common.Decimal quantity_kg = 5;
-  bool approved = 6;
-  muscovite.common.Timestamp valid_from = 7;
-  muscovite.common.Timestamp valid_until = 8;
-  optional string idempotency_key = 9;
+  string permit_number = 1;
+  string vessel_id = 2;
+  int32 imo_class = 3;
+  string quantity_kg = 4;
+  bool approved = 5;
+  google.protobuf.Timestamp valid_from = 6;
+  google.protobuf.Timestamp valid_until = 7;
+  optional string idempotency_key = 8;
 }
 
 message CreateHazmatPermitResponse {
@@ -60,15 +58,14 @@ message GetHazmatPermitResponse {
 
 message UpdateHazmatPermitRequest {
   string id = 1;
-  muscovite.common.UUID id = 2;
-  string permit_number = 3;
-  muscovite.common.UUID vessel_id = 4;
-  int32 imo_class = 5;
-  muscovite.common.Decimal quantity_kg = 6;
-  bool approved = 7;
-  muscovite.common.Timestamp valid_from = 8;
-  muscovite.common.Timestamp valid_until = 9;
-  optional string idempotency_key = 10;
+  string permit_number = 2;
+  string vessel_id = 3;
+  int32 imo_class = 4;
+  string quantity_kg = 5;
+  bool approved = 6;
+  google.protobuf.Timestamp valid_from = 7;
+  google.protobuf.Timestamp valid_until = 8;
+  optional string idempotency_key = 9;
 }
 
 message UpdateHazmatPermitResponse {

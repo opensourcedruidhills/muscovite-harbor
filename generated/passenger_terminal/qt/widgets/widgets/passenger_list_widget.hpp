@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/passenger_model.hpp"
+#include "../models/passenger_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

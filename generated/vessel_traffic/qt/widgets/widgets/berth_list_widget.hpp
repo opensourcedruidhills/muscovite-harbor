@@ -18,7 +18,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/berth_model.hpp"
+#include "../models/berth_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

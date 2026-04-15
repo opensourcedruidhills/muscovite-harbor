@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "models/invoice_line_model.hpp"
+#include "../models/invoice_line_model.hpp"
 
 namespace muscovite_harbor::widgets {
 

@@ -1,29 +1,41 @@
 # Muscovite Harbor — Copilot Instructions
 
-Muscovite Harbor is a **consumer project** of the Muscovite DSL toolchain.
+Muscovite Harbor is a **standalone consumer** of the Muscovite DSL toolchain.
 All domain modeling is done in `.mus` and `.ddd` files, compiled by `muscomp`.
+The Muscovite framework and all resources come exclusively from Conan — no
+access to the muscovite source repository is needed.
 
-## Muscovite Toolchain
+## Muscovite Resources (via Conan)
 
-The Muscovite compiler and framework live in a **separate repository**.
-Set `MUSCOVITE_ROOT` to locate it (default: `$HOME/muscovite`).
+After `conan install` + `cmake --preset debug`, these CMake cache variables
+point to resources inside the Conan package:
 
-| Resource | Path |
-|----------|------|
-| PEG grammar (DSL syntax reference) | `$MUSCOVITE_ROOT/grammar/muscovite.peg` |
-| DSL linter | `$MUSCOVITE_ROOT/tools/lint-ddd.sh` |
-| muscomp binary | `$MUSCOVITE_ROOT/build/Debug/toolchain/muscomp/muscomp` |
-| Ground truth (IR/naming/types) | `$MUSCOVITE_ROOT/doc/GROUND-TRUTH.md` |
-| Example projects | `$MUSCOVITE_ROOT/examples/` |
+| CMake Variable | Contents | Use For |
+|----------------|----------|---------|
+| `MUSCOVITE_GRAMMAR_DIR` | `muscovite.peg` | **Read this before editing .ddd files** |
+| `MUSCOVITE_DOC_DIR` | `GROUND-TRUTH.md`, `IR-CHEATSHEET.md` | IR naming conventions, type mappings |
+| `MUSCOVITE_TOOLS_DIR` | `lint-ddd.sh` | Relocatable DSL linter |
+| `MUSCOVITE_MUSCOMP_DIR` | `muscomp` binary | DSL compiler (dev-time only) |
 
-**Before editing `.ddd` files**, read the PEG grammar for the construct you're modifying.
-The grammar is the authoritative syntax reference — not documentation, not examples.
+To read the grammar file on disk:
+
+```bash
+# Extract path from CMake cache
+GRAMMAR_DIR=$(cmake --preset debug -N -L 2>/dev/null | grep MUSCOVITE_GRAMMAR_DIR | cut -d= -f2)
+cat "$GRAMMAR_DIR/muscovite.peg"
+
+# Or find it via Conan cache
+CONAN_PKG=$(conan cache path muscovite/2.24.0)
+cat "$CONAN_PKG/share/muscovite/grammar/muscovite.peg"
+```
 
 ### Lint (after any .ddd/.mus change)
 
 ```bash
-MUSCOVITE_ROOT="${MUSCOVITE_ROOT:-$HOME/muscovite}"
-"$MUSCOVITE_ROOT/tools/lint-ddd.sh" project.mus
+tools/lint.sh project.mus
+# Or use the Conan-shipped lint tool directly:
+LINT=$(cmake --preset debug -N -L 2>/dev/null | grep MUSCOVITE_TOOLS_DIR | cut -d= -f2)
+"$LINT/lint-ddd.sh" project.mus
 ```
 
 ### Regenerate (requires muscomp on PATH or MUSCOMP_BIN set)
@@ -39,7 +51,7 @@ tools/regenerate.sh
 3. **Generated code is committed** — PRs that change .ddd/.mus MUST include regenerated output (ADR-004)
 4. **Build without muscomp** — CI only needs C++ toolchain + Conan
 5. **GitHub Milestones for iterations** — no local planning files
-6. **SPDX headers** — all source files need dual-license header
+6. **SPDX headers** — all source files need dual-license header (AGPL-3.0 + Commercial)
 7. **ADRs for decisions** — document in `doc/adr/NNN-title.md`
 
 ## Bounded Contexts (6)
