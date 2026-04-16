@@ -55,7 +55,9 @@ CONTEXT CargoDecomposition @uuid "bb000050-0001-4000-8000-000000000001"
         @shared (
         value_kg    DECIMAL NOT_NULL @uuid "bb000050-0020-4000-8000-000000000020"
             @MIN(0) @MAX(50000) @unit(KILOGRAM)
-    ) DOC "Weight measurement in kilograms";
+    )
+    NATURAL_KEY (value_kg)
+    DOC "Weight measurement in kilograms";
 
     -- ====================================================================
     -- Entities

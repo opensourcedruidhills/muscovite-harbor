@@ -194,11 +194,11 @@ CONTEXT VesselTraffic @uuid "bb000010-0001-4000-8000-000000000001"
         SHORT: "{voyage_number} ETA:{eta}",
         FULL: "Voyage {voyage_number} — ETA:{eta} ETD:{etd} Status:{status}"
     )
-    DOC "A single vessel call at the harbour"
     RELATIONSHIPS {
         Voyage -> Vessel REQUIRED ONE VIA vessel_id;
         Voyage -> Berth OPTIONAL ONE VIA berth_id;
-    };
+    }
+    DOC "A single vessel call at the harbour";
 
     ENTITY PilotAssignment @uuid "bb000010-0040-4000-8000-000000000004" IDENTIFIED_BY id (
         id              UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000040",
