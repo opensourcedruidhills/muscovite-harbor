@@ -11,6 +11,8 @@
 
 #include "viewmodels/discharge_sequence_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 DischargeSequenceViewModel::DischargeSequenceViewModel(QObject* parent)
@@ -51,20 +53,56 @@ void DischargeSequenceViewModel::setCraneId(const QString& value) {
     }
 }
 
-void DischargeSequenceViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void DischargeSequenceViewModel::load(const QString& id) {
+    spdlog::debug("DischargeSequenceViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = DischargeSequenceService::NewStub(channel_);
+    // GetDischargeSequenceRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // DischargeSequenceResponse response;
+    // auto status = stub->GetDischargeSequence(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setLoadPlanId(/* response.loadPlanId() */);
+    //     setContainerId(/* response.containerId() */);
+    //     setSequenceOrder(/* response.sequenceOrder() */);
+    //     setCraneId(/* response.craneId() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void DischargeSequenceViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("DischargeSequenceViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateDischargeSequenceRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_loadPlanId(/* convert m_load_plan_id */);
+    // request.set_containerId(/* convert m_container_id */);
+    // request.set_sequenceOrder(/* convert m_sequence_order */);
+    // request.set_craneId(/* convert m_crane_id */);
+    Q_EMIT saved();
 }
 
 void DischargeSequenceViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("DischargeSequenceViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateDischargeSequenceRequest request;
+    // request.set_loadPlanId(/* convert m_load_plan_id */);
+    // request.set_containerId(/* convert m_container_id */);
+    // request.set_sequenceOrder(/* convert m_sequence_order */);
+    // request.set_craneId(/* convert m_crane_id */);
+    Q_EMIT saved();
 }
 
 void DischargeSequenceViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("DischargeSequenceViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteDischargeSequenceRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

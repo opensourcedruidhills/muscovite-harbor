@@ -11,6 +11,8 @@
 
 #include "viewmodels/gate_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 GateViewModel::GateViewModel(QObject* parent)
@@ -58,20 +60,59 @@ void GateViewModel::setVoyageId(const QString& value) {
     }
 }
 
-void GateViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void GateViewModel::load(const QString& id) {
+    spdlog::debug("GateViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = GateService::NewStub(channel_);
+    // GetGateRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // GateResponse response;
+    // auto status = stub->GetGate(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setCode(/* response.code() */);
+    //     setName(/* response.name() */);
+    //     setCapacity(/* response.capacity() */);
+    //     setStatus(/* response.status() */);
+    //     setVoyageId(/* response.voyageId() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void GateViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("GateViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateGateRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_code(/* convert m_code */);
+    // request.set_name(/* convert m_name */);
+    // request.set_capacity(/* convert m_capacity */);
+    // request.set_status(/* convert m_status */);
+    // request.set_voyageId(/* convert m_voyage_id */);
+    Q_EMIT saved();
 }
 
 void GateViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("GateViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateGateRequest request;
+    // request.set_code(/* convert m_code */);
+    // request.set_name(/* convert m_name */);
+    // request.set_capacity(/* convert m_capacity */);
+    // request.set_status(/* convert m_status */);
+    // request.set_voyageId(/* convert m_voyage_id */);
+    Q_EMIT saved();
 }
 
 void GateViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("GateViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteGateRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

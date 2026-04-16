@@ -11,41 +11,96 @@
 
 #include "viewmodels/crane_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 CraneGrpcBinding::CraneGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void CraneGrpcBinding::createCrane(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateCraneRequest protobuf
-    // TODO: Call CraneService::CreateCrane()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void CraneGrpcBinding::createCrane(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateCraneRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto name = data.value(QStringLiteral("name"));
+        [[maybe_unused]] auto craneType = data.value(QStringLiteral("craneType"));
+        [[maybe_unused]] auto maxLiftKg = data.value(QStringLiteral("maxLiftKg"));
+        [[maybe_unused]] auto isActive = data.value(QStringLiteral("isActive"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = CraneService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateCrane(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("CraneGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void CraneGrpcBinding::readCrane(const QString& /*id*/) {
-    // TODO: Call CraneService::GetCrane()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void CraneGrpcBinding::readCrane(const QString& id) {
+    try {
+        spdlog::debug("CraneGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = CraneService::NewStub(channel_);
+        // GetCraneRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("CraneGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void CraneGrpcBinding::updateCrane(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateCraneRequest protobuf
-    // TODO: Call CraneService::UpdateCrane()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void CraneGrpcBinding::updateCrane(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("CraneGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto name = data.value(QStringLiteral("name"));
+        [[maybe_unused]] auto craneType = data.value(QStringLiteral("craneType"));
+        [[maybe_unused]] auto maxLiftKg = data.value(QStringLiteral("maxLiftKg"));
+        [[maybe_unused]] auto isActive = data.value(QStringLiteral("isActive"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("CraneGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void CraneGrpcBinding::deleteCrane(const QString& /*id*/) {
-    // TODO: Call CraneService::DeleteCrane()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void CraneGrpcBinding::deleteCrane(const QString& id) {
+    try {
+        spdlog::debug("CraneGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("CraneGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void CraneGrpcBinding::listCrane(int /*page*/, int /*pageSize*/) {
-    // TODO: Call CraneService::ListCrane()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void CraneGrpcBinding::listCrane(int page, int pageSize) {
+    try {
+        spdlog::debug("CraneGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("CraneGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void CraneGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

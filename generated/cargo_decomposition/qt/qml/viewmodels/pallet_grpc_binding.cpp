@@ -11,41 +11,102 @@
 
 #include "viewmodels/pallet_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 PalletGrpcBinding::PalletGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void PalletGrpcBinding::createPallet(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreatePalletRequest protobuf
-    // TODO: Call PalletService::CreatePallet()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void PalletGrpcBinding::createPallet(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreatePalletRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto palletId = data.value(QStringLiteral("palletId"));
+        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
+        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
+        [[maybe_unused]] auto lengthCm = data.value(QStringLiteral("lengthCm"));
+        [[maybe_unused]] auto widthCm = data.value(QStringLiteral("widthCm"));
+        [[maybe_unused]] auto heightCm = data.value(QStringLiteral("heightCm"));
+        [[maybe_unused]] auto hsCode = data.value(QStringLiteral("hsCode"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = PalletService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreatePallet(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("PalletGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void PalletGrpcBinding::readPallet(const QString& /*id*/) {
-    // TODO: Call PalletService::GetPallet()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void PalletGrpcBinding::readPallet(const QString& id) {
+    try {
+        spdlog::debug("PalletGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = PalletService::NewStub(channel_);
+        // GetPalletRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("PalletGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void PalletGrpcBinding::updatePallet(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdatePalletRequest protobuf
-    // TODO: Call PalletService::UpdatePallet()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void PalletGrpcBinding::updatePallet(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("PalletGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto palletId = data.value(QStringLiteral("palletId"));
+        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
+        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
+        [[maybe_unused]] auto lengthCm = data.value(QStringLiteral("lengthCm"));
+        [[maybe_unused]] auto widthCm = data.value(QStringLiteral("widthCm"));
+        [[maybe_unused]] auto heightCm = data.value(QStringLiteral("heightCm"));
+        [[maybe_unused]] auto hsCode = data.value(QStringLiteral("hsCode"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("PalletGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void PalletGrpcBinding::deletePallet(const QString& /*id*/) {
-    // TODO: Call PalletService::DeletePallet()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void PalletGrpcBinding::deletePallet(const QString& id) {
+    try {
+        spdlog::debug("PalletGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("PalletGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void PalletGrpcBinding::listPallet(int /*page*/, int /*pageSize*/) {
-    // TODO: Call PalletService::ListPallet()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void PalletGrpcBinding::listPallet(int page, int pageSize) {
+    try {
+        spdlog::debug("PalletGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("PalletGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void PalletGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

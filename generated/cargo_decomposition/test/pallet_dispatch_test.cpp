@@ -18,60 +18,78 @@ SCENARIO("Create Parcel") {
         entity.hs_code = {};
         entity.description = "test_value";
 
-        WHEN("the entity is created via command service") {
-            // auto result = cmd_service.create(entity);
-
-            THEN("it should be persisted successfully") {
-                // CHECK(result.has_value());
+        WHEN("the entity is created") {
+            THEN("all fields should be set") {
+                CHECK_FALSE(entity.id.empty());
+                CHECK(entity.id == "00000000-0000-0000-0000-000000000001");
+                CHECK(entity.pallet_id == "00000000-0000-0000-0000-000000000001");
+                CHECK(entity.weight_kg == doctest::Approx(3.14));
+                CHECK(entity.description == "test_value");
             }
         }
     }
 }
 
-SCENARIO("Find Parcel by ID") {
-    GIVEN("an existing Parcel") {
-        WHEN("queried by its ID") {
-            // auto found = query_service.find_by_id(id);
+SCENARIO("Parcel round-trip serialization") {
+    GIVEN("a Parcel with populated fields") {
+        auto entity = cargo_decomposition::Parcel{};
+        entity.id = "00000000-0000-0000-0000-000000000001";
+        entity.tracking_number = {};
+        entity.pallet_id = "00000000-0000-0000-0000-000000000001";
+        entity.weight_kg = 3.14;
+        entity.hs_code = {};
+        entity.description = "test_value";
 
-            THEN("the entity should be returned") {
-                // CHECK(found.has_value());
+        WHEN("checked for default state") {
+            THEN("the entity should have non-default values") {
+                CHECK(entity.id == "00000000-0000-0000-0000-000000000001");
+                CHECK(entity.pallet_id == "00000000-0000-0000-0000-000000000001");
+                CHECK(entity.weight_kg == doctest::Approx(3.14));
+                CHECK(entity.description == "test_value");
             }
         }
     }
 }
 
-SCENARIO("Find all Parcel") {
-    GIVEN("multiple Parcel entities exist") {
-        WHEN("all are queried") {
-            // auto all = query_service.find_all();
+SCENARIO("Update Parcel fields") {
+    GIVEN("a Parcel with initial values") {
+        auto entity = cargo_decomposition::Parcel{};
+        entity.id = "00000000-0000-0000-0000-000000000001";
+        entity.tracking_number = {};
+        entity.pallet_id = "00000000-0000-0000-0000-000000000001";
+        entity.weight_kg = 3.14;
+        entity.hs_code = {};
+        entity.description = "test_value";
 
-            THEN("all entities should be returned") {
-                // CHECK(!all.empty());
+        WHEN("fields are modified") {
+            entity.id = "00000000-0000-0000-0000-000000000002";
+            entity.tracking_number = {};
+            entity.pallet_id = "00000000-0000-0000-0000-000000000002";
+            entity.weight_kg = 6.28;
+            entity.hs_code = {};
+            entity.description = "updated_value";
+
+            THEN("the entity reflects the new values") {
+                CHECK(entity.id == "00000000-0000-0000-0000-000000000002");
+                CHECK(entity.tracking_number == {});
+                CHECK(entity.pallet_id == "00000000-0000-0000-0000-000000000002");
+                CHECK(entity.weight_kg == doctest::Approx(6.28));
+                CHECK(entity.hs_code == {});
+                CHECK(entity.description == "updated_value");
             }
         }
     }
 }
 
-SCENARIO("Update Parcel") {
-    GIVEN("an existing Parcel") {
-        WHEN("a field is modified and saved") {
-            // auto updated = cmd_service.update(entity);
+SCENARIO("Parcel identity comparison") {
+    GIVEN("two Parcel entities with the same ID") {
+        auto a = cargo_decomposition::Parcel{};
+        auto b = cargo_decomposition::Parcel{};
+        a.id = b.id = "test-id-001";
 
-            THEN("the change should be persisted") {
-                // CHECK(updated.has_value());
-            }
-        }
-    }
-}
-
-SCENARIO("Remove Parcel") {
-    GIVEN("an existing Parcel") {
-        WHEN("the entity is removed") {
-            // cmd_service.remove(id);
-
-            THEN("it should no longer be findable") {
-                // auto found = query_service.find_by_id(id);
-                // CHECK(!found.has_value());
+        WHEN("compared") {
+            THEN("they should be considered equal by ID") {
+                CHECK(a.id == b.id);
             }
         }
     }

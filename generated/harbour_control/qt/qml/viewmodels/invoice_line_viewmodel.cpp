@@ -11,6 +11,8 @@
 
 #include "viewmodels/invoice_line_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 InvoiceLineViewModel::InvoiceLineViewModel(QObject* parent)
@@ -58,20 +60,59 @@ void InvoiceLineViewModel::setIssuedAt(const QDateTime& value) {
     }
 }
 
-void InvoiceLineViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void InvoiceLineViewModel::load(const QString& id) {
+    spdlog::debug("InvoiceLineViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = InvoiceLineService::NewStub(channel_);
+    // GetInvoiceLineRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // InvoiceLineResponse response;
+    // auto status = stub->GetInvoiceLine(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setVesselId(/* response.vesselId() */);
+    //     setServiceType(/* response.serviceType() */);
+    //     setAmount(/* response.amount() */);
+    //     setCurrency(/* response.currency() */);
+    //     setIssuedAt(/* response.issuedAt() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void InvoiceLineViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("InvoiceLineViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateInvoiceLineRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_vesselId(/* convert m_vessel_id */);
+    // request.set_serviceType(/* convert m_service_type */);
+    // request.set_amount(/* convert m_amount */);
+    // request.set_currency(/* convert m_currency */);
+    // request.set_issuedAt(/* convert m_issued_at */);
+    Q_EMIT saved();
 }
 
 void InvoiceLineViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("InvoiceLineViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateInvoiceLineRequest request;
+    // request.set_vesselId(/* convert m_vessel_id */);
+    // request.set_serviceType(/* convert m_service_type */);
+    // request.set_amount(/* convert m_amount */);
+    // request.set_currency(/* convert m_currency */);
+    // request.set_issuedAt(/* convert m_issued_at */);
+    Q_EMIT saved();
 }
 
 void InvoiceLineViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("InvoiceLineViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteInvoiceLineRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

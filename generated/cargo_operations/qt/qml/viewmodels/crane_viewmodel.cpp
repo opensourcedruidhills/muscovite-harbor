@@ -11,6 +11,8 @@
 
 #include "viewmodels/crane_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 CraneViewModel::CraneViewModel(QObject* parent)
@@ -51,20 +53,56 @@ void CraneViewModel::setIsActive(const bool& value) {
     }
 }
 
-void CraneViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void CraneViewModel::load(const QString& id) {
+    spdlog::debug("CraneViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = CraneService::NewStub(channel_);
+    // GetCraneRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // CraneResponse response;
+    // auto status = stub->GetCrane(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setName(/* response.name() */);
+    //     setCraneType(/* response.craneType() */);
+    //     setMaxLiftKg(/* response.maxLiftKg() */);
+    //     setIsActive(/* response.isActive() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void CraneViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("CraneViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateCraneRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_name(/* convert m_name */);
+    // request.set_craneType(/* convert m_crane_type */);
+    // request.set_maxLiftKg(/* convert m_max_lift_kg */);
+    // request.set_isActive(/* convert m_is_active */);
+    Q_EMIT saved();
 }
 
 void CraneViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("CraneViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateCraneRequest request;
+    // request.set_name(/* convert m_name */);
+    // request.set_craneType(/* convert m_crane_type */);
+    // request.set_maxLiftKg(/* convert m_max_lift_kg */);
+    // request.set_isActive(/* convert m_is_active */);
+    Q_EMIT saved();
 }
 
 void CraneViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("CraneViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteCraneRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

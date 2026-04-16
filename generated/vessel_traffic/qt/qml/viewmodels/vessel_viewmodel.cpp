@@ -11,6 +11,8 @@
 
 #include "viewmodels/vessel_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 VesselViewModel::VesselViewModel(QObject* parent)
@@ -72,20 +74,65 @@ void VesselViewModel::setIsActive(const bool& value) {
     }
 }
 
-void VesselViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void VesselViewModel::load(const QString& id) {
+    spdlog::debug("VesselViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = VesselService::NewStub(channel_);
+    // GetVesselRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // VesselResponse response;
+    // auto status = stub->GetVessel(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setImoNumber(/* response.imoNumber() */);
+    //     setMmsi(/* response.mmsi() */);
+    //     setCallSign(/* response.callSign() */);
+    //     setName(/* response.name() */);
+    //     setVesselType(/* response.vesselType() */);
+    //     setFlagState(/* response.flagState() */);
+    //     setIsActive(/* response.isActive() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void VesselViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("VesselViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateVesselRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_imoNumber(/* convert m_imo_number */);
+    // request.set_mmsi(/* convert m_mmsi */);
+    // request.set_callSign(/* convert m_call_sign */);
+    // request.set_name(/* convert m_name */);
+    // request.set_vesselType(/* convert m_vessel_type */);
+    // request.set_flagState(/* convert m_flag_state */);
+    // request.set_isActive(/* convert m_is_active */);
+    Q_EMIT saved();
 }
 
 void VesselViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("VesselViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateVesselRequest request;
+    // request.set_imoNumber(/* convert m_imo_number */);
+    // request.set_mmsi(/* convert m_mmsi */);
+    // request.set_callSign(/* convert m_call_sign */);
+    // request.set_name(/* convert m_name */);
+    // request.set_vesselType(/* convert m_vessel_type */);
+    // request.set_flagState(/* convert m_flag_state */);
+    // request.set_isActive(/* convert m_is_active */);
+    Q_EMIT saved();
 }
 
 void VesselViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("VesselViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteVesselRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

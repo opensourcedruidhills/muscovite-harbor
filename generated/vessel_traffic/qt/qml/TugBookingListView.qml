@@ -11,9 +11,22 @@ Page {
     property int currentPage: 1
     property int totalPages: 1
     property string filterText: ""
+    property bool loading: false
+    property string errorMessage: ""
+
+    Accessible.name: qsTr("TugBookings list")
+    Accessible.role: Accessible.Pane
 
     signal itemClicked(string id)
     signal refreshRequested()
+    signal createRequested()
+
+    Timer {
+        id: searchDebounce
+        interval: 300
+        repeat: false
+        onTriggered: root.refreshRequested()
+    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -26,12 +39,47 @@ Page {
                 id: searchField
                 placeholderText: qsTr("Search TugBooking...")
                 Layout.fillWidth: true
-                onTextChanged: root.filterText = text
+                Accessible.name: qsTr("Search TugBooking")
+                onTextChanged: {
+                    root.filterText = text
+                    searchDebounce.restart()
+                }
             }
 
             Button {
                 text: qsTr("Refresh")
+                Accessible.name: qsTr("Refresh list")
                 onClicked: root.refreshRequested()
+            }
+        }
+
+        BusyIndicator {
+            Layout.alignment: Qt.AlignHCenter
+            running: root.loading
+            visible: root.loading
+            Accessible.name: qsTr("Loading TugBooking...")
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            visible: root.errorMessage !== "" && !root.loading
+            spacing: 8
+
+            Label {
+                Layout.alignment: Qt.AlignHCenter
+                text: root.errorMessage
+                color: "red"
+                wrapMode: Text.WordWrap
+            }
+
+            Button {
+                Layout.alignment: Qt.AlignHCenter
+                text: qsTr("Retry")
+                Accessible.name: qsTr("Retry loading")
+                onClicked: {
+                    root.errorMessage = ""
+                    root.refreshRequested()
+                }
             }
         }
 
@@ -40,9 +88,12 @@ Page {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
+            visible: !root.loading && root.errorMessage === ""
 
             delegate: ItemDelegate {
                 width: listView.width
+                Accessible.name: model.id || ""
+                Accessible.role: Accessible.ListItem
                 contentItem: RowLayout {
                     spacing: 8
                     Label { text: model.id || ""; Layout.fillWidth: true }
@@ -54,10 +105,23 @@ Page {
                 onClicked: root.itemClicked(model.id || "")
             }
 
-            Label {
+            ColumnLayout {
                 anchors.centerIn: parent
-                text: qsTr("No TugBooking items found")
-                visible: listView.count === 0
+                visible: listView.count === 0 && !root.loading && root.errorMessage === ""
+                spacing: 12
+
+                Label {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: qsTr("No TugBooking items found")
+                    font.pixelSize: 16
+                }
+
+                Button {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: qsTr("Create First TugBooking")
+                    Accessible.name: qsTr("Create the first TugBooking")
+                    onClicked: root.createRequested()
+                }
             }
         }
 

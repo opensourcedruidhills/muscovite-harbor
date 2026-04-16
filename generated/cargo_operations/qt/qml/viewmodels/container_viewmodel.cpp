@@ -11,6 +11,8 @@
 
 #include "viewmodels/container_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 ContainerViewModel::ContainerViewModel(QObject* parent)
@@ -65,20 +67,62 @@ void ContainerViewModel::setStatus(const QString& value) {
     }
 }
 
-void ContainerViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void ContainerViewModel::load(const QString& id) {
+    spdlog::debug("ContainerViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = ContainerService::NewStub(channel_);
+    // GetContainerRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // ContainerResponse response;
+    // auto status = stub->GetContainer(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setContainerNumber(/* response.containerNumber() */);
+    //     setSizeCategory(/* response.sizeCategory() */);
+    //     setHazmatClass(/* response.hazmatClass() */);
+    //     setVoyageId(/* response.voyageId() */);
+    //     setYardSlotId(/* response.yardSlotId() */);
+    //     setStatus(/* response.status() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void ContainerViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("ContainerViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateContainerRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_containerNumber(/* convert m_container_number */);
+    // request.set_sizeCategory(/* convert m_size_category */);
+    // request.set_hazmatClass(/* convert m_hazmat_class */);
+    // request.set_voyageId(/* convert m_voyage_id */);
+    // request.set_yardSlotId(/* convert m_yard_slot_id */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void ContainerViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("ContainerViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateContainerRequest request;
+    // request.set_containerNumber(/* convert m_container_number */);
+    // request.set_sizeCategory(/* convert m_size_category */);
+    // request.set_hazmatClass(/* convert m_hazmat_class */);
+    // request.set_voyageId(/* convert m_voyage_id */);
+    // request.set_yardSlotId(/* convert m_yard_slot_id */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void ContainerViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("ContainerViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteContainerRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

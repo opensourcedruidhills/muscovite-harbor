@@ -11,6 +11,8 @@
 
 #include "viewmodels/hazmat_permit_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 HazmatPermitViewModel::HazmatPermitViewModel(QObject* parent)
@@ -72,20 +74,65 @@ void HazmatPermitViewModel::setValidUntil(const QDateTime& value) {
     }
 }
 
-void HazmatPermitViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void HazmatPermitViewModel::load(const QString& id) {
+    spdlog::debug("HazmatPermitViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = HazmatPermitService::NewStub(channel_);
+    // GetHazmatPermitRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // HazmatPermitResponse response;
+    // auto status = stub->GetHazmatPermit(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setPermitNumber(/* response.permitNumber() */);
+    //     setVesselId(/* response.vesselId() */);
+    //     setImoClass(/* response.imoClass() */);
+    //     setQuantityKg(/* response.quantityKg() */);
+    //     setApproved(/* response.approved() */);
+    //     setValidFrom(/* response.validFrom() */);
+    //     setValidUntil(/* response.validUntil() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void HazmatPermitViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("HazmatPermitViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateHazmatPermitRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_permitNumber(/* convert m_permit_number */);
+    // request.set_vesselId(/* convert m_vessel_id */);
+    // request.set_imoClass(/* convert m_imo_class */);
+    // request.set_quantityKg(/* convert m_quantity_kg */);
+    // request.set_approved(/* convert m_approved */);
+    // request.set_validFrom(/* convert m_valid_from */);
+    // request.set_validUntil(/* convert m_valid_until */);
+    Q_EMIT saved();
 }
 
 void HazmatPermitViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("HazmatPermitViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateHazmatPermitRequest request;
+    // request.set_permitNumber(/* convert m_permit_number */);
+    // request.set_vesselId(/* convert m_vessel_id */);
+    // request.set_imoClass(/* convert m_imo_class */);
+    // request.set_quantityKg(/* convert m_quantity_kg */);
+    // request.set_approved(/* convert m_approved */);
+    // request.set_validFrom(/* convert m_valid_from */);
+    // request.set_validUntil(/* convert m_valid_until */);
+    Q_EMIT saved();
 }
 
 void HazmatPermitViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("HazmatPermitViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteHazmatPermitRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

@@ -28,13 +28,12 @@ message Voyage {
   string cargo_category = 9;
   string status = 10;
   string voyage_id = 11;
-  optional string voyage_id = 12;
-  google.protobuf.Timestamp created_at = 13;
-  optional string created_by = 14;
-  google.protobuf.Timestamp updated_at = 15;
-  optional string updated_by = 16;
-  optional string created_by_name = 17;
-  optional string updated_by_name = 18;
+  google.protobuf.Timestamp created_at = 12;
+  optional string created_by = 13;
+  google.protobuf.Timestamp updated_at = 14;
+  optional string updated_by = 15;
+  optional string created_by_name = 16;
+  optional string updated_by_name = 17;
 }
 
 message CreateVoyageRequest {

@@ -11,6 +11,8 @@
 
 #include "viewmodels/chassis_unit_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 ChassisUnitViewModel::ChassisUnitViewModel(QObject* parent)
@@ -44,20 +46,53 @@ void ChassisUnitViewModel::setIsAvailable(const bool& value) {
     }
 }
 
-void ChassisUnitViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void ChassisUnitViewModel::load(const QString& id) {
+    spdlog::debug("ChassisUnitViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = ChassisUnitService::NewStub(channel_);
+    // GetChassisUnitRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // ChassisUnitResponse response;
+    // auto status = stub->GetChassisUnit(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setChassisNumber(/* response.chassisNumber() */);
+    //     setChassisType(/* response.chassisType() */);
+    //     setIsAvailable(/* response.isAvailable() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void ChassisUnitViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("ChassisUnitViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateChassisUnitRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_chassisNumber(/* convert m_chassis_number */);
+    // request.set_chassisType(/* convert m_chassis_type */);
+    // request.set_isAvailable(/* convert m_is_available */);
+    Q_EMIT saved();
 }
 
 void ChassisUnitViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("ChassisUnitViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateChassisUnitRequest request;
+    // request.set_chassisNumber(/* convert m_chassis_number */);
+    // request.set_chassisType(/* convert m_chassis_type */);
+    // request.set_isAvailable(/* convert m_is_available */);
+    Q_EMIT saved();
 }
 
 void ChassisUnitViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("ChassisUnitViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteChassisUnitRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

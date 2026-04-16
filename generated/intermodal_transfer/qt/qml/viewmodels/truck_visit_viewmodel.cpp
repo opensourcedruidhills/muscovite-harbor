@@ -11,6 +11,8 @@
 
 #include "viewmodels/truck_visit_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 TruckVisitViewModel::TruckVisitViewModel(QObject* parent)
@@ -58,20 +60,59 @@ void TruckVisitViewModel::setDepartedAt(const QDateTime& value) {
     }
 }
 
-void TruckVisitViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void TruckVisitViewModel::load(const QString& id) {
+    spdlog::debug("TruckVisitViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = TruckVisitService::NewStub(channel_);
+    // GetTruckVisitRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // TruckVisitResponse response;
+    // auto status = stub->GetTruckVisit(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setTruckPlate(/* response.truckPlate() */);
+    //     setCarrierName(/* response.carrierName() */);
+    //     setSlotId(/* response.slotId() */);
+    //     setArrivedAt(/* response.arrivedAt() */);
+    //     setDepartedAt(/* response.departedAt() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void TruckVisitViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("TruckVisitViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateTruckVisitRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_truckPlate(/* convert m_truck_plate */);
+    // request.set_carrierName(/* convert m_carrier_name */);
+    // request.set_slotId(/* convert m_slot_id */);
+    // request.set_arrivedAt(/* convert m_arrived_at */);
+    // request.set_departedAt(/* convert m_departed_at */);
+    Q_EMIT saved();
 }
 
 void TruckVisitViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("TruckVisitViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateTruckVisitRequest request;
+    // request.set_truckPlate(/* convert m_truck_plate */);
+    // request.set_carrierName(/* convert m_carrier_name */);
+    // request.set_slotId(/* convert m_slot_id */);
+    // request.set_arrivedAt(/* convert m_arrived_at */);
+    // request.set_departedAt(/* convert m_departed_at */);
+    Q_EMIT saved();
 }
 
 void TruckVisitViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("TruckVisitViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteTruckVisitRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

@@ -11,41 +11,98 @@
 
 #include "viewmodels/parcel_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 ParcelGrpcBinding::ParcelGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void ParcelGrpcBinding::createParcel(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateParcelRequest protobuf
-    // TODO: Call ParcelService::CreateParcel()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void ParcelGrpcBinding::createParcel(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateParcelRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
+        [[maybe_unused]] auto palletId = data.value(QStringLiteral("palletId"));
+        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
+        [[maybe_unused]] auto hsCode = data.value(QStringLiteral("hsCode"));
+        [[maybe_unused]] auto description = data.value(QStringLiteral("description"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = ParcelService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateParcel(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ParcelGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ParcelGrpcBinding::readParcel(const QString& /*id*/) {
-    // TODO: Call ParcelService::GetParcel()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void ParcelGrpcBinding::readParcel(const QString& id) {
+    try {
+        spdlog::debug("ParcelGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = ParcelService::NewStub(channel_);
+        // GetParcelRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ParcelGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ParcelGrpcBinding::updateParcel(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateParcelRequest protobuf
-    // TODO: Call ParcelService::UpdateParcel()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void ParcelGrpcBinding::updateParcel(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("ParcelGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
+        [[maybe_unused]] auto palletId = data.value(QStringLiteral("palletId"));
+        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
+        [[maybe_unused]] auto hsCode = data.value(QStringLiteral("hsCode"));
+        [[maybe_unused]] auto description = data.value(QStringLiteral("description"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ParcelGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ParcelGrpcBinding::deleteParcel(const QString& /*id*/) {
-    // TODO: Call ParcelService::DeleteParcel()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void ParcelGrpcBinding::deleteParcel(const QString& id) {
+    try {
+        spdlog::debug("ParcelGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("ParcelGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ParcelGrpcBinding::listParcel(int /*page*/, int /*pageSize*/) {
-    // TODO: Call ParcelService::ListParcel()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void ParcelGrpcBinding::listParcel(int page, int pageSize) {
+    try {
+        spdlog::debug("ParcelGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("ParcelGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void ParcelGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

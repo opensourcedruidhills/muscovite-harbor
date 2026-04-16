@@ -22,7 +22,7 @@ namespace container_handoff_steps {
 /// Correlation data for a ContainerHandoff saga instance.
 struct ContainerHandoffData {
     std::string saga_id{};
-    std::string trigger_event_id{};
+    std::string payload{};
     std::string correlation_id{};
 };
 
@@ -31,19 +31,19 @@ struct ContainerHandoffInstance {
     std::string id{};
     std::string status{}; // pending, in_progress, completed, failed, compensating
     std::string current_step{};
-    std::int32_t step_index{0};
     ContainerHandoffData data{};
-    std::chrono::system_clock::time_point started_at{};
-    std::optional<std::chrono::system_clock::time_point> completed_at{};
+    std::chrono::system_clock::time_point created_at{};
+    std::chrono::system_clock::time_point updated_at{};
 };
 
 /// Log entry for a single step execution within a ContainerHandoff saga.
 struct ContainerHandoffStepLogEntry {
     std::string saga_id{};
     std::string step_name{};
-    std::string outcome{}; // success, failure, compensated
-    std::optional<std::string> error_message{};
-    std::chrono::system_clock::time_point timestamp{};
+    std::string status{}; // pending, success, failure, compensated
+    std::optional<std::string> result{};
+    std::optional<std::chrono::system_clock::time_point> started_at{};
+    std::optional<std::chrono::system_clock::time_point> completed_at{};
 };
 
 } // namespace intermodal_transfer

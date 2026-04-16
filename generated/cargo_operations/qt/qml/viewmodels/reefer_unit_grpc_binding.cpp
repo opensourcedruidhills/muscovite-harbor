@@ -11,41 +11,96 @@
 
 #include "viewmodels/reefer_unit_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 ReeferUnitGrpcBinding::ReeferUnitGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void ReeferUnitGrpcBinding::createReeferUnit(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateReeferUnitRequest protobuf
-    // TODO: Call ReeferUnitService::CreateReeferUnit()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void ReeferUnitGrpcBinding::createReeferUnit(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateReeferUnitRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
+        [[maybe_unused]] auto targetTempC = data.value(QStringLiteral("targetTempC"));
+        [[maybe_unused]] auto currentTempC = data.value(QStringLiteral("currentTempC"));
+        [[maybe_unused]] auto isPowered = data.value(QStringLiteral("isPowered"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = ReeferUnitService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateReeferUnit(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ReeferUnitGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ReeferUnitGrpcBinding::readReeferUnit(const QString& /*id*/) {
-    // TODO: Call ReeferUnitService::GetReeferUnit()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void ReeferUnitGrpcBinding::readReeferUnit(const QString& id) {
+    try {
+        spdlog::debug("ReeferUnitGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = ReeferUnitService::NewStub(channel_);
+        // GetReeferUnitRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ReeferUnitGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ReeferUnitGrpcBinding::updateReeferUnit(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateReeferUnitRequest protobuf
-    // TODO: Call ReeferUnitService::UpdateReeferUnit()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void ReeferUnitGrpcBinding::updateReeferUnit(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("ReeferUnitGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
+        [[maybe_unused]] auto targetTempC = data.value(QStringLiteral("targetTempC"));
+        [[maybe_unused]] auto currentTempC = data.value(QStringLiteral("currentTempC"));
+        [[maybe_unused]] auto isPowered = data.value(QStringLiteral("isPowered"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ReeferUnitGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ReeferUnitGrpcBinding::deleteReeferUnit(const QString& /*id*/) {
-    // TODO: Call ReeferUnitService::DeleteReeferUnit()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void ReeferUnitGrpcBinding::deleteReeferUnit(const QString& id) {
+    try {
+        spdlog::debug("ReeferUnitGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("ReeferUnitGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ReeferUnitGrpcBinding::listReeferUnit(int /*page*/, int /*pageSize*/) {
-    // TODO: Call ReeferUnitService::ListReeferUnit()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void ReeferUnitGrpcBinding::listReeferUnit(int page, int pageSize) {
+    try {
+        spdlog::debug("ReeferUnitGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("ReeferUnitGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void ReeferUnitGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

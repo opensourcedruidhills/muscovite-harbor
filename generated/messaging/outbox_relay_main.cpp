@@ -12,6 +12,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <pqxx/pqxx>
+
 namespace {
 
 std::atomic<bool> running{true};
@@ -45,17 +47,39 @@ struct OutboxRelay {
     std::unordered_set<std::string> sent_message_ids;
 
     void poll_and_publish() {
-        // Poll outbox table for unsent messages
-        // SELECT id, message_id, subject, payload, created_at
-        // FROM muscovite_harbor_" + context_name + "_outbox
-        // WHERE sent = false ORDER BY created_at LIMIT batch_size
+        pqxx::connection conn{db_url};
+        pqxx::work tx{conn};
 
-        // For each message:
-        //   1. Check deduplication: skip if message_id in sent_message_ids
-        //   2. Publish to NATS subject
-        //   3. Mark as sent in outbox table
-        //   4. Track message_id for deduplication
-        std::cout << "[" << context_name << "] polling outbox (batch_size=" << batch_size << ")\n";
+        auto result = tx.exec_params(
+            "SELECT id, message_id, subject, payload "
+            "FROM " + context_name + ".outbox "
+            "WHERE sent = false ORDER BY created_at LIMIT $1",
+            batch_size);
+
+        for (const auto& row : result) {
+            auto id = row[0].as<std::string>();
+            auto message_id = row[1].as<std::string>();
+            auto subject = row[2].as<std::string>();
+            auto payload = row[3].as<std::string>();
+
+            // Deduplication: skip already-sent messages
+            if (sent_message_ids.contains(message_id)) { continue; }
+
+            // Publish to NATS (using nats_subject_prefix + subject)
+            auto full_subject = nats_subject_prefix + "." + subject;
+            // TODO: Replace with nats.h client call when NATS C client is available
+            std::cout << "[" << context_name << "] publishing " << message_id
+                      << " to " << full_subject << "\n";
+
+            // Mark as sent
+            tx.exec_params(
+                "UPDATE " + context_name + ".outbox SET sent = true, sent_at = NOW() WHERE id = $1",
+                id);
+
+            sent_message_ids.insert(message_id);
+        }
+
+        tx.commit();
     }
 
     void run() {

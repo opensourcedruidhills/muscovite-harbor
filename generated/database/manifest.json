@@ -1,0 +1,93 @@
+{
+  "changes": [
+    {
+      "dependencies": [],
+      "deploy": "deploy/001-extensions.sql",
+      "hash": "fnv1a:2b0b1d62be1c4390",
+      "name": "001-extensions",
+      "note": "Extensions",
+      "revert": "revert/001-extensions.sql",
+      "verify": "verify/001-extensions.sql"
+    },
+    {
+      "dependencies": [
+        "001-extensions"
+      ],
+      "deploy": "deploy/002-vessel_traffic.sql",
+      "hash": "fnv1a:3f047be3bbf55a44",
+      "name": "002-vessel_traffic",
+      "note": "Schema vessel_traffic",
+      "revert": "revert/002-vessel_traffic.sql",
+      "verify": "verify/002-vessel_traffic.sql"
+    },
+    {
+      "dependencies": [
+        "002-vessel_traffic"
+      ],
+      "deploy": "deploy/003-cargo_operations.sql",
+      "hash": "fnv1a:58da0557666fa400",
+      "name": "003-cargo_operations",
+      "note": "Schema cargo_operations",
+      "revert": "revert/003-cargo_operations.sql",
+      "verify": "verify/003-cargo_operations.sql"
+    },
+    {
+      "dependencies": [
+        "003-cargo_operations"
+      ],
+      "deploy": "deploy/004-passenger_terminal.sql",
+      "hash": "fnv1a:c6bea8ab5b3b472b",
+      "name": "004-passenger_terminal",
+      "note": "Schema passenger_terminal",
+      "revert": "revert/004-passenger_terminal.sql",
+      "verify": "verify/004-passenger_terminal.sql"
+    },
+    {
+      "dependencies": [
+        "004-passenger_terminal"
+      ],
+      "deploy": "deploy/005-intermodal_transfer.sql",
+      "hash": "fnv1a:41e55bf55856d6ac",
+      "name": "005-intermodal_transfer",
+      "note": "Schema intermodal_transfer",
+      "revert": "revert/005-intermodal_transfer.sql",
+      "verify": "verify/005-intermodal_transfer.sql"
+    },
+    {
+      "dependencies": [
+        "005-intermodal_transfer"
+      ],
+      "deploy": "deploy/006-cargo_decomposition.sql",
+      "hash": "fnv1a:4c00552a79a63f9a",
+      "name": "006-cargo_decomposition",
+      "note": "Schema cargo_decomposition",
+      "revert": "revert/006-cargo_decomposition.sql",
+      "verify": "verify/006-cargo_decomposition.sql"
+    },
+    {
+      "dependencies": [
+        "006-cargo_decomposition"
+      ],
+      "deploy": "deploy/007-harbour_control.sql",
+      "hash": "fnv1a:736ff60ef61b6a13",
+      "name": "007-harbour_control",
+      "note": "Schema harbour_control",
+      "revert": "revert/007-harbour_control.sql",
+      "verify": "verify/007-harbour_control.sql"
+    },
+    {
+      "dependencies": [
+        "007-harbour_control"
+      ],
+      "deploy": "deploy/008-security.sql",
+      "hash": "fnv1a:9d0ca07f43b367f0",
+      "name": "008-security",
+      "note": "Roles and grants",
+      "revert": "revert/008-security.sql",
+      "verify": "verify/008-security.sql"
+    }
+  ],
+  "generated_at": "2026-01-01T00:00:00Z",
+  "project": "MuscoviteHarbor",
+  "version": "1.0"
+}

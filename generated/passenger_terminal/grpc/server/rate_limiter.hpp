@@ -45,14 +45,16 @@ public:
     }
 
     /// Check a gRPC call and return RESOURCE_EXHAUSTED if throttled.
-    /// Adds grpc-retry-after-ms trailing metadata.
+    /// Adds grpc-retry-after-ms trailing metadata when ctx is non-null.
     [[nodiscard]] auto check(grpc::ServerContext* ctx) -> grpc::Status {
         if (try_acquire()) {
             return grpc::Status::OK;
         }
         auto retry_ms = static_cast<int>(1000.0 / config_.requests_per_second);
-        ctx->AddTrailingMetadata("grpc-retry-after-ms",
-                                 std::to_string(retry_ms));
+        if (ctx != nullptr) {
+            ctx->AddTrailingMetadata("grpc-retry-after-ms",
+                                     std::to_string(retry_ms));
+        }
         return grpc::Status(grpc::StatusCode::RESOURCE_EXHAUSTED,
                             "rate limit exceeded");
     }

@@ -11,6 +11,8 @@
 
 #include "viewmodels/parcel_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 ParcelViewModel::ParcelViewModel(QObject* parent)
@@ -58,20 +60,59 @@ void ParcelViewModel::setDescription(const QString& value) {
     }
 }
 
-void ParcelViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void ParcelViewModel::load(const QString& id) {
+    spdlog::debug("ParcelViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = ParcelService::NewStub(channel_);
+    // GetParcelRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // ParcelResponse response;
+    // auto status = stub->GetParcel(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setTrackingNumber(/* response.trackingNumber() */);
+    //     setPalletId(/* response.palletId() */);
+    //     setWeightKg(/* response.weightKg() */);
+    //     setHsCode(/* response.hsCode() */);
+    //     setDescription(/* response.description() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void ParcelViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("ParcelViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateParcelRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_trackingNumber(/* convert m_tracking_number */);
+    // request.set_palletId(/* convert m_pallet_id */);
+    // request.set_weightKg(/* convert m_weight_kg */);
+    // request.set_hsCode(/* convert m_hs_code */);
+    // request.set_description(/* convert m_description */);
+    Q_EMIT saved();
 }
 
 void ParcelViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("ParcelViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateParcelRequest request;
+    // request.set_trackingNumber(/* convert m_tracking_number */);
+    // request.set_palletId(/* convert m_pallet_id */);
+    // request.set_weightKg(/* convert m_weight_kg */);
+    // request.set_hsCode(/* convert m_hs_code */);
+    // request.set_description(/* convert m_description */);
+    Q_EMIT saved();
 }
 
 void ParcelViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("ParcelViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteParcelRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

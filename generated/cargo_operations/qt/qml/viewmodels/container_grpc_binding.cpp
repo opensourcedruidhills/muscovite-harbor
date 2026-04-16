@@ -11,41 +11,100 @@
 
 #include "viewmodels/container_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 ContainerGrpcBinding::ContainerGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void ContainerGrpcBinding::createContainer(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateContainerRequest protobuf
-    // TODO: Call ContainerService::CreateContainer()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void ContainerGrpcBinding::createContainer(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateContainerRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto containerNumber = data.value(QStringLiteral("containerNumber"));
+        [[maybe_unused]] auto sizeCategory = data.value(QStringLiteral("sizeCategory"));
+        [[maybe_unused]] auto hazmatClass = data.value(QStringLiteral("hazmatClass"));
+        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
+        [[maybe_unused]] auto yardSlotId = data.value(QStringLiteral("yardSlotId"));
+        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = ContainerService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateContainer(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ContainerGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ContainerGrpcBinding::readContainer(const QString& /*id*/) {
-    // TODO: Call ContainerService::GetContainer()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void ContainerGrpcBinding::readContainer(const QString& id) {
+    try {
+        spdlog::debug("ContainerGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = ContainerService::NewStub(channel_);
+        // GetContainerRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ContainerGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ContainerGrpcBinding::updateContainer(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateContainerRequest protobuf
-    // TODO: Call ContainerService::UpdateContainer()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void ContainerGrpcBinding::updateContainer(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("ContainerGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto containerNumber = data.value(QStringLiteral("containerNumber"));
+        [[maybe_unused]] auto sizeCategory = data.value(QStringLiteral("sizeCategory"));
+        [[maybe_unused]] auto hazmatClass = data.value(QStringLiteral("hazmatClass"));
+        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
+        [[maybe_unused]] auto yardSlotId = data.value(QStringLiteral("yardSlotId"));
+        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ContainerGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ContainerGrpcBinding::deleteContainer(const QString& /*id*/) {
-    // TODO: Call ContainerService::DeleteContainer()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void ContainerGrpcBinding::deleteContainer(const QString& id) {
+    try {
+        spdlog::debug("ContainerGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("ContainerGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ContainerGrpcBinding::listContainer(int /*page*/, int /*pageSize*/) {
-    // TODO: Call ContainerService::ListContainer()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void ContainerGrpcBinding::listContainer(int page, int pageSize) {
+    try {
+        spdlog::debug("ContainerGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("ContainerGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void ContainerGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

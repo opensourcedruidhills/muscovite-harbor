@@ -11,6 +11,8 @@
 
 #include "viewmodels/load_plan_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 LoadPlanViewModel::LoadPlanViewModel(QObject* parent)
@@ -44,20 +46,53 @@ void LoadPlanViewModel::setStatus(const QString& value) {
     }
 }
 
-void LoadPlanViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void LoadPlanViewModel::load(const QString& id) {
+    spdlog::debug("LoadPlanViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = LoadPlanService::NewStub(channel_);
+    // GetLoadPlanRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // LoadPlanResponse response;
+    // auto status = stub->GetLoadPlan(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setVoyageId(/* response.voyageId() */);
+    //     setCreatedAt(/* response.createdAt() */);
+    //     setStatus(/* response.status() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void LoadPlanViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("LoadPlanViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateLoadPlanRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_voyageId(/* convert m_voyage_id */);
+    // request.set_createdAt(/* convert m_created_at */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void LoadPlanViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("LoadPlanViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateLoadPlanRequest request;
+    // request.set_voyageId(/* convert m_voyage_id */);
+    // request.set_createdAt(/* convert m_created_at */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void LoadPlanViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("LoadPlanViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteLoadPlanRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

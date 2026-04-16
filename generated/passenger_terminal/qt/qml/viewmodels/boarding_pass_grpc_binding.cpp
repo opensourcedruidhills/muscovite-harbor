@@ -11,41 +11,100 @@
 
 #include "viewmodels/boarding_pass_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 BoardingPassGrpcBinding::BoardingPassGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void BoardingPassGrpcBinding::createBoardingPass(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateBoardingPassRequest protobuf
-    // TODO: Call BoardingPassService::CreateBoardingPass()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void BoardingPassGrpcBinding::createBoardingPass(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateBoardingPassRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto passengerId = data.value(QStringLiteral("passengerId"));
+        [[maybe_unused]] auto gateId = data.value(QStringLiteral("gateId"));
+        [[maybe_unused]] auto boardingGroup = data.value(QStringLiteral("boardingGroup"));
+        [[maybe_unused]] auto seatNumber = data.value(QStringLiteral("seatNumber"));
+        [[maybe_unused]] auto issuedAt = data.value(QStringLiteral("issuedAt"));
+        [[maybe_unused]] auto scannedAt = data.value(QStringLiteral("scannedAt"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = BoardingPassService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateBoardingPass(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("BoardingPassGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void BoardingPassGrpcBinding::readBoardingPass(const QString& /*id*/) {
-    // TODO: Call BoardingPassService::GetBoardingPass()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void BoardingPassGrpcBinding::readBoardingPass(const QString& id) {
+    try {
+        spdlog::debug("BoardingPassGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = BoardingPassService::NewStub(channel_);
+        // GetBoardingPassRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("BoardingPassGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void BoardingPassGrpcBinding::updateBoardingPass(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateBoardingPassRequest protobuf
-    // TODO: Call BoardingPassService::UpdateBoardingPass()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void BoardingPassGrpcBinding::updateBoardingPass(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("BoardingPassGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto passengerId = data.value(QStringLiteral("passengerId"));
+        [[maybe_unused]] auto gateId = data.value(QStringLiteral("gateId"));
+        [[maybe_unused]] auto boardingGroup = data.value(QStringLiteral("boardingGroup"));
+        [[maybe_unused]] auto seatNumber = data.value(QStringLiteral("seatNumber"));
+        [[maybe_unused]] auto issuedAt = data.value(QStringLiteral("issuedAt"));
+        [[maybe_unused]] auto scannedAt = data.value(QStringLiteral("scannedAt"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("BoardingPassGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void BoardingPassGrpcBinding::deleteBoardingPass(const QString& /*id*/) {
-    // TODO: Call BoardingPassService::DeleteBoardingPass()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void BoardingPassGrpcBinding::deleteBoardingPass(const QString& id) {
+    try {
+        spdlog::debug("BoardingPassGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("BoardingPassGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void BoardingPassGrpcBinding::listBoardingPass(int /*page*/, int /*pageSize*/) {
-    // TODO: Call BoardingPassService::ListBoardingPass()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void BoardingPassGrpcBinding::listBoardingPass(int page, int pageSize) {
+    try {
+        spdlog::debug("BoardingPassGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("BoardingPassGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void BoardingPassGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

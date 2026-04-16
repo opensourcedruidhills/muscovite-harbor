@@ -11,6 +11,8 @@
 
 #include "viewmodels/pilot_assignment_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 PilotAssignmentViewModel::PilotAssignmentViewModel(QObject* parent)
@@ -58,20 +60,59 @@ void PilotAssignmentViewModel::setDisembarkTime(const QDateTime& value) {
     }
 }
 
-void PilotAssignmentViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void PilotAssignmentViewModel::load(const QString& id) {
+    spdlog::debug("PilotAssignmentViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = PilotAssignmentService::NewStub(channel_);
+    // GetPilotAssignmentRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // PilotAssignmentResponse response;
+    // auto status = stub->GetPilotAssignment(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setVoyageId(/* response.voyageId() */);
+    //     setPilotName(/* response.pilotName() */);
+    //     setPilotZone(/* response.pilotZone() */);
+    //     setBoardingTime(/* response.boardingTime() */);
+    //     setDisembarkTime(/* response.disembarkTime() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void PilotAssignmentViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("PilotAssignmentViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdatePilotAssignmentRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_voyageId(/* convert m_voyage_id */);
+    // request.set_pilotName(/* convert m_pilot_name */);
+    // request.set_pilotZone(/* convert m_pilot_zone */);
+    // request.set_boardingTime(/* convert m_boarding_time */);
+    // request.set_disembarkTime(/* convert m_disembark_time */);
+    Q_EMIT saved();
 }
 
 void PilotAssignmentViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("PilotAssignmentViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreatePilotAssignmentRequest request;
+    // request.set_voyageId(/* convert m_voyage_id */);
+    // request.set_pilotName(/* convert m_pilot_name */);
+    // request.set_pilotZone(/* convert m_pilot_zone */);
+    // request.set_boardingTime(/* convert m_boarding_time */);
+    // request.set_disembarkTime(/* convert m_disembark_time */);
+    Q_EMIT saved();
 }
 
 void PilotAssignmentViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("PilotAssignmentViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeletePilotAssignmentRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

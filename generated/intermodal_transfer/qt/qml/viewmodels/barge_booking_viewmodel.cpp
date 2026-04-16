@@ -11,6 +11,8 @@
 
 #include "viewmodels/barge_booking_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 BargeBookingViewModel::BargeBookingViewModel(QObject* parent)
@@ -51,20 +53,56 @@ void BargeBookingViewModel::setStatus(const QString& value) {
     }
 }
 
-void BargeBookingViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void BargeBookingViewModel::load(const QString& id) {
+    spdlog::debug("BargeBookingViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = BargeBookingService::NewStub(channel_);
+    // GetBargeBookingRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // BargeBookingResponse response;
+    // auto status = stub->GetBargeBooking(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setBargeName(/* response.bargeName() */);
+    //     setCapacityTeu(/* response.capacityTeu() */);
+    //     setDepartureAt(/* response.departureAt() */);
+    //     setStatus(/* response.status() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void BargeBookingViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("BargeBookingViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateBargeBookingRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_bargeName(/* convert m_barge_name */);
+    // request.set_capacityTeu(/* convert m_capacity_teu */);
+    // request.set_departureAt(/* convert m_departure_at */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void BargeBookingViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("BargeBookingViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateBargeBookingRequest request;
+    // request.set_bargeName(/* convert m_barge_name */);
+    // request.set_capacityTeu(/* convert m_capacity_teu */);
+    // request.set_departureAt(/* convert m_departure_at */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void BargeBookingViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("BargeBookingViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteBargeBookingRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

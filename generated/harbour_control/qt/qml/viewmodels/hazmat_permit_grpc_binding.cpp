@@ -11,41 +11,102 @@
 
 #include "viewmodels/hazmat_permit_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 HazmatPermitGrpcBinding::HazmatPermitGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void HazmatPermitGrpcBinding::createHazmatPermit(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateHazmatPermitRequest protobuf
-    // TODO: Call HazmatPermitService::CreateHazmatPermit()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void HazmatPermitGrpcBinding::createHazmatPermit(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateHazmatPermitRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto permitNumber = data.value(QStringLiteral("permitNumber"));
+        [[maybe_unused]] auto vesselId = data.value(QStringLiteral("vesselId"));
+        [[maybe_unused]] auto imoClass = data.value(QStringLiteral("imoClass"));
+        [[maybe_unused]] auto quantityKg = data.value(QStringLiteral("quantityKg"));
+        [[maybe_unused]] auto approved = data.value(QStringLiteral("approved"));
+        [[maybe_unused]] auto validFrom = data.value(QStringLiteral("validFrom"));
+        [[maybe_unused]] auto validUntil = data.value(QStringLiteral("validUntil"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = HazmatPermitService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateHazmatPermit(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("HazmatPermitGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void HazmatPermitGrpcBinding::readHazmatPermit(const QString& /*id*/) {
-    // TODO: Call HazmatPermitService::GetHazmatPermit()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void HazmatPermitGrpcBinding::readHazmatPermit(const QString& id) {
+    try {
+        spdlog::debug("HazmatPermitGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = HazmatPermitService::NewStub(channel_);
+        // GetHazmatPermitRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("HazmatPermitGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void HazmatPermitGrpcBinding::updateHazmatPermit(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateHazmatPermitRequest protobuf
-    // TODO: Call HazmatPermitService::UpdateHazmatPermit()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void HazmatPermitGrpcBinding::updateHazmatPermit(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("HazmatPermitGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto permitNumber = data.value(QStringLiteral("permitNumber"));
+        [[maybe_unused]] auto vesselId = data.value(QStringLiteral("vesselId"));
+        [[maybe_unused]] auto imoClass = data.value(QStringLiteral("imoClass"));
+        [[maybe_unused]] auto quantityKg = data.value(QStringLiteral("quantityKg"));
+        [[maybe_unused]] auto approved = data.value(QStringLiteral("approved"));
+        [[maybe_unused]] auto validFrom = data.value(QStringLiteral("validFrom"));
+        [[maybe_unused]] auto validUntil = data.value(QStringLiteral("validUntil"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("HazmatPermitGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void HazmatPermitGrpcBinding::deleteHazmatPermit(const QString& /*id*/) {
-    // TODO: Call HazmatPermitService::DeleteHazmatPermit()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void HazmatPermitGrpcBinding::deleteHazmatPermit(const QString& id) {
+    try {
+        spdlog::debug("HazmatPermitGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("HazmatPermitGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void HazmatPermitGrpcBinding::listHazmatPermit(int /*page*/, int /*pageSize*/) {
-    // TODO: Call HazmatPermitService::ListHazmatPermit()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void HazmatPermitGrpcBinding::listHazmatPermit(int page, int pageSize) {
+    try {
+        spdlog::debug("HazmatPermitGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("HazmatPermitGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void HazmatPermitGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

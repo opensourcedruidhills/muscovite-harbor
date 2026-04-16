@@ -11,6 +11,8 @@
 
 #include "viewmodels/berth_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 BerthViewModel::BerthViewModel(QObject* parent)
@@ -79,20 +81,68 @@ void BerthViewModel::setIsActive(const bool& value) {
     }
 }
 
-void BerthViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void BerthViewModel::load(const QString& id) {
+    spdlog::debug("BerthViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = BerthService::NewStub(channel_);
+    // GetBerthRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // BerthResponse response;
+    // auto status = stub->GetBerth(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setCode(/* response.code() */);
+    //     setName(/* response.name() */);
+    //     setMaxLoaMetres(/* response.maxLoaMetres() */);
+    //     setMaxDraftMetres(/* response.maxDraftMetres() */);
+    //     setMaxBeamMetres(/* response.maxBeamMetres() */);
+    //     setHasCraneAccess(/* response.hasCraneAccess() */);
+    //     setHasReeferPlugs(/* response.hasReeferPlugs() */);
+    //     setIsActive(/* response.isActive() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void BerthViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("BerthViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateBerthRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_code(/* convert m_code */);
+    // request.set_name(/* convert m_name */);
+    // request.set_maxLoaMetres(/* convert m_max_loa_metres */);
+    // request.set_maxDraftMetres(/* convert m_max_draft_metres */);
+    // request.set_maxBeamMetres(/* convert m_max_beam_metres */);
+    // request.set_hasCraneAccess(/* convert m_has_crane_access */);
+    // request.set_hasReeferPlugs(/* convert m_has_reefer_plugs */);
+    // request.set_isActive(/* convert m_is_active */);
+    Q_EMIT saved();
 }
 
 void BerthViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("BerthViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateBerthRequest request;
+    // request.set_code(/* convert m_code */);
+    // request.set_name(/* convert m_name */);
+    // request.set_maxLoaMetres(/* convert m_max_loa_metres */);
+    // request.set_maxDraftMetres(/* convert m_max_draft_metres */);
+    // request.set_maxBeamMetres(/* convert m_max_beam_metres */);
+    // request.set_hasCraneAccess(/* convert m_has_crane_access */);
+    // request.set_hasReeferPlugs(/* convert m_has_reefer_plugs */);
+    // request.set_isActive(/* convert m_is_active */);
+    Q_EMIT saved();
 }
 
 void BerthViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("BerthViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteBerthRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

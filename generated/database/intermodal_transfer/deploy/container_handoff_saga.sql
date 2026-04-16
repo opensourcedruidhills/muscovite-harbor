@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS container_handoff_saga (
     id UUID NOT NULL DEFAULT uuidv7(),
     status TEXT NOT NULL DEFAULT 'pending',
     current_step TEXT,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id)

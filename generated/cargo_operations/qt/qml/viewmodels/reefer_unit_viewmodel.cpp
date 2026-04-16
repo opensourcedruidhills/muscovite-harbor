@@ -11,6 +11,8 @@
 
 #include "viewmodels/reefer_unit_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 ReeferUnitViewModel::ReeferUnitViewModel(QObject* parent)
@@ -51,20 +53,56 @@ void ReeferUnitViewModel::setIsPowered(const bool& value) {
     }
 }
 
-void ReeferUnitViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void ReeferUnitViewModel::load(const QString& id) {
+    spdlog::debug("ReeferUnitViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = ReeferUnitService::NewStub(channel_);
+    // GetReeferUnitRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // ReeferUnitResponse response;
+    // auto status = stub->GetReeferUnit(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setContainerId(/* response.containerId() */);
+    //     setTargetTempC(/* response.targetTempC() */);
+    //     setCurrentTempC(/* response.currentTempC() */);
+    //     setIsPowered(/* response.isPowered() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void ReeferUnitViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("ReeferUnitViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateReeferUnitRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_containerId(/* convert m_container_id */);
+    // request.set_targetTempC(/* convert m_target_temp_c */);
+    // request.set_currentTempC(/* convert m_current_temp_c */);
+    // request.set_isPowered(/* convert m_is_powered */);
+    Q_EMIT saved();
 }
 
 void ReeferUnitViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("ReeferUnitViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateReeferUnitRequest request;
+    // request.set_containerId(/* convert m_container_id */);
+    // request.set_targetTempC(/* convert m_target_temp_c */);
+    // request.set_currentTempC(/* convert m_current_temp_c */);
+    // request.set_isPowered(/* convert m_is_powered */);
+    Q_EMIT saved();
 }
 
 void ReeferUnitViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("ReeferUnitViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteReeferUnitRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

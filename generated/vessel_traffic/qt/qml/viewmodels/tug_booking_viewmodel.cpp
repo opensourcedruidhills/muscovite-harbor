@@ -11,6 +11,8 @@
 
 #include "viewmodels/tug_booking_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 TugBookingViewModel::TugBookingViewModel(QObject* parent)
@@ -51,20 +53,56 @@ void TugBookingViewModel::setIsConfirmed(const bool& value) {
     }
 }
 
-void TugBookingViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void TugBookingViewModel::load(const QString& id) {
+    spdlog::debug("TugBookingViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = TugBookingService::NewStub(channel_);
+    // GetTugBookingRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // TugBookingResponse response;
+    // auto status = stub->GetTugBooking(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setVoyageId(/* response.voyageId() */);
+    //     setTugName(/* response.tugName() */);
+    //     setBollardPullT(/* response.bollardPullT() */);
+    //     setIsConfirmed(/* response.isConfirmed() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void TugBookingViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("TugBookingViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateTugBookingRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_voyageId(/* convert m_voyage_id */);
+    // request.set_tugName(/* convert m_tug_name */);
+    // request.set_bollardPullT(/* convert m_bollard_pull_t */);
+    // request.set_isConfirmed(/* convert m_is_confirmed */);
+    Q_EMIT saved();
 }
 
 void TugBookingViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("TugBookingViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateTugBookingRequest request;
+    // request.set_voyageId(/* convert m_voyage_id */);
+    // request.set_tugName(/* convert m_tug_name */);
+    // request.set_bollardPullT(/* convert m_bollard_pull_t */);
+    // request.set_isConfirmed(/* convert m_is_confirmed */);
+    Q_EMIT saved();
 }
 
 void TugBookingViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("TugBookingViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteTugBookingRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

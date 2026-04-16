@@ -11,6 +11,8 @@
 
 #include "viewmodels/yard_slot_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 YardSlotViewModel::YardSlotViewModel(QObject* parent)
@@ -58,20 +60,59 @@ void YardSlotViewModel::setIsOccupied(const bool& value) {
     }
 }
 
-void YardSlotViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void YardSlotViewModel::load(const QString& id) {
+    spdlog::debug("YardSlotViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = YardSlotService::NewStub(channel_);
+    // GetYardSlotRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // YardSlotResponse response;
+    // auto status = stub->GetYardSlot(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setCode(/* response.code() */);
+    //     setMaxWeightKg(/* response.maxWeightKg() */);
+    //     setMaxTier(/* response.maxTier() */);
+    //     setHasPower(/* response.hasPower() */);
+    //     setIsOccupied(/* response.isOccupied() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void YardSlotViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("YardSlotViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateYardSlotRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_code(/* convert m_code */);
+    // request.set_maxWeightKg(/* convert m_max_weight_kg */);
+    // request.set_maxTier(/* convert m_max_tier */);
+    // request.set_hasPower(/* convert m_has_power */);
+    // request.set_isOccupied(/* convert m_is_occupied */);
+    Q_EMIT saved();
 }
 
 void YardSlotViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("YardSlotViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateYardSlotRequest request;
+    // request.set_code(/* convert m_code */);
+    // request.set_maxWeightKg(/* convert m_max_weight_kg */);
+    // request.set_maxTier(/* convert m_max_tier */);
+    // request.set_hasPower(/* convert m_has_power */);
+    // request.set_isOccupied(/* convert m_is_occupied */);
+    Q_EMIT saved();
 }
 
 void YardSlotViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("YardSlotViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteYardSlotRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

@@ -19,10 +19,10 @@ public:
     auto start(const ContainerHandoffData& data) -> std::string override {
         auto tx = conn_.begin();
         tx.exec_params(
-            "INSERT INTO intermodal_transfer.container_handoff_sagas "
-            "(id, status, current_step, trigger_event_id, started_at) "
-            "VALUES ($1, 'pending', $2, $3, NOW())",
-            data.saga_id, "ReserveYardExit", data.trigger_event_id);
+            "INSERT INTO intermodal_transfer.container_handoff_saga "
+            "(id, status, current_step, payload, created_at, updated_at) "
+            "VALUES ($1, 'pending', $2, $3, NOW(), NOW())",
+            data.saga_id, "ReserveYardExit", data.payload);
         tx.commit();
         return data.saga_id;
     }
@@ -30,8 +30,8 @@ public:
     auto advance(const std::string& saga_id, const std::string& step) -> void override {
         auto tx = conn_.begin();
         tx.exec_params(
-            "UPDATE intermodal_transfer.container_handoff_sagas "
-            "SET current_step = $2, status = 'in_progress' WHERE id = $1",
+            "UPDATE intermodal_transfer.container_handoff_saga "
+            "SET current_step = $2, status = 'in_progress', updated_at = NOW() WHERE id = $1",
             saga_id, step);
         tx.commit();
     }
@@ -39,8 +39,8 @@ public:
     auto complete(const std::string& saga_id) -> void override {
         auto tx = conn_.begin();
         tx.exec_params(
-            "UPDATE intermodal_transfer.container_handoff_sagas "
-            "SET status = 'completed', completed_at = NOW() WHERE id = $1",
+            "UPDATE intermodal_transfer.container_handoff_saga "
+            "SET status = 'completed', updated_at = NOW() WHERE id = $1",
             saga_id);
         tx.commit();
     }
@@ -48,8 +48,8 @@ public:
     auto fail(const std::string& saga_id, const std::string& reason) -> void override {
         auto tx = conn_.begin();
         tx.exec_params(
-            "UPDATE intermodal_transfer.container_handoff_sagas "
-            "SET status = 'failed', completed_at = NOW() WHERE id = $1",
+            "UPDATE intermodal_transfer.container_handoff_saga "
+            "SET status = 'failed', updated_at = NOW() WHERE id = $1",
             saga_id);
         tx.commit();
     }
@@ -58,10 +58,10 @@ public:
         auto tx = conn_.begin();
         tx.exec_params(
             "INSERT INTO intermodal_transfer.container_handoff_step_log "
-            "(saga_id, step_name, outcome, error_message, timestamp) "
-            "VALUES ($1, $2, $3, $4, NOW())",
-            entry.saga_id, entry.step_name, entry.outcome,
-            entry.error_message.value_or(""));
+            "(saga_id, step_name, status, result, started_at, completed_at) "
+            "VALUES ($1, $2, $3, $4, NOW(), NOW())",
+            entry.saga_id, entry.step_name, entry.status,
+            entry.result.value_or(""));
         tx.commit();
     }
 
@@ -82,8 +82,8 @@ public:
     [[nodiscard]] auto find_by_id(const std::string& saga_id) -> std::optional<ContainerHandoffInstance> override {
         auto tx = conn_.begin();
         auto result = tx.exec_params(
-            "SELECT id, status, current_step, trigger_event_id, started_at, completed_at "
-            "FROM intermodal_transfer.container_handoff_sagas WHERE id = $1",
+            "SELECT id, status, current_step, payload, created_at, updated_at "
+            "FROM intermodal_transfer.container_handoff_saga WHERE id = $1",
             saga_id);
         tx.commit();
         if (result.empty()) { return std::nullopt; }
@@ -94,8 +94,8 @@ public:
     [[nodiscard]] auto find_timed_out(std::chrono::seconds threshold) -> std::vector<ContainerHandoffInstance> override {
         auto tx = conn_.begin();
         auto result = tx.exec_params(
-            "SELECT id FROM intermodal_transfer.container_handoff_sagas "
-            "WHERE status = 'in_progress' AND started_at < NOW() - $1 * interval '1 second'",
+            "SELECT id FROM intermodal_transfer.container_handoff_saga "
+            "WHERE status = 'in_progress' AND created_at < NOW() - $1 * interval '1 second'",
             threshold.count());
         tx.commit();
         auto instances = std::vector<ContainerHandoffInstance>{};
@@ -108,8 +108,8 @@ public:
     [[nodiscard]] auto get_step_log(const std::string& saga_id) -> std::vector<ContainerHandoffStepLogEntry> override {
         auto tx = conn_.begin();
         auto result = tx.exec_params(
-            "SELECT saga_id, step_name, outcome, error_message, timestamp "
-            "FROM intermodal_transfer.container_handoff_step_log WHERE saga_id = $1 ORDER BY timestamp",
+            "SELECT saga_id, step_name, status, result, started_at, completed_at "
+            "FROM intermodal_transfer.container_handoff_step_log WHERE saga_id = $1 ORDER BY started_at",
             saga_id);
         tx.commit();
         auto entries = std::vector<ContainerHandoffStepLogEntry>{};

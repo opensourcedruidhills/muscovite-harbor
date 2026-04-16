@@ -14,6 +14,10 @@ CREATE TABLE IF NOT EXISTS tide_windows (
     created_by UUID,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_by UUID,
+    valid_from TIMESTAMPTZ NOT NULL DEFAULT now(),
+    valid_to TIMESTAMPTZ NOT NULL DEFAULT 'infinity'::timestamptz,
+    sys_period_start TIMESTAMPTZ NOT NULL DEFAULT now(),
+    sys_period_end TIMESTAMPTZ NOT NULL DEFAULT 'infinity'::timestamptz,
     tide_window_id UUID NOT NULL,
     PRIMARY KEY (id)
 );

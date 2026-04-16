@@ -11,6 +11,8 @@
 
 #include "viewmodels/boarding_pass_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 BoardingPassViewModel::BoardingPassViewModel(QObject* parent)
@@ -65,20 +67,62 @@ void BoardingPassViewModel::setScannedAt(const QDateTime& value) {
     }
 }
 
-void BoardingPassViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void BoardingPassViewModel::load(const QString& id) {
+    spdlog::debug("BoardingPassViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = BoardingPassService::NewStub(channel_);
+    // GetBoardingPassRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // BoardingPassResponse response;
+    // auto status = stub->GetBoardingPass(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setPassengerId(/* response.passengerId() */);
+    //     setGateId(/* response.gateId() */);
+    //     setBoardingGroup(/* response.boardingGroup() */);
+    //     setSeatNumber(/* response.seatNumber() */);
+    //     setIssuedAt(/* response.issuedAt() */);
+    //     setScannedAt(/* response.scannedAt() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void BoardingPassViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("BoardingPassViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateBoardingPassRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_passengerId(/* convert m_passenger_id */);
+    // request.set_gateId(/* convert m_gate_id */);
+    // request.set_boardingGroup(/* convert m_boarding_group */);
+    // request.set_seatNumber(/* convert m_seat_number */);
+    // request.set_issuedAt(/* convert m_issued_at */);
+    // request.set_scannedAt(/* convert m_scanned_at */);
+    Q_EMIT saved();
 }
 
 void BoardingPassViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("BoardingPassViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateBoardingPassRequest request;
+    // request.set_passengerId(/* convert m_passenger_id */);
+    // request.set_gateId(/* convert m_gate_id */);
+    // request.set_boardingGroup(/* convert m_boarding_group */);
+    // request.set_seatNumber(/* convert m_seat_number */);
+    // request.set_issuedAt(/* convert m_issued_at */);
+    // request.set_scannedAt(/* convert m_scanned_at */);
+    Q_EMIT saved();
 }
 
 void BoardingPassViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("BoardingPassViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteBoardingPassRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

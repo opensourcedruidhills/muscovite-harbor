@@ -11,6 +11,8 @@
 
 #include "viewmodels/tide_window_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 TideWindowViewModel::TideWindowViewModel(QObject* parent)
@@ -44,20 +46,53 @@ void TideWindowViewModel::setAvailableDraft(const QString& value) {
     }
 }
 
-void TideWindowViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void TideWindowViewModel::load(const QString& id) {
+    spdlog::debug("TideWindowViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = TideWindowService::NewStub(channel_);
+    // GetTideWindowRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // TideWindowResponse response;
+    // auto status = stub->GetTideWindow(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setBerthId(/* response.berthId() */);
+    //     setTideHeightMetres(/* response.tideHeightMetres() */);
+    //     setAvailableDraft(/* response.availableDraft() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void TideWindowViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("TideWindowViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateTideWindowRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_berthId(/* convert m_berth_id */);
+    // request.set_tideHeightMetres(/* convert m_tide_height_metres */);
+    // request.set_availableDraft(/* convert m_available_draft */);
+    Q_EMIT saved();
 }
 
 void TideWindowViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("TideWindowViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateTideWindowRequest request;
+    // request.set_berthId(/* convert m_berth_id */);
+    // request.set_tideHeightMetres(/* convert m_tide_height_metres */);
+    // request.set_availableDraft(/* convert m_available_draft */);
+    Q_EMIT saved();
 }
 
 void TideWindowViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("TideWindowViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteTideWindowRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

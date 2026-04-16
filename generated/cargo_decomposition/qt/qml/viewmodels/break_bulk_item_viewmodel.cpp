@@ -11,6 +11,8 @@
 
 #include "viewmodels/break_bulk_item_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 BreakBulkItemViewModel::BreakBulkItemViewModel(QObject* parent)
@@ -51,20 +53,56 @@ void BreakBulkItemViewModel::setRequiresCrane(const bool& value) {
     }
 }
 
-void BreakBulkItemViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void BreakBulkItemViewModel::load(const QString& id) {
+    spdlog::debug("BreakBulkItemViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = BreakBulkItemService::NewStub(channel_);
+    // GetBreakBulkItemRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // BreakBulkItemResponse response;
+    // auto status = stub->GetBreakBulkItem(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setContainerId(/* response.containerId() */);
+    //     setItemType(/* response.itemType() */);
+    //     setWeightKg(/* response.weightKg() */);
+    //     setRequiresCrane(/* response.requiresCrane() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void BreakBulkItemViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("BreakBulkItemViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateBreakBulkItemRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_containerId(/* convert m_container_id */);
+    // request.set_itemType(/* convert m_item_type */);
+    // request.set_weightKg(/* convert m_weight_kg */);
+    // request.set_requiresCrane(/* convert m_requires_crane */);
+    Q_EMIT saved();
 }
 
 void BreakBulkItemViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("BreakBulkItemViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateBreakBulkItemRequest request;
+    // request.set_containerId(/* convert m_container_id */);
+    // request.set_itemType(/* convert m_item_type */);
+    // request.set_weightKg(/* convert m_weight_kg */);
+    // request.set_requiresCrane(/* convert m_requires_crane */);
+    Q_EMIT saved();
 }
 
 void BreakBulkItemViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("BreakBulkItemViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteBreakBulkItemRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

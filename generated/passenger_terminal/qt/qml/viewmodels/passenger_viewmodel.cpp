@@ -11,6 +11,8 @@
 
 #include "viewmodels/passenger_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 PassengerViewModel::PassengerViewModel(QObject* parent)
@@ -51,20 +53,56 @@ void PassengerViewModel::setStatus(const QString& value) {
     }
 }
 
-void PassengerViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void PassengerViewModel::load(const QString& id) {
+    spdlog::debug("PassengerViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = PassengerService::NewStub(channel_);
+    // GetPassengerRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // PassengerResponse response;
+    // auto status = stub->GetPassenger(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setBookingRef(/* response.bookingRef() */);
+    //     setPassengerType(/* response.passengerType() */);
+    //     setVoyageId(/* response.voyageId() */);
+    //     setStatus(/* response.status() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void PassengerViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("PassengerViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdatePassengerRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_bookingRef(/* convert m_booking_ref */);
+    // request.set_passengerType(/* convert m_passenger_type */);
+    // request.set_voyageId(/* convert m_voyage_id */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void PassengerViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("PassengerViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreatePassengerRequest request;
+    // request.set_bookingRef(/* convert m_booking_ref */);
+    // request.set_passengerType(/* convert m_passenger_type */);
+    // request.set_voyageId(/* convert m_voyage_id */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void PassengerViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("PassengerViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeletePassengerRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

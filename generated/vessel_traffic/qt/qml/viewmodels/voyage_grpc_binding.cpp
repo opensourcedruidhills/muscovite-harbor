@@ -11,41 +11,106 @@
 
 #include "viewmodels/voyage_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 VoyageGrpcBinding::VoyageGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void VoyageGrpcBinding::createVoyage(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateVoyageRequest protobuf
-    // TODO: Call VoyageService::CreateVoyage()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void VoyageGrpcBinding::createVoyage(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateVoyageRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto vesselId = data.value(QStringLiteral("vesselId"));
+        [[maybe_unused]] auto berthId = data.value(QStringLiteral("berthId"));
+        [[maybe_unused]] auto voyageNumber = data.value(QStringLiteral("voyageNumber"));
+        [[maybe_unused]] auto eta = data.value(QStringLiteral("eta"));
+        [[maybe_unused]] auto ata = data.value(QStringLiteral("ata"));
+        [[maybe_unused]] auto etd = data.value(QStringLiteral("etd"));
+        [[maybe_unused]] auto atd = data.value(QStringLiteral("atd"));
+        [[maybe_unused]] auto cargoCategory = data.value(QStringLiteral("cargoCategory"));
+        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = VoyageService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateVoyage(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("VoyageGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void VoyageGrpcBinding::readVoyage(const QString& /*id*/) {
-    // TODO: Call VoyageService::GetVoyage()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void VoyageGrpcBinding::readVoyage(const QString& id) {
+    try {
+        spdlog::debug("VoyageGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = VoyageService::NewStub(channel_);
+        // GetVoyageRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("VoyageGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void VoyageGrpcBinding::updateVoyage(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateVoyageRequest protobuf
-    // TODO: Call VoyageService::UpdateVoyage()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void VoyageGrpcBinding::updateVoyage(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("VoyageGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto vesselId = data.value(QStringLiteral("vesselId"));
+        [[maybe_unused]] auto berthId = data.value(QStringLiteral("berthId"));
+        [[maybe_unused]] auto voyageNumber = data.value(QStringLiteral("voyageNumber"));
+        [[maybe_unused]] auto eta = data.value(QStringLiteral("eta"));
+        [[maybe_unused]] auto ata = data.value(QStringLiteral("ata"));
+        [[maybe_unused]] auto etd = data.value(QStringLiteral("etd"));
+        [[maybe_unused]] auto atd = data.value(QStringLiteral("atd"));
+        [[maybe_unused]] auto cargoCategory = data.value(QStringLiteral("cargoCategory"));
+        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("VoyageGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void VoyageGrpcBinding::deleteVoyage(const QString& /*id*/) {
-    // TODO: Call VoyageService::DeleteVoyage()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void VoyageGrpcBinding::deleteVoyage(const QString& id) {
+    try {
+        spdlog::debug("VoyageGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("VoyageGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void VoyageGrpcBinding::listVoyage(int /*page*/, int /*pageSize*/) {
-    // TODO: Call VoyageService::ListVoyage()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void VoyageGrpcBinding::listVoyage(int page, int pageSize) {
+    try {
+        spdlog::debug("VoyageGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("VoyageGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void VoyageGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

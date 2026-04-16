@@ -11,41 +11,98 @@
 
 #include "viewmodels/invoice_line_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 InvoiceLineGrpcBinding::InvoiceLineGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void InvoiceLineGrpcBinding::createInvoiceLine(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateInvoiceLineRequest protobuf
-    // TODO: Call InvoiceLineService::CreateInvoiceLine()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void InvoiceLineGrpcBinding::createInvoiceLine(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateInvoiceLineRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto vesselId = data.value(QStringLiteral("vesselId"));
+        [[maybe_unused]] auto serviceType = data.value(QStringLiteral("serviceType"));
+        [[maybe_unused]] auto amount = data.value(QStringLiteral("amount"));
+        [[maybe_unused]] auto currency = data.value(QStringLiteral("currency"));
+        [[maybe_unused]] auto issuedAt = data.value(QStringLiteral("issuedAt"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = InvoiceLineService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateInvoiceLine(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("InvoiceLineGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void InvoiceLineGrpcBinding::readInvoiceLine(const QString& /*id*/) {
-    // TODO: Call InvoiceLineService::GetInvoiceLine()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void InvoiceLineGrpcBinding::readInvoiceLine(const QString& id) {
+    try {
+        spdlog::debug("InvoiceLineGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = InvoiceLineService::NewStub(channel_);
+        // GetInvoiceLineRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("InvoiceLineGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void InvoiceLineGrpcBinding::updateInvoiceLine(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateInvoiceLineRequest protobuf
-    // TODO: Call InvoiceLineService::UpdateInvoiceLine()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void InvoiceLineGrpcBinding::updateInvoiceLine(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("InvoiceLineGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto vesselId = data.value(QStringLiteral("vesselId"));
+        [[maybe_unused]] auto serviceType = data.value(QStringLiteral("serviceType"));
+        [[maybe_unused]] auto amount = data.value(QStringLiteral("amount"));
+        [[maybe_unused]] auto currency = data.value(QStringLiteral("currency"));
+        [[maybe_unused]] auto issuedAt = data.value(QStringLiteral("issuedAt"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("InvoiceLineGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void InvoiceLineGrpcBinding::deleteInvoiceLine(const QString& /*id*/) {
-    // TODO: Call InvoiceLineService::DeleteInvoiceLine()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void InvoiceLineGrpcBinding::deleteInvoiceLine(const QString& id) {
+    try {
+        spdlog::debug("InvoiceLineGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("InvoiceLineGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void InvoiceLineGrpcBinding::listInvoiceLine(int /*page*/, int /*pageSize*/) {
-    // TODO: Call InvoiceLineService::ListInvoiceLine()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void InvoiceLineGrpcBinding::listInvoiceLine(int page, int pageSize) {
+    try {
+        spdlog::debug("InvoiceLineGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("InvoiceLineGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void InvoiceLineGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

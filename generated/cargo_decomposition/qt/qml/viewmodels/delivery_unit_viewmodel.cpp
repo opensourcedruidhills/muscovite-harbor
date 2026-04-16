@@ -11,6 +11,8 @@
 
 #include "viewmodels/delivery_unit_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 DeliveryUnitViewModel::DeliveryUnitViewModel(QObject* parent)
@@ -51,20 +53,56 @@ void DeliveryUnitViewModel::setDispatchedAt(const QDateTime& value) {
     }
 }
 
-void DeliveryUnitViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void DeliveryUnitViewModel::load(const QString& id) {
+    spdlog::debug("DeliveryUnitViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = DeliveryUnitService::NewStub(channel_);
+    // GetDeliveryUnitRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // DeliveryUnitResponse response;
+    // auto status = stub->GetDeliveryUnit(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setTrackingNumber(/* response.trackingNumber() */);
+    //     setDestination(/* response.destination() */);
+    //     setCarrier(/* response.carrier() */);
+    //     setDispatchedAt(/* response.dispatchedAt() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void DeliveryUnitViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("DeliveryUnitViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateDeliveryUnitRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_trackingNumber(/* convert m_tracking_number */);
+    // request.set_destination(/* convert m_destination */);
+    // request.set_carrier(/* convert m_carrier */);
+    // request.set_dispatchedAt(/* convert m_dispatched_at */);
+    Q_EMIT saved();
 }
 
 void DeliveryUnitViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("DeliveryUnitViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateDeliveryUnitRequest request;
+    // request.set_trackingNumber(/* convert m_tracking_number */);
+    // request.set_destination(/* convert m_destination */);
+    // request.set_carrier(/* convert m_carrier */);
+    // request.set_dispatchedAt(/* convert m_dispatched_at */);
+    Q_EMIT saved();
 }
 
 void DeliveryUnitViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("DeliveryUnitViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteDeliveryUnitRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

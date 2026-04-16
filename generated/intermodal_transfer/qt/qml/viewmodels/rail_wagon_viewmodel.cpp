@@ -11,6 +11,8 @@
 
 #include "viewmodels/rail_wagon_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 RailWagonViewModel::RailWagonViewModel(QObject* parent)
@@ -44,20 +46,53 @@ void RailWagonViewModel::setSlotId(const QString& value) {
     }
 }
 
-void RailWagonViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void RailWagonViewModel::load(const QString& id) {
+    spdlog::debug("RailWagonViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = RailWagonService::NewStub(channel_);
+    // GetRailWagonRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // RailWagonResponse response;
+    // auto status = stub->GetRailWagon(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setWagonNumber(/* response.wagonNumber() */);
+    //     setMaxWeightKg(/* response.maxWeightKg() */);
+    //     setSlotId(/* response.slotId() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void RailWagonViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("RailWagonViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateRailWagonRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_wagonNumber(/* convert m_wagon_number */);
+    // request.set_maxWeightKg(/* convert m_max_weight_kg */);
+    // request.set_slotId(/* convert m_slot_id */);
+    Q_EMIT saved();
 }
 
 void RailWagonViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("RailWagonViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateRailWagonRequest request;
+    // request.set_wagonNumber(/* convert m_wagon_number */);
+    // request.set_maxWeightKg(/* convert m_max_weight_kg */);
+    // request.set_slotId(/* convert m_slot_id */);
+    Q_EMIT saved();
 }
 
 void RailWagonViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("RailWagonViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteRailWagonRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

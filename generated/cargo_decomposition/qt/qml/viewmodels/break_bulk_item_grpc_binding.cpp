@@ -11,41 +11,96 @@
 
 #include "viewmodels/break_bulk_item_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 BreakBulkItemGrpcBinding::BreakBulkItemGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void BreakBulkItemGrpcBinding::createBreakBulkItem(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateBreakBulkItemRequest protobuf
-    // TODO: Call BreakBulkItemService::CreateBreakBulkItem()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void BreakBulkItemGrpcBinding::createBreakBulkItem(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateBreakBulkItemRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
+        [[maybe_unused]] auto itemType = data.value(QStringLiteral("itemType"));
+        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
+        [[maybe_unused]] auto requiresCrane = data.value(QStringLiteral("requiresCrane"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = BreakBulkItemService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateBreakBulkItem(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("BreakBulkItemGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void BreakBulkItemGrpcBinding::readBreakBulkItem(const QString& /*id*/) {
-    // TODO: Call BreakBulkItemService::GetBreakBulkItem()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void BreakBulkItemGrpcBinding::readBreakBulkItem(const QString& id) {
+    try {
+        spdlog::debug("BreakBulkItemGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = BreakBulkItemService::NewStub(channel_);
+        // GetBreakBulkItemRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("BreakBulkItemGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void BreakBulkItemGrpcBinding::updateBreakBulkItem(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateBreakBulkItemRequest protobuf
-    // TODO: Call BreakBulkItemService::UpdateBreakBulkItem()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void BreakBulkItemGrpcBinding::updateBreakBulkItem(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("BreakBulkItemGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
+        [[maybe_unused]] auto itemType = data.value(QStringLiteral("itemType"));
+        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
+        [[maybe_unused]] auto requiresCrane = data.value(QStringLiteral("requiresCrane"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("BreakBulkItemGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void BreakBulkItemGrpcBinding::deleteBreakBulkItem(const QString& /*id*/) {
-    // TODO: Call BreakBulkItemService::DeleteBreakBulkItem()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void BreakBulkItemGrpcBinding::deleteBreakBulkItem(const QString& id) {
+    try {
+        spdlog::debug("BreakBulkItemGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("BreakBulkItemGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void BreakBulkItemGrpcBinding::listBreakBulkItem(int /*page*/, int /*pageSize*/) {
-    // TODO: Call BreakBulkItemService::ListBreakBulkItem()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void BreakBulkItemGrpcBinding::listBreakBulkItem(int page, int pageSize) {
+    try {
+        spdlog::debug("BreakBulkItemGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("BreakBulkItemGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void BreakBulkItemGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

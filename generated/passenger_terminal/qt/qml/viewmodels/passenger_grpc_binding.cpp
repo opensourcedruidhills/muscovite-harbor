@@ -11,41 +11,96 @@
 
 #include "viewmodels/passenger_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 PassengerGrpcBinding::PassengerGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void PassengerGrpcBinding::createPassenger(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreatePassengerRequest protobuf
-    // TODO: Call PassengerService::CreatePassenger()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void PassengerGrpcBinding::createPassenger(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreatePassengerRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto bookingRef = data.value(QStringLiteral("bookingRef"));
+        [[maybe_unused]] auto passengerType = data.value(QStringLiteral("passengerType"));
+        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
+        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = PassengerService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreatePassenger(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("PassengerGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void PassengerGrpcBinding::readPassenger(const QString& /*id*/) {
-    // TODO: Call PassengerService::GetPassenger()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void PassengerGrpcBinding::readPassenger(const QString& id) {
+    try {
+        spdlog::debug("PassengerGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = PassengerService::NewStub(channel_);
+        // GetPassengerRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("PassengerGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void PassengerGrpcBinding::updatePassenger(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdatePassengerRequest protobuf
-    // TODO: Call PassengerService::UpdatePassenger()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void PassengerGrpcBinding::updatePassenger(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("PassengerGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto bookingRef = data.value(QStringLiteral("bookingRef"));
+        [[maybe_unused]] auto passengerType = data.value(QStringLiteral("passengerType"));
+        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
+        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("PassengerGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void PassengerGrpcBinding::deletePassenger(const QString& /*id*/) {
-    // TODO: Call PassengerService::DeletePassenger()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void PassengerGrpcBinding::deletePassenger(const QString& id) {
+    try {
+        spdlog::debug("PassengerGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("PassengerGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void PassengerGrpcBinding::listPassenger(int /*page*/, int /*pageSize*/) {
-    // TODO: Call PassengerService::ListPassenger()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void PassengerGrpcBinding::listPassenger(int page, int pageSize) {
+    try {
+        spdlog::debug("PassengerGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("PassengerGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void PassengerGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

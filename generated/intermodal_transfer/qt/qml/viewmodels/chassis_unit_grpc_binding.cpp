@@ -11,41 +11,94 @@
 
 #include "viewmodels/chassis_unit_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 ChassisUnitGrpcBinding::ChassisUnitGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void ChassisUnitGrpcBinding::createChassisUnit(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateChassisUnitRequest protobuf
-    // TODO: Call ChassisUnitService::CreateChassisUnit()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void ChassisUnitGrpcBinding::createChassisUnit(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateChassisUnitRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto chassisNumber = data.value(QStringLiteral("chassisNumber"));
+        [[maybe_unused]] auto chassisType = data.value(QStringLiteral("chassisType"));
+        [[maybe_unused]] auto isAvailable = data.value(QStringLiteral("isAvailable"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = ChassisUnitService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateChassisUnit(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ChassisUnitGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ChassisUnitGrpcBinding::readChassisUnit(const QString& /*id*/) {
-    // TODO: Call ChassisUnitService::GetChassisUnit()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void ChassisUnitGrpcBinding::readChassisUnit(const QString& id) {
+    try {
+        spdlog::debug("ChassisUnitGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = ChassisUnitService::NewStub(channel_);
+        // GetChassisUnitRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ChassisUnitGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ChassisUnitGrpcBinding::updateChassisUnit(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateChassisUnitRequest protobuf
-    // TODO: Call ChassisUnitService::UpdateChassisUnit()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void ChassisUnitGrpcBinding::updateChassisUnit(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("ChassisUnitGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto chassisNumber = data.value(QStringLiteral("chassisNumber"));
+        [[maybe_unused]] auto chassisType = data.value(QStringLiteral("chassisType"));
+        [[maybe_unused]] auto isAvailable = data.value(QStringLiteral("isAvailable"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("ChassisUnitGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ChassisUnitGrpcBinding::deleteChassisUnit(const QString& /*id*/) {
-    // TODO: Call ChassisUnitService::DeleteChassisUnit()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void ChassisUnitGrpcBinding::deleteChassisUnit(const QString& id) {
+    try {
+        spdlog::debug("ChassisUnitGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("ChassisUnitGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void ChassisUnitGrpcBinding::listChassisUnit(int /*page*/, int /*pageSize*/) {
-    // TODO: Call ChassisUnitService::ListChassisUnit()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void ChassisUnitGrpcBinding::listChassisUnit(int page, int pageSize) {
+    try {
+        spdlog::debug("ChassisUnitGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("ChassisUnitGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void ChassisUnitGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

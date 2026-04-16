@@ -11,6 +11,8 @@
 
 #include "viewmodels/voyage_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 VoyageViewModel::VoyageViewModel(QObject* parent)
@@ -86,20 +88,71 @@ void VoyageViewModel::setStatus(const QString& value) {
     }
 }
 
-void VoyageViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void VoyageViewModel::load(const QString& id) {
+    spdlog::debug("VoyageViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = VoyageService::NewStub(channel_);
+    // GetVoyageRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // VoyageResponse response;
+    // auto status = stub->GetVoyage(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setVesselId(/* response.vesselId() */);
+    //     setBerthId(/* response.berthId() */);
+    //     setVoyageNumber(/* response.voyageNumber() */);
+    //     setEta(/* response.eta() */);
+    //     setAta(/* response.ata() */);
+    //     setEtd(/* response.etd() */);
+    //     setAtd(/* response.atd() */);
+    //     setCargoCategory(/* response.cargoCategory() */);
+    //     setStatus(/* response.status() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void VoyageViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("VoyageViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateVoyageRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_vesselId(/* convert m_vessel_id */);
+    // request.set_berthId(/* convert m_berth_id */);
+    // request.set_voyageNumber(/* convert m_voyage_number */);
+    // request.set_eta(/* convert m_eta */);
+    // request.set_ata(/* convert m_ata */);
+    // request.set_etd(/* convert m_etd */);
+    // request.set_atd(/* convert m_atd */);
+    // request.set_cargoCategory(/* convert m_cargo_category */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void VoyageViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("VoyageViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateVoyageRequest request;
+    // request.set_vesselId(/* convert m_vessel_id */);
+    // request.set_berthId(/* convert m_berth_id */);
+    // request.set_voyageNumber(/* convert m_voyage_number */);
+    // request.set_eta(/* convert m_eta */);
+    // request.set_ata(/* convert m_ata */);
+    // request.set_etd(/* convert m_etd */);
+    // request.set_atd(/* convert m_atd */);
+    // request.set_cargoCategory(/* convert m_cargo_category */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void VoyageViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("VoyageViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteVoyageRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

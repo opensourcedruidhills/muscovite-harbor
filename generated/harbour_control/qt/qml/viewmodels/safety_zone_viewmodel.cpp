@@ -11,6 +11,8 @@
 
 #include "viewmodels/safety_zone_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 SafetyZoneViewModel::SafetyZoneViewModel(QObject* parent)
@@ -58,20 +60,59 @@ void SafetyZoneViewModel::setIsRestricted(const bool& value) {
     }
 }
 
-void SafetyZoneViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void SafetyZoneViewModel::load(const QString& id) {
+    spdlog::debug("SafetyZoneViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = SafetyZoneService::NewStub(channel_);
+    // GetSafetyZoneRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // SafetyZoneResponse response;
+    // auto status = stub->GetSafetyZone(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setZoneCode(/* response.zoneCode() */);
+    //     setZoneName(/* response.zoneName() */);
+    //     setSecurityLevel(/* response.securityLevel() */);
+    //     setMaxHazmatClass(/* response.maxHazmatClass() */);
+    //     setIsRestricted(/* response.isRestricted() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void SafetyZoneViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("SafetyZoneViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateSafetyZoneRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_zoneCode(/* convert m_zone_code */);
+    // request.set_zoneName(/* convert m_zone_name */);
+    // request.set_securityLevel(/* convert m_security_level */);
+    // request.set_maxHazmatClass(/* convert m_max_hazmat_class */);
+    // request.set_isRestricted(/* convert m_is_restricted */);
+    Q_EMIT saved();
 }
 
 void SafetyZoneViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("SafetyZoneViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateSafetyZoneRequest request;
+    // request.set_zoneCode(/* convert m_zone_code */);
+    // request.set_zoneName(/* convert m_zone_name */);
+    // request.set_securityLevel(/* convert m_security_level */);
+    // request.set_maxHazmatClass(/* convert m_max_hazmat_class */);
+    // request.set_isRestricted(/* convert m_is_restricted */);
+    Q_EMIT saved();
 }
 
 void SafetyZoneViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("SafetyZoneViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteSafetyZoneRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

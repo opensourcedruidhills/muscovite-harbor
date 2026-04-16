@@ -11,41 +11,98 @@
 
 #include "viewmodels/truck_visit_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 TruckVisitGrpcBinding::TruckVisitGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void TruckVisitGrpcBinding::createTruckVisit(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateTruckVisitRequest protobuf
-    // TODO: Call TruckVisitService::CreateTruckVisit()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void TruckVisitGrpcBinding::createTruckVisit(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateTruckVisitRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto truckPlate = data.value(QStringLiteral("truckPlate"));
+        [[maybe_unused]] auto carrierName = data.value(QStringLiteral("carrierName"));
+        [[maybe_unused]] auto slotId = data.value(QStringLiteral("slotId"));
+        [[maybe_unused]] auto arrivedAt = data.value(QStringLiteral("arrivedAt"));
+        [[maybe_unused]] auto departedAt = data.value(QStringLiteral("departedAt"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = TruckVisitService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateTruckVisit(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("TruckVisitGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void TruckVisitGrpcBinding::readTruckVisit(const QString& /*id*/) {
-    // TODO: Call TruckVisitService::GetTruckVisit()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void TruckVisitGrpcBinding::readTruckVisit(const QString& id) {
+    try {
+        spdlog::debug("TruckVisitGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = TruckVisitService::NewStub(channel_);
+        // GetTruckVisitRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("TruckVisitGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void TruckVisitGrpcBinding::updateTruckVisit(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateTruckVisitRequest protobuf
-    // TODO: Call TruckVisitService::UpdateTruckVisit()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void TruckVisitGrpcBinding::updateTruckVisit(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("TruckVisitGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto truckPlate = data.value(QStringLiteral("truckPlate"));
+        [[maybe_unused]] auto carrierName = data.value(QStringLiteral("carrierName"));
+        [[maybe_unused]] auto slotId = data.value(QStringLiteral("slotId"));
+        [[maybe_unused]] auto arrivedAt = data.value(QStringLiteral("arrivedAt"));
+        [[maybe_unused]] auto departedAt = data.value(QStringLiteral("departedAt"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("TruckVisitGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void TruckVisitGrpcBinding::deleteTruckVisit(const QString& /*id*/) {
-    // TODO: Call TruckVisitService::DeleteTruckVisit()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void TruckVisitGrpcBinding::deleteTruckVisit(const QString& id) {
+    try {
+        spdlog::debug("TruckVisitGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("TruckVisitGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void TruckVisitGrpcBinding::listTruckVisit(int /*page*/, int /*pageSize*/) {
-    // TODO: Call TruckVisitService::ListTruckVisit()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void TruckVisitGrpcBinding::listTruckVisit(int page, int pageSize) {
+    try {
+        spdlog::debug("TruckVisitGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("TruckVisitGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void TruckVisitGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

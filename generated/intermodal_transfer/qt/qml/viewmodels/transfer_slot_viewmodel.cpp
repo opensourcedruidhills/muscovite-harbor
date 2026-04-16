@@ -11,6 +11,8 @@
 
 #include "viewmodels/transfer_slot_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 TransferSlotViewModel::TransferSlotViewModel(QObject* parent)
@@ -58,20 +60,59 @@ void TransferSlotViewModel::setStatus(const QString& value) {
     }
 }
 
-void TransferSlotViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void TransferSlotViewModel::load(const QString& id) {
+    spdlog::debug("TransferSlotViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = TransferSlotService::NewStub(channel_);
+    // GetTransferSlotRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // TransferSlotResponse response;
+    // auto status = stub->GetTransferSlot(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setReference(/* response.reference() */);
+    //     setContainerId(/* response.containerId() */);
+    //     setTransportMode(/* response.transportMode() */);
+    //     setScheduledAt(/* response.scheduledAt() */);
+    //     setStatus(/* response.status() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void TransferSlotViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("TransferSlotViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdateTransferSlotRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_reference(/* convert m_reference */);
+    // request.set_containerId(/* convert m_container_id */);
+    // request.set_transportMode(/* convert m_transport_mode */);
+    // request.set_scheduledAt(/* convert m_scheduled_at */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void TransferSlotViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("TransferSlotViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreateTransferSlotRequest request;
+    // request.set_reference(/* convert m_reference */);
+    // request.set_containerId(/* convert m_container_id */);
+    // request.set_transportMode(/* convert m_transport_mode */);
+    // request.set_scheduledAt(/* convert m_scheduled_at */);
+    // request.set_status(/* convert m_status */);
+    Q_EMIT saved();
 }
 
 void TransferSlotViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("TransferSlotViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeleteTransferSlotRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml

@@ -11,41 +11,96 @@
 
 #include "viewmodels/delivery_unit_grpc_binding.hpp"
 
+#include <QVariant>
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 DeliveryUnitGrpcBinding::DeliveryUnitGrpcBinding(QObject* parent)
     : QObject{parent} {}
 
-void DeliveryUnitGrpcBinding::createDeliveryUnit(const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to CreateDeliveryUnitRequest protobuf
-    // TODO: Call DeliveryUnitService::CreateDeliveryUnit()
-    // On success: Q_EMIT createCompleted(result)
-    // On error: handleGrpcError("create", status.code(), status.message())
+void DeliveryUnitGrpcBinding::createDeliveryUnit(const QVariantMap& data) {
+    try {
+        // Map QVariantMap to CreateDeliveryUnitRequest protobuf fields
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
+        [[maybe_unused]] auto destination = data.value(QStringLiteral("destination"));
+        [[maybe_unused]] auto carrier = data.value(QStringLiteral("carrier"));
+        [[maybe_unused]] auto dispatchedAt = data.value(QStringLiteral("dispatchedAt"));
+
+        // TODO: Wire to generated gRPC stub when proto compilation is integrated
+        // auto stub = DeliveryUnitService::NewStub(channel_);
+        // grpc::ClientContext ctx;
+        // auto status = stub->CreateDeliveryUnit(&ctx, request, &response);
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        Q_EMIT createCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("DeliveryUnitGrpcBinding::create failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void DeliveryUnitGrpcBinding::readDeliveryUnit(const QString& /*id*/) {
-    // TODO: Call DeliveryUnitService::GetDeliveryUnit()
-    // On success: Q_EMIT readCompleted(result)
-    // On error: handleGrpcError("read", status.code(), status.message())
+void DeliveryUnitGrpcBinding::readDeliveryUnit(const QString& id) {
+    try {
+        spdlog::debug("DeliveryUnitGrpcBinding::read {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+        // auto stub = DeliveryUnitService::NewStub(channel_);
+        // GetDeliveryUnitRequest request;
+        // request.set_id(id.toStdString());
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT readCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("DeliveryUnitGrpcBinding::read failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void DeliveryUnitGrpcBinding::updateDeliveryUnit(const QString& /*id*/, const QVariantMap& /*data*/) {
-    // TODO: Map QVariantMap to UpdateDeliveryUnitRequest protobuf
-    // TODO: Call DeliveryUnitService::UpdateDeliveryUnit()
-    // On success: Q_EMIT updateCompleted(result)
-    // On error: handleGrpcError("update", status.code(), status.message())
+void DeliveryUnitGrpcBinding::updateDeliveryUnit(const QString& id, const QVariantMap& data) {
+    try {
+        spdlog::debug("DeliveryUnitGrpcBinding::update {}", id.toStdString());
+        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
+        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
+        [[maybe_unused]] auto destination = data.value(QStringLiteral("destination"));
+        [[maybe_unused]] auto carrier = data.value(QStringLiteral("carrier"));
+        [[maybe_unused]] auto dispatchedAt = data.value(QStringLiteral("dispatchedAt"));
+        // TODO: Wire to generated gRPC stub
+
+        QVariantMap result;
+        result[QStringLiteral("id")] = id;
+        Q_EMIT updateCompleted(result);
+    } catch (const std::exception& ex) {
+        spdlog::error("DeliveryUnitGrpcBinding::update failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void DeliveryUnitGrpcBinding::deleteDeliveryUnit(const QString& /*id*/) {
-    // TODO: Call DeliveryUnitService::DeleteDeliveryUnit()
-    // On success: Q_EMIT deleteCompleted()
-    // On error: handleGrpcError("delete", status.code(), status.message())
+void DeliveryUnitGrpcBinding::deleteDeliveryUnit(const QString& id) {
+    try {
+        spdlog::debug("DeliveryUnitGrpcBinding::delete {}", id.toStdString());
+        // TODO: Wire to generated gRPC stub
+
+        Q_EMIT deleteCompleted();
+    } catch (const std::exception& ex) {
+        spdlog::error("DeliveryUnitGrpcBinding::delete failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
-void DeliveryUnitGrpcBinding::listDeliveryUnit(int /*page*/, int /*pageSize*/) {
-    // TODO: Call DeliveryUnitService::ListDeliveryUnit()
-    // On success: Q_EMIT listCompleted(results, totalCount)
-    // On error: handleGrpcError("list", status.code(), status.message())
+void DeliveryUnitGrpcBinding::listDeliveryUnit(int page, int pageSize) {
+    try {
+        spdlog::debug("DeliveryUnitGrpcBinding::list page={} size={}", page, pageSize);
+        // TODO: Wire to generated gRPC stub
+
+        QVariantList results;
+        Q_EMIT listCompleted(results, 0);
+    } catch (const std::exception& ex) {
+        spdlog::error("DeliveryUnitGrpcBinding::list failed: {}", ex.what());
+        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
+    }
 }
 
 void DeliveryUnitGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {

@@ -11,6 +11,8 @@
 
 #include "viewmodels/pallet_viewmodel.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace muscovite_harbor::qml {
 
 PalletViewModel::PalletViewModel(QObject* parent)
@@ -72,20 +74,65 @@ void PalletViewModel::setHsCode(const QString& value) {
     }
 }
 
-void PalletViewModel::load(const QString& /*id*/) {
-    // TODO: Implement gRPC load
+void PalletViewModel::load(const QString& id) {
+    spdlog::debug("PalletViewModel::load {}", id.toStdString());
+    // TODO: Wire to generated gRPC stub when proto compilation is integrated
+    // auto stub = PalletService::NewStub(channel_);
+    // GetPalletRequest request;
+    // request.set_id(id.toStdString());
+    // grpc::ClientContext ctx;
+    // PalletResponse response;
+    // auto status = stub->GetPallet(&ctx, request, &response);
+    // if (status.ok()) {
+    //     setId(/* response.id() */);
+    //     setPalletId(/* response.palletId() */);
+    //     setContainerId(/* response.containerId() */);
+    //     setWeightKg(/* response.weightKg() */);
+    //     setLengthCm(/* response.lengthCm() */);
+    //     setWidthCm(/* response.widthCm() */);
+    //     setHeightCm(/* response.heightCm() */);
+    //     setHsCode(/* response.hsCode() */);
+    //     Q_EMIT loaded();
+    // } else {
+    //     Q_EMIT error(QString::fromStdString(status.error_message()));
+    // }
 }
 
 void PalletViewModel::save() {
-    // TODO: Implement gRPC save
+    spdlog::debug("PalletViewModel::save");
+    // TODO: Wire to generated gRPC stub
+    // UpdatePalletRequest request;
+    // request.set_id(/* convert m_id */);
+    // request.set_palletId(/* convert m_pallet_id */);
+    // request.set_containerId(/* convert m_container_id */);
+    // request.set_weightKg(/* convert m_weight_kg */);
+    // request.set_lengthCm(/* convert m_length_cm */);
+    // request.set_widthCm(/* convert m_width_cm */);
+    // request.set_heightCm(/* convert m_height_cm */);
+    // request.set_hsCode(/* convert m_hs_code */);
+    Q_EMIT saved();
 }
 
 void PalletViewModel::createNew() {
-    // TODO: Implement gRPC create
+    spdlog::debug("PalletViewModel::createNew");
+    // TODO: Wire to generated gRPC stub
+    // CreatePalletRequest request;
+    // request.set_palletId(/* convert m_pallet_id */);
+    // request.set_containerId(/* convert m_container_id */);
+    // request.set_weightKg(/* convert m_weight_kg */);
+    // request.set_lengthCm(/* convert m_length_cm */);
+    // request.set_widthCm(/* convert m_width_cm */);
+    // request.set_heightCm(/* convert m_height_cm */);
+    // request.set_hsCode(/* convert m_hs_code */);
+    Q_EMIT saved();
 }
 
 void PalletViewModel::remove() {
-    // TODO: Implement gRPC remove
+    spdlog::debug("PalletViewModel::remove");
+    // TODO: Wire to generated gRPC stub
+    // DeletePalletRequest request;
+    // request.set_id(m_id.toStdString());
+    Q_EMIT removed();
 }
 
 } // namespace muscovite_harbor::qml
