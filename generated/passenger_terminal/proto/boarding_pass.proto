@@ -41,8 +41,7 @@ message CreateBoardingPassRequest {
   google.protobuf.Timestamp issued_at = 5;
   google.protobuf.Timestamp scanned_at = 6;
   string boarding_pass_id = 7;
-  optional string boarding_pass_id = 8;
-  optional string idempotency_key = 9;
+  optional string idempotency_key = 8;
 }
 
 message CreateBoardingPassResponse {
@@ -66,8 +65,7 @@ message UpdateBoardingPassRequest {
   google.protobuf.Timestamp issued_at = 6;
   google.protobuf.Timestamp scanned_at = 7;
   string boarding_pass_id = 8;
-  optional string boarding_pass_id = 9;
-  optional string idempotency_key = 10;
+  optional string idempotency_key = 9;
 }
 
 message UpdateBoardingPassResponse {

@@ -13,7 +13,9 @@ class MuscoviteHarborConan(ConanFile):
         self.requires("muscovite/[>=2.24.0]")
 
     def build_requirements(self):
-        self.tool_requires("muscomp/[>=2.25.0]")
+        # muscomp Conan packaging broken (opensourcedruidhills/muscovite#1453)
+        # Use muscomp binary from PATH until fixed
+        pass
 
     def layout(self):
         cmake_layout(self)

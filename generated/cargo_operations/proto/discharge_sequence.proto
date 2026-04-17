@@ -37,9 +37,7 @@ message CreateDischargeSequenceRequest {
   int32 sequence_order = 3;
   string crane_id = 4;
   string discharge_sequence_id = 5;
-  string discharge_sequence_id = 6;
-  optional string discharge_sequence_id = 7;
-  optional string idempotency_key = 8;
+  optional string idempotency_key = 6;
 }
 
 message CreateDischargeSequenceResponse {
@@ -61,9 +59,7 @@ message UpdateDischargeSequenceRequest {
   int32 sequence_order = 4;
   string crane_id = 5;
   string discharge_sequence_id = 6;
-  string discharge_sequence_id = 7;
-  optional string discharge_sequence_id = 8;
-  optional string idempotency_key = 9;
+  optional string idempotency_key = 7;
 }
 
 message UpdateDischargeSequenceResponse {

@@ -14,7 +14,8 @@ syntax = "proto3";
 
 package intermodaltransfer;
 
-import "intermodal_handoff.proto";
+import "transfer_slot.proto";
+import "truck_visit.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 

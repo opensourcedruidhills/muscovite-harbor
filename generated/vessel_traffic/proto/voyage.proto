@@ -47,8 +47,7 @@ message CreateVoyageRequest {
   string cargo_category = 8;
   string status = 9;
   string voyage_id = 10;
-  optional string voyage_id = 11;
-  optional string idempotency_key = 12;
+  optional string idempotency_key = 11;
 }
 
 message CreateVoyageResponse {
@@ -75,8 +74,7 @@ message UpdateVoyageRequest {
   string cargo_category = 9;
   string status = 10;
   string voyage_id = 11;
-  optional string voyage_id = 12;
-  optional string idempotency_key = 13;
+  optional string idempotency_key = 12;
 }
 
 message UpdateVoyageResponse {

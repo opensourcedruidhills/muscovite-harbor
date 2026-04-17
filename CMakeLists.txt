@@ -7,4 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(muscovite CONFIG REQUIRED COMPONENTS dba server grpc)
 
-add_subdirectory(generated/src)
+# muscomp generates the build system in generated/CMakeLists.txt (not generated/src/)
+# See opensourcedruidhills/muscovite#1455
+add_subdirectory(generated)
