@@ -22,7 +22,7 @@ class MuscoviteHarborConan(ConanFile):
         muscovite_version = _read_version("MUSCOMP_VERSION")
         self.requires(f"muscovite/{muscovite_version}")
         self.requires("doctest/2.4.11")
-        self.requires("spdlog/1.15.0")
+        self.requires("spdlog/[>=1.15.0 <2]")
         self.requires("nlohmann_json/3.11.3")
 
     def layout(self):

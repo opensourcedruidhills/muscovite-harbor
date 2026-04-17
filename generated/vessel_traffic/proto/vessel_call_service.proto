@@ -66,6 +66,18 @@ message RemoveTugBookingResponse {
 }
 
 
+message VesselsByETARequest {
+  google.protobuf.Timestamp from_eta = 1;
+  google.protobuf.Timestamp to_eta = 2;
+}
+
+message VesselsByETAResponse {
+  repeated Voyage results = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+
 service VoyageService {
   // Root entity operations
   rpc CreateVoyage(CreateVoyageRequest) returns (CreateVoyageResponse);
