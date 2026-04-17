@@ -12,6 +12,7 @@ set(passenger_terminal_grpc_proto_PROTO_FILES
   proto/passenger.proto
   proto/gate.proto
   proto/boarding_pass.proto
+  proto/passenger_name.proto
   proto/embarkation_service.proto
   proto/services.proto
 )

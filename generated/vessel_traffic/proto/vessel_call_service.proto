@@ -20,6 +20,52 @@ import "tug_booking.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
+message AddPilotAssignmentRequest {
+  string parent_id = 1;
+  string voyage_id = 2;
+  string pilot_name = 3;
+  string pilot_zone = 4;
+  google.protobuf.Timestamp boarding_time = 5;
+  google.protobuf.Timestamp disembark_time = 6;
+  string pilot_assignment_id = 7;
+}
+
+message AddPilotAssignmentResponse {
+  string id = 1;
+}
+
+message RemovePilotAssignmentRequest {
+  string parent_id = 1;
+  string pilot_assignment_id = 2;
+}
+
+message RemovePilotAssignmentResponse {
+}
+
+
+message AddTugBookingRequest {
+  string parent_id = 1;
+  string voyage_id = 2;
+  string tug_name = 3;
+  // Bollard pull in tonnes
+  string bollard_pull_t = 4;
+  bool is_confirmed = 5;
+  string tug_booking_id = 6;
+}
+
+message AddTugBookingResponse {
+  string id = 1;
+}
+
+message RemoveTugBookingRequest {
+  string parent_id = 1;
+  string tug_booking_id = 2;
+}
+
+message RemoveTugBookingResponse {
+}
+
+
 service VoyageService {
   // Root entity operations
   rpc CreateVoyage(CreateVoyageRequest) returns (CreateVoyageResponse);

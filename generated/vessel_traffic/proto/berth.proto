@@ -14,6 +14,7 @@ syntax = "proto3";
 
 package vesseltraffic;
 
+import "geo_position.proto";
 import "google/protobuf/timestamp.proto";
 
 message Berth {

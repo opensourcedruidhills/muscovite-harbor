@@ -19,6 +19,28 @@ import "discharge_sequence.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
+message AddDischargeSequenceRequest {
+  string parent_id = 1;
+  string load_plan_id = 2;
+  string container_id = 3;
+  int32 sequence_order = 4;
+  string crane_id = 5;
+  string discharge_sequence_id = 6;
+}
+
+message AddDischargeSequenceResponse {
+  string id = 1;
+}
+
+message RemoveDischargeSequenceRequest {
+  string parent_id = 1;
+  string discharge_sequence_id = 2;
+}
+
+message RemoveDischargeSequenceResponse {
+}
+
+
 service LoadPlanService {
   // Root entity operations
   rpc CreateLoadPlan(CreateLoadPlanRequest) returns (CreateLoadPlanResponse);

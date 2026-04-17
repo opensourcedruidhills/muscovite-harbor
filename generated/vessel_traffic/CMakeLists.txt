@@ -15,6 +15,9 @@ set(vessel_traffic_grpc_proto_PROTO_FILES
   proto/pilot_assignment.proto
   proto/tug_booking.proto
   proto/tide_window.proto
+  proto/dimensions.proto
+  proto/geo_position.proto
+  proto/time_window.proto
   proto/vessel_call_service.proto
   proto/services.proto
 )

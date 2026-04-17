@@ -19,6 +19,29 @@ import "truck_visit.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
+message AddTruckVisitRequest {
+  string parent_id = 1;
+  string truck_plate = 2;
+  string carrier_name = 3;
+  string slot_id = 4;
+  google.protobuf.Timestamp arrived_at = 5;
+  google.protobuf.Timestamp departed_at = 6;
+  string truck_visit_id = 7;
+}
+
+message AddTruckVisitResponse {
+  string id = 1;
+}
+
+message RemoveTruckVisitRequest {
+  string parent_id = 1;
+  string truck_visit_id = 2;
+}
+
+message RemoveTruckVisitResponse {
+}
+
+
 service TransferSlotService {
   // Root entity operations
   rpc CreateTransferSlot(CreateTransferSlotRequest) returns (CreateTransferSlotResponse);

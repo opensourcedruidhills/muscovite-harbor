@@ -13,6 +13,8 @@ set(cargo_decomposition_grpc_proto_PROTO_FILES
   proto/parcel.proto
   proto/delivery_unit.proto
   proto/break_bulk_item.proto
+  proto/dimensions.proto
+  proto/weight.proto
   proto/container_unpack_service.proto
   proto/pallet_dispatch_service.proto
   proto/services.proto

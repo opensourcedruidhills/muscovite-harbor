@@ -19,6 +19,30 @@ import "boarding_pass.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
+message AddBoardingPassRequest {
+  string parent_id = 1;
+  string passenger_id = 2;
+  string gate_id = 3;
+  string boarding_group = 4;
+  string seat_number = 5;
+  google.protobuf.Timestamp issued_at = 6;
+  google.protobuf.Timestamp scanned_at = 7;
+  string boarding_pass_id = 8;
+}
+
+message AddBoardingPassResponse {
+  string id = 1;
+}
+
+message RemoveBoardingPassRequest {
+  string parent_id = 1;
+  string boarding_pass_id = 2;
+}
+
+message RemoveBoardingPassResponse {
+}
+
+
 service PassengerService {
   // Root entity operations
   rpc CreatePassenger(CreatePassengerRequest) returns (CreatePassengerResponse);
