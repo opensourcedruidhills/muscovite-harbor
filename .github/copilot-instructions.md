@@ -13,6 +13,12 @@ This is a **Muscovite consumer project**. All code in `generated/` is produced b
 3. **Unknown types cause generation FAIL** — only use types from `doc/TYPE-MAPPINGS.md`.
 4. **No implicit foreign keys** — every FK requires explicit `RELATIONSHIPS {}` block.
 5. **C++23 only** — no raw loops, no C-style casts, no `new`/`delete`.
+6. **NO writes to `/tmp`** — on Linux, `/tmp` is a RAM-backed tmpfs. Writing build
+   artifacts, temp copies, or test output there **will exhaust system memory and crash
+   the machine**. Use repo-relative `tmp/` (gitignored) for any temporary files.
+   This applies to `mktemp`, `std::filesystem::temp_directory_path()`, Python
+   `tempfile`, and any other mechanism that defaults to `/tmp`.
+   **NEVER use `mktemp -d` — use `mkdir -p tmp/` instead.**
 
 ---
 
