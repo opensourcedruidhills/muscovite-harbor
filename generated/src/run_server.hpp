@@ -19,21 +19,16 @@
 #include <grpcpp/grpcpp.h>
 #include <spdlog/spdlog.h>
 
+#include "grpc/server/auth_interceptor.hpp"
 #include "vessel_traffic/grpc/server/version_service_impl.hpp"
-#include "vessel_traffic/grpc/server/auth_interceptor.hpp"
 #include "cargo_operations/grpc/server/version_service_impl.hpp"
-#include "cargo_operations/grpc/server/auth_interceptor.hpp"
 #include "passenger_terminal/grpc/server/version_service_impl.hpp"
-#include "passenger_terminal/grpc/server/auth_interceptor.hpp"
 #include "intermodal_transfer/grpc/server/version_service_impl.hpp"
-#include "intermodal_transfer/grpc/server/auth_interceptor.hpp"
 #include "cargo_decomposition/grpc/server/version_service_impl.hpp"
-#include "cargo_decomposition/grpc/server/auth_interceptor.hpp"
 #include "harbour_control/grpc/server/version_service_impl.hpp"
-#include "harbour_control/grpc/server/auth_interceptor.hpp"
 
 #ifdef MUSCOVITE_DEV_AUTH
-#include "vessel_traffic/grpc/server/dev_auth_provider.hpp"
+#include "grpc/server/dev_auth_provider.hpp"
 #endif
 
 namespace muscovite_harbor {
