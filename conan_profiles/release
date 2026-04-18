@@ -11,7 +11,8 @@ include(default)
 build_type=Release
 compiler.cppstd=gnu23
 compiler.libcxx=libstdc++11
-compiler.cstd=17
+# compiler.cstd intentionally omitted — not in conanfile.py settings,
+# including it changes Conan package ID hash causing binary mismatches.
 
 [buildenv]
 CC=gcc

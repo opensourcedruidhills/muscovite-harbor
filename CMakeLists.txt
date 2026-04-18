@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(muscovite CONFIG REQUIRED COMPONENTS dba server grpc)
 
+# Fix Conan component recipes with empty include dirs (protobuf, abseil, gRPC).
+# Without this, system headers (/usr/include/absl/) leak in and cause ABI mismatches.
+include(${CMAKE_BINARY_DIR}/generators/conan_include_fixup.cmake)
+
 # muscomp generates the build system in generated/CMakeLists.txt (not generated/src/)
 # See opensourcedruidhills/muscovite#1455
 add_subdirectory(generated)
