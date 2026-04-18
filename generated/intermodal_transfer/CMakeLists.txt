@@ -49,3 +49,9 @@ target_include_directories(intermodal_transfer_grpc_proto PUBLIC
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+# ── DBA header-only library (FTR-1499) ────────────────────────
+add_library(intermodal_transfer_dba INTERFACE)
+target_include_directories(intermodal_transfer_dba INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR}/..
+)
+

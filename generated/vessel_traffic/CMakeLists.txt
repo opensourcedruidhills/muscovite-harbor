@@ -53,3 +53,9 @@ target_include_directories(vessel_traffic_grpc_proto PUBLIC
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+# ── DBA header-only library (FTR-1499) ────────────────────────
+add_library(vessel_traffic_dba INTERFACE)
+target_include_directories(vessel_traffic_dba INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR}/..
+)
+
