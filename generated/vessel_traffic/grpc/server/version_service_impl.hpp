@@ -16,8 +16,8 @@
 #include <string>
 #include <grpcpp/grpcpp.h>
 
-#include "vessel_traffic/proto/version.grpc.pb.h"
-#include "vessel_traffic/proto/version.pb.h"
+#include "vessel_traffic/version.grpc.pb.h"
+#include "vessel_traffic/version.pb.h"
 
 namespace vessel_traffic {
 

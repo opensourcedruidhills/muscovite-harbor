@@ -16,8 +16,8 @@
 #include <string>
 #include <grpcpp/grpcpp.h>
 
-#include "intermodal_transfer/proto/version.grpc.pb.h"
-#include "intermodal_transfer/proto/version.pb.h"
+#include "intermodal_transfer/version.grpc.pb.h"
+#include "intermodal_transfer/version.pb.h"
 
 namespace intermodal_transfer {
 

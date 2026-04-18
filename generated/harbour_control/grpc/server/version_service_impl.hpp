@@ -16,8 +16,8 @@
 #include <string>
 #include <grpcpp/grpcpp.h>
 
-#include "harbour_control/proto/version.grpc.pb.h"
-#include "harbour_control/proto/version.pb.h"
+#include "harbour_control/version.grpc.pb.h"
+#include "harbour_control/version.pb.h"
 
 namespace harbour_control {
 

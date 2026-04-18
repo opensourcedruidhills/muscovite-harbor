@@ -10,10 +10,10 @@ class MuscoviteHarborConan(ConanFile):
     generators = "CMakeDeps", "CMakeToolchain"
 
     def requirements(self):
-        self.requires("muscovite/2.25.7")
+        self.requires("muscovite/2.25.8")
 
     def build_requirements(self):
-        self.tool_requires("muscomp/2.25.7")
+        self.tool_requires("muscomp/2.25.8")
 
     def layout(self):
         cmake_layout(self)
