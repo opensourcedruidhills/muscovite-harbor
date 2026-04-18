@@ -36,6 +36,28 @@ add_subdirectory(intermodal_transfer)
 add_subdirectory(cargo_decomposition)
 add_subdirectory(harbour_control)
 
+# ── gRPC server binary (FTR-1488) ─────────────────────────────────
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/server_main.cpp)
+    add_executable(muscovite_harbor_server src/server_main.cpp)
+    target_link_libraries(muscovite_harbor_server PRIVATE
+        vessel_traffic_dba
+        vessel_traffic_grpc_proto
+        cargo_operations_dba
+        cargo_operations_grpc_proto
+        passenger_terminal_dba
+        passenger_terminal_grpc_proto
+        intermodal_transfer_dba
+        intermodal_transfer_grpc_proto
+        cargo_decomposition_dba
+        cargo_decomposition_grpc_proto
+        harbour_control_dba
+        harbour_control_grpc_proto
+        muscovite::dba
+        gRPC::grpc++
+        spdlog::spdlog
+    )
+endif()
+
 # ── Tests ─────────────────────────────────────────────────────────
 enable_testing()
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/vessel_traffic/tests/CMakeLists.txt)

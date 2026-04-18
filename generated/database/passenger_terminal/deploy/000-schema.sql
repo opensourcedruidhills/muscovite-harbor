@@ -192,12 +192,10 @@ CREATE MATERIALIZED VIEW passenger_terminal.departure_board AS
 SELECT 1 WHERE false /* ERROR: projection 'DepartureBoard' has no source_sql or source_entity */
 WITH DATA;
 
-CREATE INDEX idx_departure_board_voyage_number ON passenger_terminal.departure_board (voyage_number);
 CREATE MATERIALIZED VIEW passenger_terminal.arrival_board AS
 SELECT 1 WHERE false /* ERROR: projection 'ArrivalBoard' has no source_sql or source_entity */
 WITH DATA;
 
-CREATE INDEX idx_arrival_board_voyage_number ON passenger_terminal.arrival_board (voyage_number);
 COMMENT ON TABLE passenger_terminal.passengers IS 'A passenger travelling on a voyage';
 COMMENT ON TABLE passenger_terminal.gates IS 'A physical gate in the passenger terminal';
 COMMENT ON TABLE passenger_terminal.boarding_passes IS 'Issued boarding pass for a passenger';

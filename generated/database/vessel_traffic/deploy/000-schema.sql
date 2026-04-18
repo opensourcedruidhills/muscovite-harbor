@@ -250,12 +250,10 @@ CREATE MATERIALIZED VIEW vessel_traffic.berth_occupancy_board AS
 SELECT 1 WHERE false /* ERROR: projection 'BerthOccupancyBoard' has no source_sql or source_entity */
 WITH DATA;
 
-CREATE INDEX idx_berth_occupancy_board_berth_code ON vessel_traffic.berth_occupancy_board (berth_code);
 CREATE MATERIALIZED VIEW vessel_traffic.vessel_movement_log AS
 SELECT 1 WHERE false /* ERROR: projection 'VesselMovementLog' has no source_sql or source_entity */
 WITH DATA;
 
-CREATE INDEX idx_vessel_movement_log_voyage_number ON vessel_traffic.vessel_movement_log (voyage_number);
 COMMENT ON TABLE vessel_traffic.vessels IS 'A registered vessel in the harbour traffic system';
 COMMENT ON TABLE vessel_traffic.berths IS 'A physical berth where vessels moor';
 COMMENT ON TABLE vessel_traffic.voyages IS 'A single vessel call at the harbour';

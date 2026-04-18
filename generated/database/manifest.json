@@ -14,7 +14,7 @@
         "001-extensions"
       ],
       "deploy": "deploy/002-vessel_traffic.sql",
-      "hash": "fnv1a:adfdd3cf525860a0",
+      "hash": "fnv1a:dc7d55225faba4b4",
       "name": "002-vessel_traffic",
       "note": "Schema vessel_traffic",
       "revert": "revert/002-vessel_traffic.sql",
@@ -25,7 +25,7 @@
         "002-vessel_traffic"
       ],
       "deploy": "deploy/003-cargo_operations.sql",
-      "hash": "fnv1a:8da806a6df14b074",
+      "hash": "fnv1a:bdc70c19fba3f288",
       "name": "003-cargo_operations",
       "note": "Schema cargo_operations",
       "revert": "revert/003-cargo_operations.sql",
@@ -36,7 +36,7 @@
         "003-cargo_operations"
       ],
       "deploy": "deploy/004-passenger_terminal.sql",
-      "hash": "fnv1a:9e36cea93e05747b",
+      "hash": "fnv1a:62712fcfc8f9cf13",
       "name": "004-passenger_terminal",
       "note": "Schema passenger_terminal",
       "revert": "revert/004-passenger_terminal.sql",
