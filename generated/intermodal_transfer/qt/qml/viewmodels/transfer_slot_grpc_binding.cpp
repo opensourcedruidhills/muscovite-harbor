@@ -21,21 +21,35 @@ TransferSlotGrpcBinding::TransferSlotGrpcBinding(QObject* parent)
 
 void TransferSlotGrpcBinding::createTransferSlot(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateTransferSlotRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto reference = data.value(QStringLiteral("reference"));
-        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
-        [[maybe_unused]] auto transportMode = data.value(QStringLiteral("transportMode"));
-        [[maybe_unused]] auto scheduledAt = data.value(QStringLiteral("scheduledAt"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = TransferSlotService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateTransferSlot(&ctx, request, &response);
-
+        auto stub = TransferSlotService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateTransferSlotRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("reference"))) {
+            request.set_reference(data.value(QStringLiteral("reference")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("containerId"))) {
+            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("transportMode"))) {
+            request.set_transportMode(data.value(QStringLiteral("transportMode")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("scheduledAt"))) {
+            request.set_scheduledAt(data.value(QStringLiteral("scheduledAt")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("status"))) {
+            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
+        }
+        CreateTransferSlotResponse response;
+        auto status = stub->CreateTransferSlot(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("TransferSlotGrpcBinding::create failed: {}", ex.what());
@@ -45,14 +59,18 @@ void TransferSlotGrpcBinding::createTransferSlot(const QVariantMap& data) {
 
 void TransferSlotGrpcBinding::readTransferSlot(const QString& id) {
     try {
-        spdlog::debug("TransferSlotGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = TransferSlotService::NewStub(channel_);
-        // GetTransferSlotRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = TransferSlotService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetTransferSlotRequest request;
+        request.set_id(id.toStdString());
+        GetTransferSlotResponse response;
+        auto status = stub->GetTransferSlot(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("TransferSlotGrpcBinding::read failed: {}", ex.what());
@@ -62,15 +80,34 @@ void TransferSlotGrpcBinding::readTransferSlot(const QString& id) {
 
 void TransferSlotGrpcBinding::updateTransferSlot(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("TransferSlotGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto reference = data.value(QStringLiteral("reference"));
-        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
-        [[maybe_unused]] auto transportMode = data.value(QStringLiteral("transportMode"));
-        [[maybe_unused]] auto scheduledAt = data.value(QStringLiteral("scheduledAt"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TransferSlotService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateTransferSlotRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("reference"))) {
+            request.set_reference(data.value(QStringLiteral("reference")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("containerId"))) {
+            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("transportMode"))) {
+            request.set_transportMode(data.value(QStringLiteral("transportMode")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("scheduledAt"))) {
+            request.set_scheduledAt(data.value(QStringLiteral("scheduledAt")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("status"))) {
+            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
+        }
+        UpdateTransferSlotResponse response;
+        auto status = stub->UpdateTransferSlot(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -82,9 +119,16 @@ void TransferSlotGrpcBinding::updateTransferSlot(const QString& id, const QVaria
 
 void TransferSlotGrpcBinding::deleteTransferSlot(const QString& id) {
     try {
-        spdlog::debug("TransferSlotGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TransferSlotService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteTransferSlotRequest request;
+        request.set_id(id.toStdString());
+        DeleteTransferSlotResponse response;
+        auto status = stub->DeleteTransferSlot(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("TransferSlotGrpcBinding::delete failed: {}", ex.what());
@@ -94,11 +138,19 @@ void TransferSlotGrpcBinding::deleteTransferSlot(const QString& id) {
 
 void TransferSlotGrpcBinding::listTransferSlot(int page, int pageSize) {
     try {
-        spdlog::debug("TransferSlotGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TransferSlotService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListTransferSlotRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListTransferSlotResponse response;
+        auto status = stub->ListTransferSlot(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("TransferSlotGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

@@ -21,19 +21,29 @@ LoadPlanGrpcBinding::LoadPlanGrpcBinding(QObject* parent)
 
 void LoadPlanGrpcBinding::createLoadPlan(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateLoadPlanRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        [[maybe_unused]] auto createdAt = data.value(QStringLiteral("createdAt"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = LoadPlanService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateLoadPlan(&ctx, request, &response);
-
+        auto stub = LoadPlanService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateLoadPlanRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("voyageId"))) {
+            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("createdAt"))) {
+            request.set_createdAt(data.value(QStringLiteral("createdAt")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("status"))) {
+            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
+        }
+        CreateLoadPlanResponse response;
+        auto status = stub->CreateLoadPlan(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("LoadPlanGrpcBinding::create failed: {}", ex.what());
@@ -43,14 +53,18 @@ void LoadPlanGrpcBinding::createLoadPlan(const QVariantMap& data) {
 
 void LoadPlanGrpcBinding::readLoadPlan(const QString& id) {
     try {
-        spdlog::debug("LoadPlanGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = LoadPlanService::NewStub(channel_);
-        // GetLoadPlanRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = LoadPlanService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetLoadPlanRequest request;
+        request.set_id(id.toStdString());
+        GetLoadPlanResponse response;
+        auto status = stub->GetLoadPlan(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("LoadPlanGrpcBinding::read failed: {}", ex.what());
@@ -60,13 +74,28 @@ void LoadPlanGrpcBinding::readLoadPlan(const QString& id) {
 
 void LoadPlanGrpcBinding::updateLoadPlan(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("LoadPlanGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        [[maybe_unused]] auto createdAt = data.value(QStringLiteral("createdAt"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = LoadPlanService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateLoadPlanRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("voyageId"))) {
+            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("createdAt"))) {
+            request.set_createdAt(data.value(QStringLiteral("createdAt")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("status"))) {
+            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
+        }
+        UpdateLoadPlanResponse response;
+        auto status = stub->UpdateLoadPlan(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -78,9 +107,16 @@ void LoadPlanGrpcBinding::updateLoadPlan(const QString& id, const QVariantMap& d
 
 void LoadPlanGrpcBinding::deleteLoadPlan(const QString& id) {
     try {
-        spdlog::debug("LoadPlanGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = LoadPlanService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteLoadPlanRequest request;
+        request.set_id(id.toStdString());
+        DeleteLoadPlanResponse response;
+        auto status = stub->DeleteLoadPlan(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("LoadPlanGrpcBinding::delete failed: {}", ex.what());
@@ -90,11 +126,19 @@ void LoadPlanGrpcBinding::deleteLoadPlan(const QString& id) {
 
 void LoadPlanGrpcBinding::listLoadPlan(int page, int pageSize) {
     try {
-        spdlog::debug("LoadPlanGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = LoadPlanService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListLoadPlanRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListLoadPlanResponse response;
+        auto status = stub->ListLoadPlan(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("LoadPlanGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

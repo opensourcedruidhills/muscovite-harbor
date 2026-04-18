@@ -7,7 +7,6 @@
 #include <muscovite/dba/decimal.hpp>
 #include <muscovite/dba/timestamp.hpp>
 #include <string>
-#include <string>
 
 namespace harbour_control {
 

@@ -21,21 +21,35 @@ ParcelGrpcBinding::ParcelGrpcBinding(QObject* parent)
 
 void ParcelGrpcBinding::createParcel(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateParcelRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
-        [[maybe_unused]] auto palletId = data.value(QStringLiteral("palletId"));
-        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
-        [[maybe_unused]] auto hsCode = data.value(QStringLiteral("hsCode"));
-        [[maybe_unused]] auto description = data.value(QStringLiteral("description"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = ParcelService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateParcel(&ctx, request, &response);
-
+        auto stub = ParcelService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateParcelRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("trackingNumber"))) {
+            request.set_trackingNumber(data.value(QStringLiteral("trackingNumber")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("palletId"))) {
+            request.set_palletId(data.value(QStringLiteral("palletId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("weightKg"))) {
+            request.set_weightKg(data.value(QStringLiteral("weightKg")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("hsCode"))) {
+            request.set_hsCode(data.value(QStringLiteral("hsCode")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("description"))) {
+            request.set_description(data.value(QStringLiteral("description")).toString().toStdString());
+        }
+        CreateParcelResponse response;
+        auto status = stub->CreateParcel(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("ParcelGrpcBinding::create failed: {}", ex.what());
@@ -45,14 +59,18 @@ void ParcelGrpcBinding::createParcel(const QVariantMap& data) {
 
 void ParcelGrpcBinding::readParcel(const QString& id) {
     try {
-        spdlog::debug("ParcelGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = ParcelService::NewStub(channel_);
-        // GetParcelRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = ParcelService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetParcelRequest request;
+        request.set_id(id.toStdString());
+        GetParcelResponse response;
+        auto status = stub->GetParcel(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("ParcelGrpcBinding::read failed: {}", ex.what());
@@ -62,15 +80,34 @@ void ParcelGrpcBinding::readParcel(const QString& id) {
 
 void ParcelGrpcBinding::updateParcel(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("ParcelGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
-        [[maybe_unused]] auto palletId = data.value(QStringLiteral("palletId"));
-        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
-        [[maybe_unused]] auto hsCode = data.value(QStringLiteral("hsCode"));
-        [[maybe_unused]] auto description = data.value(QStringLiteral("description"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = ParcelService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateParcelRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("trackingNumber"))) {
+            request.set_trackingNumber(data.value(QStringLiteral("trackingNumber")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("palletId"))) {
+            request.set_palletId(data.value(QStringLiteral("palletId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("weightKg"))) {
+            request.set_weightKg(data.value(QStringLiteral("weightKg")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("hsCode"))) {
+            request.set_hsCode(data.value(QStringLiteral("hsCode")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("description"))) {
+            request.set_description(data.value(QStringLiteral("description")).toString().toStdString());
+        }
+        UpdateParcelResponse response;
+        auto status = stub->UpdateParcel(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -82,9 +119,16 @@ void ParcelGrpcBinding::updateParcel(const QString& id, const QVariantMap& data)
 
 void ParcelGrpcBinding::deleteParcel(const QString& id) {
     try {
-        spdlog::debug("ParcelGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = ParcelService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteParcelRequest request;
+        request.set_id(id.toStdString());
+        DeleteParcelResponse response;
+        auto status = stub->DeleteParcel(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("ParcelGrpcBinding::delete failed: {}", ex.what());
@@ -94,11 +138,19 @@ void ParcelGrpcBinding::deleteParcel(const QString& id) {
 
 void ParcelGrpcBinding::listParcel(int page, int pageSize) {
     try {
-        spdlog::debug("ParcelGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = ParcelService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListParcelRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListParcelResponse response;
+        auto status = stub->ListParcel(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("ParcelGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

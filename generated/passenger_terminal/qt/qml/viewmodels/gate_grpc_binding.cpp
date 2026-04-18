@@ -21,21 +21,35 @@ GateGrpcBinding::GateGrpcBinding(QObject* parent)
 
 void GateGrpcBinding::createGate(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateGateRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto code = data.value(QStringLiteral("code"));
-        [[maybe_unused]] auto name = data.value(QStringLiteral("name"));
-        [[maybe_unused]] auto capacity = data.value(QStringLiteral("capacity"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = GateService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateGate(&ctx, request, &response);
-
+        auto stub = GateService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateGateRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("code"))) {
+            request.set_code(data.value(QStringLiteral("code")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("name"))) {
+            request.set_name(data.value(QStringLiteral("name")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("capacity"))) {
+            request.set_capacity(data.value(QStringLiteral("capacity")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("status"))) {
+            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("voyageId"))) {
+            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
+        }
+        CreateGateResponse response;
+        auto status = stub->CreateGate(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("GateGrpcBinding::create failed: {}", ex.what());
@@ -45,14 +59,18 @@ void GateGrpcBinding::createGate(const QVariantMap& data) {
 
 void GateGrpcBinding::readGate(const QString& id) {
     try {
-        spdlog::debug("GateGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = GateService::NewStub(channel_);
-        // GetGateRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = GateService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetGateRequest request;
+        request.set_id(id.toStdString());
+        GetGateResponse response;
+        auto status = stub->GetGate(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("GateGrpcBinding::read failed: {}", ex.what());
@@ -62,15 +80,34 @@ void GateGrpcBinding::readGate(const QString& id) {
 
 void GateGrpcBinding::updateGate(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("GateGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto code = data.value(QStringLiteral("code"));
-        [[maybe_unused]] auto name = data.value(QStringLiteral("name"));
-        [[maybe_unused]] auto capacity = data.value(QStringLiteral("capacity"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = GateService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateGateRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("code"))) {
+            request.set_code(data.value(QStringLiteral("code")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("name"))) {
+            request.set_name(data.value(QStringLiteral("name")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("capacity"))) {
+            request.set_capacity(data.value(QStringLiteral("capacity")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("status"))) {
+            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("voyageId"))) {
+            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
+        }
+        UpdateGateResponse response;
+        auto status = stub->UpdateGate(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -82,9 +119,16 @@ void GateGrpcBinding::updateGate(const QString& id, const QVariantMap& data) {
 
 void GateGrpcBinding::deleteGate(const QString& id) {
     try {
-        spdlog::debug("GateGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = GateService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteGateRequest request;
+        request.set_id(id.toStdString());
+        DeleteGateResponse response;
+        auto status = stub->DeleteGate(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("GateGrpcBinding::delete failed: {}", ex.what());
@@ -94,11 +138,19 @@ void GateGrpcBinding::deleteGate(const QString& id) {
 
 void GateGrpcBinding::listGate(int page, int pageSize) {
     try {
-        spdlog::debug("GateGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = GateService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListGateRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListGateResponse response;
+        auto status = stub->ListGate(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("GateGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

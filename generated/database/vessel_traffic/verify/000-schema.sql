@@ -42,7 +42,6 @@ SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_t
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'voyages' AND column_name = 'created_by';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'voyages' AND column_name = 'updated_at';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'voyages' AND column_name = 'updated_by';
-SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'voyages' AND column_name = 'voyage_id';
 SELECT 1/COUNT(*) FROM information_schema.tables WHERE table_schema = 'vessel_traffic' AND table_name = 'pilot_assignments';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'pilot_assignments' AND column_name = 'id';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'pilot_assignments' AND column_name = 'voyage_id';
@@ -54,7 +53,6 @@ SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_t
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'pilot_assignments' AND column_name = 'created_by';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'pilot_assignments' AND column_name = 'updated_at';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'pilot_assignments' AND column_name = 'updated_by';
-SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'pilot_assignments' AND column_name = 'pilot_assignment_id';
 SELECT 1/COUNT(*) FROM information_schema.tables WHERE table_schema = 'vessel_traffic' AND table_name = 'tug_bookings';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tug_bookings' AND column_name = 'id';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tug_bookings' AND column_name = 'voyage_id';
@@ -65,7 +63,6 @@ SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_t
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tug_bookings' AND column_name = 'created_by';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tug_bookings' AND column_name = 'updated_at';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tug_bookings' AND column_name = 'updated_by';
-SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tug_bookings' AND column_name = 'tug_booking_id';
 SELECT 1/COUNT(*) FROM information_schema.tables WHERE table_schema = 'vessel_traffic' AND table_name = 'tide_windows';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tide_windows' AND column_name = 'id';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tide_windows' AND column_name = 'berth_id';
@@ -79,7 +76,6 @@ SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_t
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tide_windows' AND column_name = 'valid_to';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tide_windows' AND column_name = 'sys_period_start';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tide_windows' AND column_name = 'sys_period_end';
-SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'tide_windows' AND column_name = 'tide_window_id';
 SELECT 1/COUNT(*) FROM information_schema.tables WHERE table_schema = 'vessel_traffic' AND table_name = 'outbox';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'outbox' AND column_name = 'id';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'vessel_traffic' AND table_name = 'outbox' AND column_name = 'aggregate_type';

@@ -21,21 +21,35 @@ PilotAssignmentGrpcBinding::PilotAssignmentGrpcBinding(QObject* parent)
 
 void PilotAssignmentGrpcBinding::createPilotAssignment(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreatePilotAssignmentRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        [[maybe_unused]] auto pilotName = data.value(QStringLiteral("pilotName"));
-        [[maybe_unused]] auto pilotZone = data.value(QStringLiteral("pilotZone"));
-        [[maybe_unused]] auto boardingTime = data.value(QStringLiteral("boardingTime"));
-        [[maybe_unused]] auto disembarkTime = data.value(QStringLiteral("disembarkTime"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = PilotAssignmentService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreatePilotAssignment(&ctx, request, &response);
-
+        auto stub = PilotAssignmentService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreatePilotAssignmentRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("voyageId"))) {
+            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("pilotName"))) {
+            request.set_pilotName(data.value(QStringLiteral("pilotName")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("pilotZone"))) {
+            request.set_pilotZone(data.value(QStringLiteral("pilotZone")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("boardingTime"))) {
+            request.set_boardingTime(data.value(QStringLiteral("boardingTime")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("disembarkTime"))) {
+            request.set_disembarkTime(data.value(QStringLiteral("disembarkTime")).toString().toStdString());
+        }
+        CreatePilotAssignmentResponse response;
+        auto status = stub->CreatePilotAssignment(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("PilotAssignmentGrpcBinding::create failed: {}", ex.what());
@@ -45,14 +59,18 @@ void PilotAssignmentGrpcBinding::createPilotAssignment(const QVariantMap& data) 
 
 void PilotAssignmentGrpcBinding::readPilotAssignment(const QString& id) {
     try {
-        spdlog::debug("PilotAssignmentGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = PilotAssignmentService::NewStub(channel_);
-        // GetPilotAssignmentRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = PilotAssignmentService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetPilotAssignmentRequest request;
+        request.set_id(id.toStdString());
+        GetPilotAssignmentResponse response;
+        auto status = stub->GetPilotAssignment(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("PilotAssignmentGrpcBinding::read failed: {}", ex.what());
@@ -62,15 +80,34 @@ void PilotAssignmentGrpcBinding::readPilotAssignment(const QString& id) {
 
 void PilotAssignmentGrpcBinding::updatePilotAssignment(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("PilotAssignmentGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        [[maybe_unused]] auto pilotName = data.value(QStringLiteral("pilotName"));
-        [[maybe_unused]] auto pilotZone = data.value(QStringLiteral("pilotZone"));
-        [[maybe_unused]] auto boardingTime = data.value(QStringLiteral("boardingTime"));
-        [[maybe_unused]] auto disembarkTime = data.value(QStringLiteral("disembarkTime"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = PilotAssignmentService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdatePilotAssignmentRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("voyageId"))) {
+            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("pilotName"))) {
+            request.set_pilotName(data.value(QStringLiteral("pilotName")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("pilotZone"))) {
+            request.set_pilotZone(data.value(QStringLiteral("pilotZone")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("boardingTime"))) {
+            request.set_boardingTime(data.value(QStringLiteral("boardingTime")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("disembarkTime"))) {
+            request.set_disembarkTime(data.value(QStringLiteral("disembarkTime")).toString().toStdString());
+        }
+        UpdatePilotAssignmentResponse response;
+        auto status = stub->UpdatePilotAssignment(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -82,9 +119,16 @@ void PilotAssignmentGrpcBinding::updatePilotAssignment(const QString& id, const 
 
 void PilotAssignmentGrpcBinding::deletePilotAssignment(const QString& id) {
     try {
-        spdlog::debug("PilotAssignmentGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = PilotAssignmentService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeletePilotAssignmentRequest request;
+        request.set_id(id.toStdString());
+        DeletePilotAssignmentResponse response;
+        auto status = stub->DeletePilotAssignment(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("PilotAssignmentGrpcBinding::delete failed: {}", ex.what());
@@ -94,11 +138,19 @@ void PilotAssignmentGrpcBinding::deletePilotAssignment(const QString& id) {
 
 void PilotAssignmentGrpcBinding::listPilotAssignment(int page, int pageSize) {
     try {
-        spdlog::debug("PilotAssignmentGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = PilotAssignmentService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListPilotAssignmentRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListPilotAssignmentResponse response;
+        auto status = stub->ListPilotAssignment(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("PilotAssignmentGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

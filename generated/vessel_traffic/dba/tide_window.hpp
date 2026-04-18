@@ -5,7 +5,6 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <muscovite/dba/decimal.hpp>
-#include <string>
 
 namespace vessel_traffic {
 

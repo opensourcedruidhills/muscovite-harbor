@@ -15,7 +15,15 @@ auto ProjectionService::refresh_departure_board() -> void {
 }
 
 auto ProjectionService::is_stale_departure_board() const -> bool {
-    return false; // TODO: check last refresh timestamp
+    // WHY: #1483 — check pg_stat_user_tables for last vacuum/analyze as proxy
+    auto tx = conn_.begin();
+    auto result = tx.exec_params(
+        "SELECT EXTRACT(EPOCH FROM (NOW() - COALESCE(last_analyze, last_autoanalyze, '1970-01-01'))) > $1 "
+        "FROM pg_stat_user_tables WHERE relname = $2",
+        refresh_interval_seconds_, "departure_board");
+    tx.commit();
+    if (result.empty()) { return true; }
+    return result[0][0].as<bool>();
 }
 
 } // namespace passenger_terminal

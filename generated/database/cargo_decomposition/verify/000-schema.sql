@@ -24,7 +24,6 @@ SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_de
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'parcels' AND column_name = 'created_by';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'parcels' AND column_name = 'updated_at';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'parcels' AND column_name = 'updated_by';
-SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'parcels' AND column_name = 'parcel_id';
 SELECT 1/COUNT(*) FROM information_schema.tables WHERE table_schema = 'cargo_decomposition' AND table_name = 'delivery_units';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'delivery_units' AND column_name = 'id';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'delivery_units' AND column_name = 'tracking_number';
@@ -35,7 +34,7 @@ SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_de
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'delivery_units' AND column_name = 'created_by';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'delivery_units' AND column_name = 'updated_at';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'delivery_units' AND column_name = 'updated_by';
-SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'delivery_units' AND column_name = 'delivery_unit_id';
+SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'delivery_units' AND column_name = 'parcel_id';
 SELECT 1/COUNT(*) FROM information_schema.tables WHERE table_schema = 'cargo_decomposition' AND table_name = 'break_bulk_items';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'break_bulk_items' AND column_name = 'id';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_decomposition' AND table_name = 'break_bulk_items' AND column_name = 'container_id';

@@ -21,20 +21,32 @@ DeliveryUnitGrpcBinding::DeliveryUnitGrpcBinding(QObject* parent)
 
 void DeliveryUnitGrpcBinding::createDeliveryUnit(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateDeliveryUnitRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
-        [[maybe_unused]] auto destination = data.value(QStringLiteral("destination"));
-        [[maybe_unused]] auto carrier = data.value(QStringLiteral("carrier"));
-        [[maybe_unused]] auto dispatchedAt = data.value(QStringLiteral("dispatchedAt"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = DeliveryUnitService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateDeliveryUnit(&ctx, request, &response);
-
+        auto stub = DeliveryUnitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateDeliveryUnitRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("trackingNumber"))) {
+            request.set_trackingNumber(data.value(QStringLiteral("trackingNumber")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("destination"))) {
+            request.set_destination(data.value(QStringLiteral("destination")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("carrier"))) {
+            request.set_carrier(data.value(QStringLiteral("carrier")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("dispatchedAt"))) {
+            request.set_dispatchedAt(data.value(QStringLiteral("dispatchedAt")).toString().toStdString());
+        }
+        CreateDeliveryUnitResponse response;
+        auto status = stub->CreateDeliveryUnit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("DeliveryUnitGrpcBinding::create failed: {}", ex.what());
@@ -44,14 +56,18 @@ void DeliveryUnitGrpcBinding::createDeliveryUnit(const QVariantMap& data) {
 
 void DeliveryUnitGrpcBinding::readDeliveryUnit(const QString& id) {
     try {
-        spdlog::debug("DeliveryUnitGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = DeliveryUnitService::NewStub(channel_);
-        // GetDeliveryUnitRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = DeliveryUnitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetDeliveryUnitRequest request;
+        request.set_id(id.toStdString());
+        GetDeliveryUnitResponse response;
+        auto status = stub->GetDeliveryUnit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("DeliveryUnitGrpcBinding::read failed: {}", ex.what());
@@ -61,14 +77,31 @@ void DeliveryUnitGrpcBinding::readDeliveryUnit(const QString& id) {
 
 void DeliveryUnitGrpcBinding::updateDeliveryUnit(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("DeliveryUnitGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
-        [[maybe_unused]] auto destination = data.value(QStringLiteral("destination"));
-        [[maybe_unused]] auto carrier = data.value(QStringLiteral("carrier"));
-        [[maybe_unused]] auto dispatchedAt = data.value(QStringLiteral("dispatchedAt"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = DeliveryUnitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateDeliveryUnitRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("trackingNumber"))) {
+            request.set_trackingNumber(data.value(QStringLiteral("trackingNumber")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("destination"))) {
+            request.set_destination(data.value(QStringLiteral("destination")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("carrier"))) {
+            request.set_carrier(data.value(QStringLiteral("carrier")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("dispatchedAt"))) {
+            request.set_dispatchedAt(data.value(QStringLiteral("dispatchedAt")).toString().toStdString());
+        }
+        UpdateDeliveryUnitResponse response;
+        auto status = stub->UpdateDeliveryUnit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -80,9 +113,16 @@ void DeliveryUnitGrpcBinding::updateDeliveryUnit(const QString& id, const QVaria
 
 void DeliveryUnitGrpcBinding::deleteDeliveryUnit(const QString& id) {
     try {
-        spdlog::debug("DeliveryUnitGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = DeliveryUnitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteDeliveryUnitRequest request;
+        request.set_id(id.toStdString());
+        DeleteDeliveryUnitResponse response;
+        auto status = stub->DeleteDeliveryUnit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("DeliveryUnitGrpcBinding::delete failed: {}", ex.what());
@@ -92,11 +132,19 @@ void DeliveryUnitGrpcBinding::deleteDeliveryUnit(const QString& id) {
 
 void DeliveryUnitGrpcBinding::listDeliveryUnit(int page, int pageSize) {
     try {
-        spdlog::debug("DeliveryUnitGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = DeliveryUnitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListDeliveryUnitRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListDeliveryUnitResponse response;
+        auto status = stub->ListDeliveryUnit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("DeliveryUnitGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

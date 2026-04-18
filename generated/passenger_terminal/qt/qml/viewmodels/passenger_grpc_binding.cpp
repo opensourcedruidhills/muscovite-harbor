@@ -21,20 +21,32 @@ PassengerGrpcBinding::PassengerGrpcBinding(QObject* parent)
 
 void PassengerGrpcBinding::createPassenger(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreatePassengerRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto bookingRef = data.value(QStringLiteral("bookingRef"));
-        [[maybe_unused]] auto passengerType = data.value(QStringLiteral("passengerType"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = PassengerService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreatePassenger(&ctx, request, &response);
-
+        auto stub = PassengerService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreatePassengerRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("bookingRef"))) {
+            request.set_bookingRef(data.value(QStringLiteral("bookingRef")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("passengerType"))) {
+            request.set_passengerType(data.value(QStringLiteral("passengerType")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("voyageId"))) {
+            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("status"))) {
+            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
+        }
+        CreatePassengerResponse response;
+        auto status = stub->CreatePassenger(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("PassengerGrpcBinding::create failed: {}", ex.what());
@@ -44,14 +56,18 @@ void PassengerGrpcBinding::createPassenger(const QVariantMap& data) {
 
 void PassengerGrpcBinding::readPassenger(const QString& id) {
     try {
-        spdlog::debug("PassengerGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = PassengerService::NewStub(channel_);
-        // GetPassengerRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = PassengerService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetPassengerRequest request;
+        request.set_id(id.toStdString());
+        GetPassengerResponse response;
+        auto status = stub->GetPassenger(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("PassengerGrpcBinding::read failed: {}", ex.what());
@@ -61,14 +77,31 @@ void PassengerGrpcBinding::readPassenger(const QString& id) {
 
 void PassengerGrpcBinding::updatePassenger(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("PassengerGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto bookingRef = data.value(QStringLiteral("bookingRef"));
-        [[maybe_unused]] auto passengerType = data.value(QStringLiteral("passengerType"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = PassengerService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdatePassengerRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("bookingRef"))) {
+            request.set_bookingRef(data.value(QStringLiteral("bookingRef")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("passengerType"))) {
+            request.set_passengerType(data.value(QStringLiteral("passengerType")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("voyageId"))) {
+            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("status"))) {
+            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
+        }
+        UpdatePassengerResponse response;
+        auto status = stub->UpdatePassenger(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -80,9 +113,16 @@ void PassengerGrpcBinding::updatePassenger(const QString& id, const QVariantMap&
 
 void PassengerGrpcBinding::deletePassenger(const QString& id) {
     try {
-        spdlog::debug("PassengerGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = PassengerService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeletePassengerRequest request;
+        request.set_id(id.toStdString());
+        DeletePassengerResponse response;
+        auto status = stub->DeletePassenger(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("PassengerGrpcBinding::delete failed: {}", ex.what());
@@ -92,11 +132,19 @@ void PassengerGrpcBinding::deletePassenger(const QString& id) {
 
 void PassengerGrpcBinding::listPassenger(int page, int pageSize) {
     try {
-        spdlog::debug("PassengerGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = PassengerService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListPassengerRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListPassengerResponse response;
+        auto status = stub->ListPassenger(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("PassengerGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

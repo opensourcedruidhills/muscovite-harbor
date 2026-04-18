@@ -6,7 +6,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <muscovite/dba/decimal.hpp>
 #include <string>
-#include <string>
+#include "types/berth_code.hpp"
 
 namespace vessel_traffic {
 

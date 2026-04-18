@@ -21,20 +21,32 @@ BargeBookingGrpcBinding::BargeBookingGrpcBinding(QObject* parent)
 
 void BargeBookingGrpcBinding::createBargeBooking(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateBargeBookingRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto bargeName = data.value(QStringLiteral("bargeName"));
-        [[maybe_unused]] auto capacityTeu = data.value(QStringLiteral("capacityTeu"));
-        [[maybe_unused]] auto departureAt = data.value(QStringLiteral("departureAt"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = BargeBookingService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateBargeBooking(&ctx, request, &response);
-
+        auto stub = BargeBookingService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateBargeBookingRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("bargeName"))) {
+            request.set_bargeName(data.value(QStringLiteral("bargeName")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("capacityTeu"))) {
+            request.set_capacityTeu(data.value(QStringLiteral("capacityTeu")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("departureAt"))) {
+            request.set_departureAt(data.value(QStringLiteral("departureAt")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("status"))) {
+            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
+        }
+        CreateBargeBookingResponse response;
+        auto status = stub->CreateBargeBooking(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("BargeBookingGrpcBinding::create failed: {}", ex.what());
@@ -44,14 +56,18 @@ void BargeBookingGrpcBinding::createBargeBooking(const QVariantMap& data) {
 
 void BargeBookingGrpcBinding::readBargeBooking(const QString& id) {
     try {
-        spdlog::debug("BargeBookingGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = BargeBookingService::NewStub(channel_);
-        // GetBargeBookingRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = BargeBookingService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetBargeBookingRequest request;
+        request.set_id(id.toStdString());
+        GetBargeBookingResponse response;
+        auto status = stub->GetBargeBooking(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("BargeBookingGrpcBinding::read failed: {}", ex.what());
@@ -61,14 +77,31 @@ void BargeBookingGrpcBinding::readBargeBooking(const QString& id) {
 
 void BargeBookingGrpcBinding::updateBargeBooking(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("BargeBookingGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto bargeName = data.value(QStringLiteral("bargeName"));
-        [[maybe_unused]] auto capacityTeu = data.value(QStringLiteral("capacityTeu"));
-        [[maybe_unused]] auto departureAt = data.value(QStringLiteral("departureAt"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = BargeBookingService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateBargeBookingRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("bargeName"))) {
+            request.set_bargeName(data.value(QStringLiteral("bargeName")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("capacityTeu"))) {
+            request.set_capacityTeu(data.value(QStringLiteral("capacityTeu")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("departureAt"))) {
+            request.set_departureAt(data.value(QStringLiteral("departureAt")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("status"))) {
+            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
+        }
+        UpdateBargeBookingResponse response;
+        auto status = stub->UpdateBargeBooking(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -80,9 +113,16 @@ void BargeBookingGrpcBinding::updateBargeBooking(const QString& id, const QVaria
 
 void BargeBookingGrpcBinding::deleteBargeBooking(const QString& id) {
     try {
-        spdlog::debug("BargeBookingGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = BargeBookingService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteBargeBookingRequest request;
+        request.set_id(id.toStdString());
+        DeleteBargeBookingResponse response;
+        auto status = stub->DeleteBargeBooking(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("BargeBookingGrpcBinding::delete failed: {}", ex.what());
@@ -92,11 +132,19 @@ void BargeBookingGrpcBinding::deleteBargeBooking(const QString& id) {
 
 void BargeBookingGrpcBinding::listBargeBooking(int page, int pageSize) {
     try {
-        spdlog::debug("BargeBookingGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = BargeBookingService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListBargeBookingRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListBargeBookingResponse response;
+        auto status = stub->ListBargeBooking(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("BargeBookingGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

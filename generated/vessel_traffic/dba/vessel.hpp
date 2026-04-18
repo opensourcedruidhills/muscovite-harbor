@@ -5,7 +5,9 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <string>
-#include <string>
+#include "types/call_sign.hpp"
+#include "types/imo_number.hpp"
+#include "types/mmsi.hpp"
 
 namespace vessel_traffic {
 

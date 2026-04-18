@@ -3,6 +3,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include "parcel_domain_service.hpp"
+#include <stdexcept>
 
 namespace cargo_decomposition {
 
@@ -30,12 +31,16 @@ auto ParcelDomainService::find_all() -> std::vector<Parcel> {
 }
 
 auto ParcelDomainService::add_delivery_unit(const Parcel::Id& parent_id, const DeliveryUnit& child) -> void {
-    // Validate parent exists, then delegate to command service
-    (void)parent_id; (void)child;
+    auto parent = query_service_.find_by_id(parent_id);
+    if (!parent) {
+        throw std::runtime_error("Parent Parcel not found");
+    }
+    command_service_.create(child);
 }
 
 auto ParcelDomainService::remove_delivery_unit(const Parcel::Id& parent_id, const DeliveryUnit::Id& child_id) -> void {
-    (void)parent_id; (void)child_id;
+    (void)parent_id;
+    command_service_.remove(child_id);
 }
 
 } // namespace cargo_decomposition

@@ -21,23 +21,41 @@ HazmatPermitGrpcBinding::HazmatPermitGrpcBinding(QObject* parent)
 
 void HazmatPermitGrpcBinding::createHazmatPermit(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateHazmatPermitRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto permitNumber = data.value(QStringLiteral("permitNumber"));
-        [[maybe_unused]] auto vesselId = data.value(QStringLiteral("vesselId"));
-        [[maybe_unused]] auto imoClass = data.value(QStringLiteral("imoClass"));
-        [[maybe_unused]] auto quantityKg = data.value(QStringLiteral("quantityKg"));
-        [[maybe_unused]] auto approved = data.value(QStringLiteral("approved"));
-        [[maybe_unused]] auto validFrom = data.value(QStringLiteral("validFrom"));
-        [[maybe_unused]] auto validUntil = data.value(QStringLiteral("validUntil"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = HazmatPermitService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateHazmatPermit(&ctx, request, &response);
-
+        auto stub = HazmatPermitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateHazmatPermitRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("permitNumber"))) {
+            request.set_permitNumber(data.value(QStringLiteral("permitNumber")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("vesselId"))) {
+            request.set_vesselId(data.value(QStringLiteral("vesselId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("imoClass"))) {
+            request.set_imoClass(data.value(QStringLiteral("imoClass")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("quantityKg"))) {
+            request.set_quantityKg(data.value(QStringLiteral("quantityKg")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("approved"))) {
+            request.set_approved(data.value(QStringLiteral("approved")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("validFrom"))) {
+            request.set_validFrom(data.value(QStringLiteral("validFrom")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("validUntil"))) {
+            request.set_validUntil(data.value(QStringLiteral("validUntil")).toString().toStdString());
+        }
+        CreateHazmatPermitResponse response;
+        auto status = stub->CreateHazmatPermit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("HazmatPermitGrpcBinding::create failed: {}", ex.what());
@@ -47,14 +65,18 @@ void HazmatPermitGrpcBinding::createHazmatPermit(const QVariantMap& data) {
 
 void HazmatPermitGrpcBinding::readHazmatPermit(const QString& id) {
     try {
-        spdlog::debug("HazmatPermitGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = HazmatPermitService::NewStub(channel_);
-        // GetHazmatPermitRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = HazmatPermitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetHazmatPermitRequest request;
+        request.set_id(id.toStdString());
+        GetHazmatPermitResponse response;
+        auto status = stub->GetHazmatPermit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("HazmatPermitGrpcBinding::read failed: {}", ex.what());
@@ -64,17 +86,40 @@ void HazmatPermitGrpcBinding::readHazmatPermit(const QString& id) {
 
 void HazmatPermitGrpcBinding::updateHazmatPermit(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("HazmatPermitGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto permitNumber = data.value(QStringLiteral("permitNumber"));
-        [[maybe_unused]] auto vesselId = data.value(QStringLiteral("vesselId"));
-        [[maybe_unused]] auto imoClass = data.value(QStringLiteral("imoClass"));
-        [[maybe_unused]] auto quantityKg = data.value(QStringLiteral("quantityKg"));
-        [[maybe_unused]] auto approved = data.value(QStringLiteral("approved"));
-        [[maybe_unused]] auto validFrom = data.value(QStringLiteral("validFrom"));
-        [[maybe_unused]] auto validUntil = data.value(QStringLiteral("validUntil"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = HazmatPermitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateHazmatPermitRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("permitNumber"))) {
+            request.set_permitNumber(data.value(QStringLiteral("permitNumber")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("vesselId"))) {
+            request.set_vesselId(data.value(QStringLiteral("vesselId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("imoClass"))) {
+            request.set_imoClass(data.value(QStringLiteral("imoClass")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("quantityKg"))) {
+            request.set_quantityKg(data.value(QStringLiteral("quantityKg")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("approved"))) {
+            request.set_approved(data.value(QStringLiteral("approved")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("validFrom"))) {
+            request.set_validFrom(data.value(QStringLiteral("validFrom")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("validUntil"))) {
+            request.set_validUntil(data.value(QStringLiteral("validUntil")).toString().toStdString());
+        }
+        UpdateHazmatPermitResponse response;
+        auto status = stub->UpdateHazmatPermit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -86,9 +131,16 @@ void HazmatPermitGrpcBinding::updateHazmatPermit(const QString& id, const QVaria
 
 void HazmatPermitGrpcBinding::deleteHazmatPermit(const QString& id) {
     try {
-        spdlog::debug("HazmatPermitGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = HazmatPermitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteHazmatPermitRequest request;
+        request.set_id(id.toStdString());
+        DeleteHazmatPermitResponse response;
+        auto status = stub->DeleteHazmatPermit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("HazmatPermitGrpcBinding::delete failed: {}", ex.what());
@@ -98,11 +150,19 @@ void HazmatPermitGrpcBinding::deleteHazmatPermit(const QString& id) {
 
 void HazmatPermitGrpcBinding::listHazmatPermit(int page, int pageSize) {
     try {
-        spdlog::debug("HazmatPermitGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = HazmatPermitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListHazmatPermitRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListHazmatPermitResponse response;
+        auto status = stub->ListHazmatPermit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("HazmatPermitGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

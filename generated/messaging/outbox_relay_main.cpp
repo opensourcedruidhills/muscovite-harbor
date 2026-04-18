@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <pqxx/pqxx>
+#include <nats/nats.h>
 
 namespace {
 
@@ -45,6 +46,18 @@ struct OutboxRelay {
     int batch_size{100};
     int max_retries{5};
     std::unordered_set<std::string> sent_message_ids;
+    natsConnection* nats_conn_{nullptr};
+
+    void connect_nats() {
+        natsOptions* opts{nullptr};
+        natsOptions_Create(&opts);
+        natsOptions_SetURL(opts, nats_url.c_str());
+        auto status = natsConnection_Connect(&nats_conn_, opts);
+        natsOptions_Destroy(opts);
+        if (status != NATS_OK) {
+            throw std::runtime_error("NATS connect failed: " + std::string(natsStatus_GetText(status)));
+        }
+    }
 
     void poll_and_publish() {
         pqxx::connection conn{db_url};
@@ -65,11 +78,15 @@ struct OutboxRelay {
             // Deduplication: skip already-sent messages
             if (sent_message_ids.contains(message_id)) { continue; }
 
-            // Publish to NATS (using nats_subject_prefix + subject)
+            // Publish to NATS
             auto full_subject = nats_subject_prefix + "." + subject;
-            // TODO: Replace with nats.h client call when NATS C client is available
-            std::cout << "[" << context_name << "] publishing " << message_id
-                      << " to " << full_subject << "\n";
+            auto status = natsConnection_Publish(nats_conn_,
+                full_subject.c_str(),
+                reinterpret_cast<const void*>(payload.data()),
+                static_cast<int>(payload.size()));
+            if (status != NATS_OK) {
+                throw std::runtime_error("NATS publish failed: " + std::string(natsStatus_GetText(status)));
+            }
 
             // Mark as sent
             tx.exec_params(

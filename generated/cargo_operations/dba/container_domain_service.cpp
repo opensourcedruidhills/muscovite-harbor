@@ -3,6 +3,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include "container_domain_service.hpp"
+#include <stdexcept>
 
 namespace cargo_operations {
 

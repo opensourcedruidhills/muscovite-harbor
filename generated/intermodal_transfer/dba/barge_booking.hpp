@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <muscovite/dba/timestamp.hpp>
 #include <string>
-#include <string>
 
 namespace intermodal_transfer {
 

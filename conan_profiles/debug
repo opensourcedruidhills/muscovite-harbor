@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+# Copyright (c) 2025-2026 Johannes Lochmann
+#
+# This software is dual-licensed:
+#  - GNU Affero General Public License v3 (AGPL-3.0), see LICENSE-AGPL
+#  - Commercial license, contact muscovite-licensing@johanneslochmann.net
+
+# Muscovite Debug Build Profile
+#
+# This profile configures the Conan package manager for debug builds.
+# Use with: conan install --profile conan_profiles/debug .
+#
+# Profile Inheritance:
+# ====================
+# This profile inherits from the default profile which auto-detects:
+#   - Compiler (GCC, Clang, MSVC)
+#   - OS (Linux, macOS, Windows)
+#   - Architecture (x86_64, ARM, etc.)
+#
+# You can view your default profile with:
+#   conan profile show default
+
+include(default)
+
+# Build Configuration:
+# ====================
+[settings]
+build_type=Debug
+# CMAKE_BUILD_TYPE will be set to "Debug" (uppercase) for CMake
+# Conanfile.py layout() will convert this to lowercase "debug" for folder names
+# Result: build/debug/ (not build/Debug/)
+
+compiler.cppstd=gnu23
+# Use C++23 standard with GNU extensions enabled (gnu23, not c++23)
+# This enables GCC's C++ extensions which are used by some Muscovite code
+
+compiler.libcxx=libstdc++11
+# Use GNU's standard C++ library implementation with C++11 ABI
+
+compiler.cstd=17
+# C standard for any C code (if needed)
+
+# Compiler Environment:
+# ====================
+[buildenv]
+CC=gcc
+# C compiler: explicitly use gcc (not clang or msvc)
+
+CXX=g++
+# C++ compiler: explicitly use g++ (not clang++ or msvc++)
+
+# CMake Configuration:
+# ====================
+[conf]
+tools.cmake.cmaketoolchain:generator=Ninja
+tools.build:cxxflags=["-D_GLIBCXX_ASSERTIONS"]
+# Use Ninja as the CMake generator for faster builds than Unix Makefiles
+#
+# Workflow:
+# =========
+# 1. conan install --profile conan_profiles/debug .
+#    → Downloads C++ dependencies (jwt-cpp, nlohmann_json, etc.)
+#    → Generates build/debug/generators/conan_toolchain.cmake
+#
+# 2. cmake --preset debug
+#    → CMakeLists.txt includes conan_toolchain.cmake
+#    → All dependencies are discoverable via find_package()
+#
+# 3. cmake --build --preset debug
+#    → Ninja builds all targets with Debug configuration
+#    → Produces build/debug/muscoviteserver, build/debug/muscovitedba, etc.
+#
+# Troubleshooting:
+# ================
+# Q: CMake can't find jwt-cpp, nlohmann_json, etc.?
+# A: Conan toolchain wasn't included before find_package().
+#    Check CMakeLists.txt lines 10-16 are before Dependencies.cmake include.
+#
+# Q: Build goes to build/Debug instead of build/debug?
+# A: Conanfile.py layout() wasn't applied.
+#    Verify: conan install output should say "Generators folder: .../build/debug/generators"
+#
+# Q: Wrong compiler used?
+# A: Check: CC=gcc CXX=g++ are set above.
+#    Or set them in environment: export CC=gcc CXX=g++
+#
+# Q: C++23 errors?
+# A: Check: compiler.cppstd=gnu23 (not c++23)
+#    GCC needs gnu23 to enable C++23 extensions used in Muscovite

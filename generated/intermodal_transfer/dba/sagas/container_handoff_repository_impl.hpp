@@ -87,8 +87,15 @@ public:
             saga_id);
         tx.commit();
         if (result.empty()) { return std::nullopt; }
-        // TODO: map result row to ContainerHandoffInstance
-        return ContainerHandoffInstance{.id = saga_id};
+        const auto& row = result[0];
+        return ContainerHandoffInstance{
+            .id = row[0].as<std::string>(),
+            .status = row[1].as<std::string>(),
+            .current_step = row[2].as<std::string>(),
+            .payload = row[3].as<std::string>(),
+            .created_at = row[4].as<std::string>(),
+            .updated_at = row[5].as<std::string>(),
+        };
     }
 
     [[nodiscard]] auto find_timed_out(std::chrono::seconds threshold) -> std::vector<ContainerHandoffInstance> override {
@@ -113,7 +120,16 @@ public:
             saga_id);
         tx.commit();
         auto entries = std::vector<ContainerHandoffStepLogEntry>{};
-        // TODO: map result rows to StepLogEntry
+        for (const auto& row : result) {
+            entries.push_back(ContainerHandoffStepLogEntry{
+                .saga_id = row[0].as<std::string>(),
+                .step_name = row[1].as<std::string>(),
+                .status = row[2].as<std::string>(),
+                .result = row[3].is_null() ? std::string{} : row[3].as<std::string>(),
+                .started_at = row[4].as<std::string>(),
+                .completed_at = row[5].is_null() ? std::string{} : row[5].as<std::string>(),
+            });
+        }
         return entries;
     }
 

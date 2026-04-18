@@ -6,7 +6,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <muscovite/dba/timestamp.hpp>
 #include <string>
-#include <string>
+#include "types/tracking_number.hpp"
 
 namespace cargo_decomposition {
 

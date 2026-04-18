@@ -21,20 +21,32 @@ TugBookingGrpcBinding::TugBookingGrpcBinding(QObject* parent)
 
 void TugBookingGrpcBinding::createTugBooking(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateTugBookingRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        [[maybe_unused]] auto tugName = data.value(QStringLiteral("tugName"));
-        [[maybe_unused]] auto bollardPullT = data.value(QStringLiteral("bollardPullT"));
-        [[maybe_unused]] auto isConfirmed = data.value(QStringLiteral("isConfirmed"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = TugBookingService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateTugBooking(&ctx, request, &response);
-
+        auto stub = TugBookingService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateTugBookingRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("voyageId"))) {
+            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("tugName"))) {
+            request.set_tugName(data.value(QStringLiteral("tugName")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("bollardPullT"))) {
+            request.set_bollardPullT(data.value(QStringLiteral("bollardPullT")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("isConfirmed"))) {
+            request.set_isConfirmed(data.value(QStringLiteral("isConfirmed")).toString().toStdString());
+        }
+        CreateTugBookingResponse response;
+        auto status = stub->CreateTugBooking(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("TugBookingGrpcBinding::create failed: {}", ex.what());
@@ -44,14 +56,18 @@ void TugBookingGrpcBinding::createTugBooking(const QVariantMap& data) {
 
 void TugBookingGrpcBinding::readTugBooking(const QString& id) {
     try {
-        spdlog::debug("TugBookingGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = TugBookingService::NewStub(channel_);
-        // GetTugBookingRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = TugBookingService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetTugBookingRequest request;
+        request.set_id(id.toStdString());
+        GetTugBookingResponse response;
+        auto status = stub->GetTugBooking(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("TugBookingGrpcBinding::read failed: {}", ex.what());
@@ -61,14 +77,31 @@ void TugBookingGrpcBinding::readTugBooking(const QString& id) {
 
 void TugBookingGrpcBinding::updateTugBooking(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("TugBookingGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        [[maybe_unused]] auto tugName = data.value(QStringLiteral("tugName"));
-        [[maybe_unused]] auto bollardPullT = data.value(QStringLiteral("bollardPullT"));
-        [[maybe_unused]] auto isConfirmed = data.value(QStringLiteral("isConfirmed"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TugBookingService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateTugBookingRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("voyageId"))) {
+            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("tugName"))) {
+            request.set_tugName(data.value(QStringLiteral("tugName")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("bollardPullT"))) {
+            request.set_bollardPullT(data.value(QStringLiteral("bollardPullT")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("isConfirmed"))) {
+            request.set_isConfirmed(data.value(QStringLiteral("isConfirmed")).toString().toStdString());
+        }
+        UpdateTugBookingResponse response;
+        auto status = stub->UpdateTugBooking(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -80,9 +113,16 @@ void TugBookingGrpcBinding::updateTugBooking(const QString& id, const QVariantMa
 
 void TugBookingGrpcBinding::deleteTugBooking(const QString& id) {
     try {
-        spdlog::debug("TugBookingGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TugBookingService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteTugBookingRequest request;
+        request.set_id(id.toStdString());
+        DeleteTugBookingResponse response;
+        auto status = stub->DeleteTugBooking(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("TugBookingGrpcBinding::delete failed: {}", ex.what());
@@ -92,11 +132,19 @@ void TugBookingGrpcBinding::deleteTugBooking(const QString& id) {
 
 void TugBookingGrpcBinding::listTugBooking(int page, int pageSize) {
     try {
-        spdlog::debug("TugBookingGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TugBookingService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListTugBookingRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListTugBookingResponse response;
+        auto status = stub->ListTugBooking(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("TugBookingGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

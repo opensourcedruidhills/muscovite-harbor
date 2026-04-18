@@ -43,7 +43,6 @@ SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_op
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'reefer_units' AND column_name = 'created_by';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'reefer_units' AND column_name = 'updated_at';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'reefer_units' AND column_name = 'updated_by';
-SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'reefer_units' AND column_name = 'reefer_unit_id';
 SELECT 1/COUNT(*) FROM information_schema.tables WHERE table_schema = 'cargo_operations' AND table_name = 'load_plans';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'load_plans' AND column_name = 'id';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'load_plans' AND column_name = 'voyage_id';
@@ -62,7 +61,6 @@ SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_op
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'discharge_sequences' AND column_name = 'created_by';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'discharge_sequences' AND column_name = 'updated_at';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'discharge_sequences' AND column_name = 'updated_by';
-SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'discharge_sequences' AND column_name = 'discharge_sequence_id';
 SELECT 1/COUNT(*) FROM information_schema.tables WHERE table_schema = 'cargo_operations' AND table_name = 'container_stack_events';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'container_stack_events' AND column_name = 'id';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'cargo_operations' AND table_name = 'container_stack_events' AND column_name = 'aggregate_id';

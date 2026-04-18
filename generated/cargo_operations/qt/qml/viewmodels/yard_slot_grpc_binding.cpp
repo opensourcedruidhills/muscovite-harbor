@@ -21,21 +21,35 @@ YardSlotGrpcBinding::YardSlotGrpcBinding(QObject* parent)
 
 void YardSlotGrpcBinding::createYardSlot(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateYardSlotRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto code = data.value(QStringLiteral("code"));
-        [[maybe_unused]] auto maxWeightKg = data.value(QStringLiteral("maxWeightKg"));
-        [[maybe_unused]] auto maxTier = data.value(QStringLiteral("maxTier"));
-        [[maybe_unused]] auto hasPower = data.value(QStringLiteral("hasPower"));
-        [[maybe_unused]] auto isOccupied = data.value(QStringLiteral("isOccupied"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = YardSlotService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateYardSlot(&ctx, request, &response);
-
+        auto stub = YardSlotService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateYardSlotRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("code"))) {
+            request.set_code(data.value(QStringLiteral("code")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("maxWeightKg"))) {
+            request.set_maxWeightKg(data.value(QStringLiteral("maxWeightKg")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("maxTier"))) {
+            request.set_maxTier(data.value(QStringLiteral("maxTier")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("hasPower"))) {
+            request.set_hasPower(data.value(QStringLiteral("hasPower")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("isOccupied"))) {
+            request.set_isOccupied(data.value(QStringLiteral("isOccupied")).toString().toStdString());
+        }
+        CreateYardSlotResponse response;
+        auto status = stub->CreateYardSlot(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("YardSlotGrpcBinding::create failed: {}", ex.what());
@@ -45,14 +59,18 @@ void YardSlotGrpcBinding::createYardSlot(const QVariantMap& data) {
 
 void YardSlotGrpcBinding::readYardSlot(const QString& id) {
     try {
-        spdlog::debug("YardSlotGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = YardSlotService::NewStub(channel_);
-        // GetYardSlotRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = YardSlotService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetYardSlotRequest request;
+        request.set_id(id.toStdString());
+        GetYardSlotResponse response;
+        auto status = stub->GetYardSlot(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("YardSlotGrpcBinding::read failed: {}", ex.what());
@@ -62,15 +80,34 @@ void YardSlotGrpcBinding::readYardSlot(const QString& id) {
 
 void YardSlotGrpcBinding::updateYardSlot(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("YardSlotGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto code = data.value(QStringLiteral("code"));
-        [[maybe_unused]] auto maxWeightKg = data.value(QStringLiteral("maxWeightKg"));
-        [[maybe_unused]] auto maxTier = data.value(QStringLiteral("maxTier"));
-        [[maybe_unused]] auto hasPower = data.value(QStringLiteral("hasPower"));
-        [[maybe_unused]] auto isOccupied = data.value(QStringLiteral("isOccupied"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = YardSlotService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateYardSlotRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("code"))) {
+            request.set_code(data.value(QStringLiteral("code")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("maxWeightKg"))) {
+            request.set_maxWeightKg(data.value(QStringLiteral("maxWeightKg")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("maxTier"))) {
+            request.set_maxTier(data.value(QStringLiteral("maxTier")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("hasPower"))) {
+            request.set_hasPower(data.value(QStringLiteral("hasPower")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("isOccupied"))) {
+            request.set_isOccupied(data.value(QStringLiteral("isOccupied")).toString().toStdString());
+        }
+        UpdateYardSlotResponse response;
+        auto status = stub->UpdateYardSlot(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -82,9 +119,16 @@ void YardSlotGrpcBinding::updateYardSlot(const QString& id, const QVariantMap& d
 
 void YardSlotGrpcBinding::deleteYardSlot(const QString& id) {
     try {
-        spdlog::debug("YardSlotGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = YardSlotService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteYardSlotRequest request;
+        request.set_id(id.toStdString());
+        DeleteYardSlotResponse response;
+        auto status = stub->DeleteYardSlot(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("YardSlotGrpcBinding::delete failed: {}", ex.what());
@@ -94,11 +138,19 @@ void YardSlotGrpcBinding::deleteYardSlot(const QString& id) {
 
 void YardSlotGrpcBinding::listYardSlot(int page, int pageSize) {
     try {
-        spdlog::debug("YardSlotGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = YardSlotService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListYardSlotRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListYardSlotResponse response;
+        auto status = stub->ListYardSlot(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("YardSlotGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

@@ -21,19 +21,29 @@ RailWagonGrpcBinding::RailWagonGrpcBinding(QObject* parent)
 
 void RailWagonGrpcBinding::createRailWagon(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateRailWagonRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto wagonNumber = data.value(QStringLiteral("wagonNumber"));
-        [[maybe_unused]] auto maxWeightKg = data.value(QStringLiteral("maxWeightKg"));
-        [[maybe_unused]] auto slotId = data.value(QStringLiteral("slotId"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = RailWagonService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateRailWagon(&ctx, request, &response);
-
+        auto stub = RailWagonService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateRailWagonRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("wagonNumber"))) {
+            request.set_wagonNumber(data.value(QStringLiteral("wagonNumber")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("maxWeightKg"))) {
+            request.set_maxWeightKg(data.value(QStringLiteral("maxWeightKg")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("slotId"))) {
+            request.set_slotId(data.value(QStringLiteral("slotId")).toString().toStdString());
+        }
+        CreateRailWagonResponse response;
+        auto status = stub->CreateRailWagon(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("RailWagonGrpcBinding::create failed: {}", ex.what());
@@ -43,14 +53,18 @@ void RailWagonGrpcBinding::createRailWagon(const QVariantMap& data) {
 
 void RailWagonGrpcBinding::readRailWagon(const QString& id) {
     try {
-        spdlog::debug("RailWagonGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = RailWagonService::NewStub(channel_);
-        // GetRailWagonRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = RailWagonService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetRailWagonRequest request;
+        request.set_id(id.toStdString());
+        GetRailWagonResponse response;
+        auto status = stub->GetRailWagon(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("RailWagonGrpcBinding::read failed: {}", ex.what());
@@ -60,13 +74,28 @@ void RailWagonGrpcBinding::readRailWagon(const QString& id) {
 
 void RailWagonGrpcBinding::updateRailWagon(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("RailWagonGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto wagonNumber = data.value(QStringLiteral("wagonNumber"));
-        [[maybe_unused]] auto maxWeightKg = data.value(QStringLiteral("maxWeightKg"));
-        [[maybe_unused]] auto slotId = data.value(QStringLiteral("slotId"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = RailWagonService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateRailWagonRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("wagonNumber"))) {
+            request.set_wagonNumber(data.value(QStringLiteral("wagonNumber")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("maxWeightKg"))) {
+            request.set_maxWeightKg(data.value(QStringLiteral("maxWeightKg")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("slotId"))) {
+            request.set_slotId(data.value(QStringLiteral("slotId")).toString().toStdString());
+        }
+        UpdateRailWagonResponse response;
+        auto status = stub->UpdateRailWagon(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -78,9 +107,16 @@ void RailWagonGrpcBinding::updateRailWagon(const QString& id, const QVariantMap&
 
 void RailWagonGrpcBinding::deleteRailWagon(const QString& id) {
     try {
-        spdlog::debug("RailWagonGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = RailWagonService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteRailWagonRequest request;
+        request.set_id(id.toStdString());
+        DeleteRailWagonResponse response;
+        auto status = stub->DeleteRailWagon(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("RailWagonGrpcBinding::delete failed: {}", ex.what());
@@ -90,11 +126,19 @@ void RailWagonGrpcBinding::deleteRailWagon(const QString& id) {
 
 void RailWagonGrpcBinding::listRailWagon(int page, int pageSize) {
     try {
-        spdlog::debug("RailWagonGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = RailWagonService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListRailWagonRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListRailWagonResponse response;
+        auto status = stub->ListRailWagon(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("RailWagonGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

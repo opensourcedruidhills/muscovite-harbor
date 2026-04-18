@@ -21,19 +21,29 @@ TideWindowGrpcBinding::TideWindowGrpcBinding(QObject* parent)
 
 void TideWindowGrpcBinding::createTideWindow(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateTideWindowRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto berthId = data.value(QStringLiteral("berthId"));
-        [[maybe_unused]] auto tideHeightMetres = data.value(QStringLiteral("tideHeightMetres"));
-        [[maybe_unused]] auto availableDraft = data.value(QStringLiteral("availableDraft"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = TideWindowService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateTideWindow(&ctx, request, &response);
-
+        auto stub = TideWindowService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateTideWindowRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("berthId"))) {
+            request.set_berthId(data.value(QStringLiteral("berthId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("tideHeightMetres"))) {
+            request.set_tideHeightMetres(data.value(QStringLiteral("tideHeightMetres")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("availableDraft"))) {
+            request.set_availableDraft(data.value(QStringLiteral("availableDraft")).toString().toStdString());
+        }
+        CreateTideWindowResponse response;
+        auto status = stub->CreateTideWindow(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("TideWindowGrpcBinding::create failed: {}", ex.what());
@@ -43,14 +53,18 @@ void TideWindowGrpcBinding::createTideWindow(const QVariantMap& data) {
 
 void TideWindowGrpcBinding::readTideWindow(const QString& id) {
     try {
-        spdlog::debug("TideWindowGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = TideWindowService::NewStub(channel_);
-        // GetTideWindowRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = TideWindowService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetTideWindowRequest request;
+        request.set_id(id.toStdString());
+        GetTideWindowResponse response;
+        auto status = stub->GetTideWindow(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("TideWindowGrpcBinding::read failed: {}", ex.what());
@@ -60,13 +74,28 @@ void TideWindowGrpcBinding::readTideWindow(const QString& id) {
 
 void TideWindowGrpcBinding::updateTideWindow(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("TideWindowGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto berthId = data.value(QStringLiteral("berthId"));
-        [[maybe_unused]] auto tideHeightMetres = data.value(QStringLiteral("tideHeightMetres"));
-        [[maybe_unused]] auto availableDraft = data.value(QStringLiteral("availableDraft"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TideWindowService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateTideWindowRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("berthId"))) {
+            request.set_berthId(data.value(QStringLiteral("berthId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("tideHeightMetres"))) {
+            request.set_tideHeightMetres(data.value(QStringLiteral("tideHeightMetres")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("availableDraft"))) {
+            request.set_availableDraft(data.value(QStringLiteral("availableDraft")).toString().toStdString());
+        }
+        UpdateTideWindowResponse response;
+        auto status = stub->UpdateTideWindow(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -78,9 +107,16 @@ void TideWindowGrpcBinding::updateTideWindow(const QString& id, const QVariantMa
 
 void TideWindowGrpcBinding::deleteTideWindow(const QString& id) {
     try {
-        spdlog::debug("TideWindowGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TideWindowService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteTideWindowRequest request;
+        request.set_id(id.toStdString());
+        DeleteTideWindowResponse response;
+        auto status = stub->DeleteTideWindow(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("TideWindowGrpcBinding::delete failed: {}", ex.what());
@@ -90,11 +126,19 @@ void TideWindowGrpcBinding::deleteTideWindow(const QString& id) {
 
 void TideWindowGrpcBinding::listTideWindow(int page, int pageSize) {
     try {
-        spdlog::debug("TideWindowGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TideWindowService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListTideWindowRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListTideWindowResponse response;
+        auto status = stub->ListTideWindow(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("TideWindowGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

@@ -33,7 +33,6 @@ SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'passenge
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'passenger_terminal' AND table_name = 'boarding_passes' AND column_name = 'created_by';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'passenger_terminal' AND table_name = 'boarding_passes' AND column_name = 'updated_at';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'passenger_terminal' AND table_name = 'boarding_passes' AND column_name = 'updated_by';
-SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'passenger_terminal' AND table_name = 'boarding_passes' AND column_name = 'boarding_pass_id';
 SELECT 1/COUNT(*) FROM information_schema.tables WHERE table_schema = 'passenger_terminal' AND table_name = 'outbox';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'passenger_terminal' AND table_name = 'outbox' AND column_name = 'id';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'passenger_terminal' AND table_name = 'outbox' AND column_name = 'aggregate_type';

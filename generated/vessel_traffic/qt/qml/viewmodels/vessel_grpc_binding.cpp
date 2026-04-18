@@ -21,23 +21,41 @@ VesselGrpcBinding::VesselGrpcBinding(QObject* parent)
 
 void VesselGrpcBinding::createVessel(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateVesselRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto imoNumber = data.value(QStringLiteral("imoNumber"));
-        [[maybe_unused]] auto mmsi = data.value(QStringLiteral("mmsi"));
-        [[maybe_unused]] auto callSign = data.value(QStringLiteral("callSign"));
-        [[maybe_unused]] auto name = data.value(QStringLiteral("name"));
-        [[maybe_unused]] auto vesselType = data.value(QStringLiteral("vesselType"));
-        [[maybe_unused]] auto flagState = data.value(QStringLiteral("flagState"));
-        [[maybe_unused]] auto isActive = data.value(QStringLiteral("isActive"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = VesselService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateVessel(&ctx, request, &response);
-
+        auto stub = VesselService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateVesselRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("imoNumber"))) {
+            request.set_imoNumber(data.value(QStringLiteral("imoNumber")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("mmsi"))) {
+            request.set_mmsi(data.value(QStringLiteral("mmsi")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("callSign"))) {
+            request.set_callSign(data.value(QStringLiteral("callSign")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("name"))) {
+            request.set_name(data.value(QStringLiteral("name")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("vesselType"))) {
+            request.set_vesselType(data.value(QStringLiteral("vesselType")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("flagState"))) {
+            request.set_flagState(data.value(QStringLiteral("flagState")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("isActive"))) {
+            request.set_isActive(data.value(QStringLiteral("isActive")).toString().toStdString());
+        }
+        CreateVesselResponse response;
+        auto status = stub->CreateVessel(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("VesselGrpcBinding::create failed: {}", ex.what());
@@ -47,14 +65,18 @@ void VesselGrpcBinding::createVessel(const QVariantMap& data) {
 
 void VesselGrpcBinding::readVessel(const QString& id) {
     try {
-        spdlog::debug("VesselGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = VesselService::NewStub(channel_);
-        // GetVesselRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = VesselService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetVesselRequest request;
+        request.set_id(id.toStdString());
+        GetVesselResponse response;
+        auto status = stub->GetVessel(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("VesselGrpcBinding::read failed: {}", ex.what());
@@ -64,17 +86,40 @@ void VesselGrpcBinding::readVessel(const QString& id) {
 
 void VesselGrpcBinding::updateVessel(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("VesselGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto imoNumber = data.value(QStringLiteral("imoNumber"));
-        [[maybe_unused]] auto mmsi = data.value(QStringLiteral("mmsi"));
-        [[maybe_unused]] auto callSign = data.value(QStringLiteral("callSign"));
-        [[maybe_unused]] auto name = data.value(QStringLiteral("name"));
-        [[maybe_unused]] auto vesselType = data.value(QStringLiteral("vesselType"));
-        [[maybe_unused]] auto flagState = data.value(QStringLiteral("flagState"));
-        [[maybe_unused]] auto isActive = data.value(QStringLiteral("isActive"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = VesselService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateVesselRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("imoNumber"))) {
+            request.set_imoNumber(data.value(QStringLiteral("imoNumber")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("mmsi"))) {
+            request.set_mmsi(data.value(QStringLiteral("mmsi")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("callSign"))) {
+            request.set_callSign(data.value(QStringLiteral("callSign")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("name"))) {
+            request.set_name(data.value(QStringLiteral("name")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("vesselType"))) {
+            request.set_vesselType(data.value(QStringLiteral("vesselType")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("flagState"))) {
+            request.set_flagState(data.value(QStringLiteral("flagState")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("isActive"))) {
+            request.set_isActive(data.value(QStringLiteral("isActive")).toString().toStdString());
+        }
+        UpdateVesselResponse response;
+        auto status = stub->UpdateVessel(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -86,9 +131,16 @@ void VesselGrpcBinding::updateVessel(const QString& id, const QVariantMap& data)
 
 void VesselGrpcBinding::deleteVessel(const QString& id) {
     try {
-        spdlog::debug("VesselGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = VesselService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteVesselRequest request;
+        request.set_id(id.toStdString());
+        DeleteVesselResponse response;
+        auto status = stub->DeleteVessel(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("VesselGrpcBinding::delete failed: {}", ex.what());
@@ -98,11 +150,19 @@ void VesselGrpcBinding::deleteVessel(const QString& id) {
 
 void VesselGrpcBinding::listVessel(int page, int pageSize) {
     try {
-        spdlog::debug("VesselGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = VesselService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListVesselRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListVesselResponse response;
+        auto status = stub->ListVessel(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("VesselGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

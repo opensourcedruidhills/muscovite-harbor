@@ -21,21 +21,35 @@ TruckVisitGrpcBinding::TruckVisitGrpcBinding(QObject* parent)
 
 void TruckVisitGrpcBinding::createTruckVisit(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateTruckVisitRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto truckPlate = data.value(QStringLiteral("truckPlate"));
-        [[maybe_unused]] auto carrierName = data.value(QStringLiteral("carrierName"));
-        [[maybe_unused]] auto slotId = data.value(QStringLiteral("slotId"));
-        [[maybe_unused]] auto arrivedAt = data.value(QStringLiteral("arrivedAt"));
-        [[maybe_unused]] auto departedAt = data.value(QStringLiteral("departedAt"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = TruckVisitService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateTruckVisit(&ctx, request, &response);
-
+        auto stub = TruckVisitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateTruckVisitRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("truckPlate"))) {
+            request.set_truckPlate(data.value(QStringLiteral("truckPlate")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("carrierName"))) {
+            request.set_carrierName(data.value(QStringLiteral("carrierName")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("slotId"))) {
+            request.set_slotId(data.value(QStringLiteral("slotId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("arrivedAt"))) {
+            request.set_arrivedAt(data.value(QStringLiteral("arrivedAt")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("departedAt"))) {
+            request.set_departedAt(data.value(QStringLiteral("departedAt")).toString().toStdString());
+        }
+        CreateTruckVisitResponse response;
+        auto status = stub->CreateTruckVisit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("TruckVisitGrpcBinding::create failed: {}", ex.what());
@@ -45,14 +59,18 @@ void TruckVisitGrpcBinding::createTruckVisit(const QVariantMap& data) {
 
 void TruckVisitGrpcBinding::readTruckVisit(const QString& id) {
     try {
-        spdlog::debug("TruckVisitGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = TruckVisitService::NewStub(channel_);
-        // GetTruckVisitRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = TruckVisitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetTruckVisitRequest request;
+        request.set_id(id.toStdString());
+        GetTruckVisitResponse response;
+        auto status = stub->GetTruckVisit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("TruckVisitGrpcBinding::read failed: {}", ex.what());
@@ -62,15 +80,34 @@ void TruckVisitGrpcBinding::readTruckVisit(const QString& id) {
 
 void TruckVisitGrpcBinding::updateTruckVisit(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("TruckVisitGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto truckPlate = data.value(QStringLiteral("truckPlate"));
-        [[maybe_unused]] auto carrierName = data.value(QStringLiteral("carrierName"));
-        [[maybe_unused]] auto slotId = data.value(QStringLiteral("slotId"));
-        [[maybe_unused]] auto arrivedAt = data.value(QStringLiteral("arrivedAt"));
-        [[maybe_unused]] auto departedAt = data.value(QStringLiteral("departedAt"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TruckVisitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateTruckVisitRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("truckPlate"))) {
+            request.set_truckPlate(data.value(QStringLiteral("truckPlate")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("carrierName"))) {
+            request.set_carrierName(data.value(QStringLiteral("carrierName")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("slotId"))) {
+            request.set_slotId(data.value(QStringLiteral("slotId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("arrivedAt"))) {
+            request.set_arrivedAt(data.value(QStringLiteral("arrivedAt")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("departedAt"))) {
+            request.set_departedAt(data.value(QStringLiteral("departedAt")).toString().toStdString());
+        }
+        UpdateTruckVisitResponse response;
+        auto status = stub->UpdateTruckVisit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -82,9 +119,16 @@ void TruckVisitGrpcBinding::updateTruckVisit(const QString& id, const QVariantMa
 
 void TruckVisitGrpcBinding::deleteTruckVisit(const QString& id) {
     try {
-        spdlog::debug("TruckVisitGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TruckVisitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteTruckVisitRequest request;
+        request.set_id(id.toStdString());
+        DeleteTruckVisitResponse response;
+        auto status = stub->DeleteTruckVisit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("TruckVisitGrpcBinding::delete failed: {}", ex.what());
@@ -94,11 +138,19 @@ void TruckVisitGrpcBinding::deleteTruckVisit(const QString& id) {
 
 void TruckVisitGrpcBinding::listTruckVisit(int page, int pageSize) {
     try {
-        spdlog::debug("TruckVisitGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = TruckVisitService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListTruckVisitRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListTruckVisitResponse response;
+        auto status = stub->ListTruckVisit(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("TruckVisitGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

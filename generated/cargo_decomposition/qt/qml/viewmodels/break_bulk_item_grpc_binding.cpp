@@ -21,20 +21,32 @@ BreakBulkItemGrpcBinding::BreakBulkItemGrpcBinding(QObject* parent)
 
 void BreakBulkItemGrpcBinding::createBreakBulkItem(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateBreakBulkItemRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
-        [[maybe_unused]] auto itemType = data.value(QStringLiteral("itemType"));
-        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
-        [[maybe_unused]] auto requiresCrane = data.value(QStringLiteral("requiresCrane"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = BreakBulkItemService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateBreakBulkItem(&ctx, request, &response);
-
+        auto stub = BreakBulkItemService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateBreakBulkItemRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("containerId"))) {
+            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("itemType"))) {
+            request.set_itemType(data.value(QStringLiteral("itemType")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("weightKg"))) {
+            request.set_weightKg(data.value(QStringLiteral("weightKg")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("requiresCrane"))) {
+            request.set_requiresCrane(data.value(QStringLiteral("requiresCrane")).toString().toStdString());
+        }
+        CreateBreakBulkItemResponse response;
+        auto status = stub->CreateBreakBulkItem(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("BreakBulkItemGrpcBinding::create failed: {}", ex.what());
@@ -44,14 +56,18 @@ void BreakBulkItemGrpcBinding::createBreakBulkItem(const QVariantMap& data) {
 
 void BreakBulkItemGrpcBinding::readBreakBulkItem(const QString& id) {
     try {
-        spdlog::debug("BreakBulkItemGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = BreakBulkItemService::NewStub(channel_);
-        // GetBreakBulkItemRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = BreakBulkItemService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetBreakBulkItemRequest request;
+        request.set_id(id.toStdString());
+        GetBreakBulkItemResponse response;
+        auto status = stub->GetBreakBulkItem(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("BreakBulkItemGrpcBinding::read failed: {}", ex.what());
@@ -61,14 +77,31 @@ void BreakBulkItemGrpcBinding::readBreakBulkItem(const QString& id) {
 
 void BreakBulkItemGrpcBinding::updateBreakBulkItem(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("BreakBulkItemGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
-        [[maybe_unused]] auto itemType = data.value(QStringLiteral("itemType"));
-        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
-        [[maybe_unused]] auto requiresCrane = data.value(QStringLiteral("requiresCrane"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = BreakBulkItemService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateBreakBulkItemRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("containerId"))) {
+            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("itemType"))) {
+            request.set_itemType(data.value(QStringLiteral("itemType")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("weightKg"))) {
+            request.set_weightKg(data.value(QStringLiteral("weightKg")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("requiresCrane"))) {
+            request.set_requiresCrane(data.value(QStringLiteral("requiresCrane")).toString().toStdString());
+        }
+        UpdateBreakBulkItemResponse response;
+        auto status = stub->UpdateBreakBulkItem(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -80,9 +113,16 @@ void BreakBulkItemGrpcBinding::updateBreakBulkItem(const QString& id, const QVar
 
 void BreakBulkItemGrpcBinding::deleteBreakBulkItem(const QString& id) {
     try {
-        spdlog::debug("BreakBulkItemGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = BreakBulkItemService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteBreakBulkItemRequest request;
+        request.set_id(id.toStdString());
+        DeleteBreakBulkItemResponse response;
+        auto status = stub->DeleteBreakBulkItem(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("BreakBulkItemGrpcBinding::delete failed: {}", ex.what());
@@ -92,11 +132,19 @@ void BreakBulkItemGrpcBinding::deleteBreakBulkItem(const QString& id) {
 
 void BreakBulkItemGrpcBinding::listBreakBulkItem(int page, int pageSize) {
     try {
-        spdlog::debug("BreakBulkItemGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = BreakBulkItemService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListBreakBulkItemRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListBreakBulkItemResponse response;
+        auto status = stub->ListBreakBulkItem(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("BreakBulkItemGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

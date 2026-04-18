@@ -21,20 +21,32 @@ DischargeSequenceGrpcBinding::DischargeSequenceGrpcBinding(QObject* parent)
 
 void DischargeSequenceGrpcBinding::createDischargeSequence(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateDischargeSequenceRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto loadPlanId = data.value(QStringLiteral("loadPlanId"));
-        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
-        [[maybe_unused]] auto sequenceOrder = data.value(QStringLiteral("sequenceOrder"));
-        [[maybe_unused]] auto craneId = data.value(QStringLiteral("craneId"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = DischargeSequenceService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateDischargeSequence(&ctx, request, &response);
-
+        auto stub = DischargeSequenceService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateDischargeSequenceRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("loadPlanId"))) {
+            request.set_loadPlanId(data.value(QStringLiteral("loadPlanId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("containerId"))) {
+            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("sequenceOrder"))) {
+            request.set_sequenceOrder(data.value(QStringLiteral("sequenceOrder")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("craneId"))) {
+            request.set_craneId(data.value(QStringLiteral("craneId")).toString().toStdString());
+        }
+        CreateDischargeSequenceResponse response;
+        auto status = stub->CreateDischargeSequence(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("DischargeSequenceGrpcBinding::create failed: {}", ex.what());
@@ -44,14 +56,18 @@ void DischargeSequenceGrpcBinding::createDischargeSequence(const QVariantMap& da
 
 void DischargeSequenceGrpcBinding::readDischargeSequence(const QString& id) {
     try {
-        spdlog::debug("DischargeSequenceGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = DischargeSequenceService::NewStub(channel_);
-        // GetDischargeSequenceRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = DischargeSequenceService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetDischargeSequenceRequest request;
+        request.set_id(id.toStdString());
+        GetDischargeSequenceResponse response;
+        auto status = stub->GetDischargeSequence(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("DischargeSequenceGrpcBinding::read failed: {}", ex.what());
@@ -61,14 +77,31 @@ void DischargeSequenceGrpcBinding::readDischargeSequence(const QString& id) {
 
 void DischargeSequenceGrpcBinding::updateDischargeSequence(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("DischargeSequenceGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto loadPlanId = data.value(QStringLiteral("loadPlanId"));
-        [[maybe_unused]] auto containerId = data.value(QStringLiteral("containerId"));
-        [[maybe_unused]] auto sequenceOrder = data.value(QStringLiteral("sequenceOrder"));
-        [[maybe_unused]] auto craneId = data.value(QStringLiteral("craneId"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = DischargeSequenceService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateDischargeSequenceRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("loadPlanId"))) {
+            request.set_loadPlanId(data.value(QStringLiteral("loadPlanId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("containerId"))) {
+            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("sequenceOrder"))) {
+            request.set_sequenceOrder(data.value(QStringLiteral("sequenceOrder")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("craneId"))) {
+            request.set_craneId(data.value(QStringLiteral("craneId")).toString().toStdString());
+        }
+        UpdateDischargeSequenceResponse response;
+        auto status = stub->UpdateDischargeSequence(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -80,9 +113,16 @@ void DischargeSequenceGrpcBinding::updateDischargeSequence(const QString& id, co
 
 void DischargeSequenceGrpcBinding::deleteDischargeSequence(const QString& id) {
     try {
-        spdlog::debug("DischargeSequenceGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = DischargeSequenceService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteDischargeSequenceRequest request;
+        request.set_id(id.toStdString());
+        DeleteDischargeSequenceResponse response;
+        auto status = stub->DeleteDischargeSequence(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("DischargeSequenceGrpcBinding::delete failed: {}", ex.what());
@@ -92,11 +132,19 @@ void DischargeSequenceGrpcBinding::deleteDischargeSequence(const QString& id) {
 
 void DischargeSequenceGrpcBinding::listDischargeSequence(int page, int pageSize) {
     try {
-        spdlog::debug("DischargeSequenceGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = DischargeSequenceService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListDischargeSequenceRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListDischargeSequenceResponse response;
+        auto status = stub->ListDischargeSequence(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("DischargeSequenceGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

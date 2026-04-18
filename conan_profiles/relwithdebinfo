@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+# Copyright (c) 2025-2026 Johannes Lochmann
+#
+# This software is dual-licensed:
+#  - GNU Affero General Public License v3 (AGPL-3.0), see LICENSE-AGPL
+#  - Commercial license, contact muscovite-licensing@johanneslochmann.net
+
+include(default)
+
+[settings]
+build_type=RelWithDebInfo
+compiler.cppstd=gnu23
+compiler.libcxx=libstdc++11
+compiler.cstd=17
+
+[buildenv]
+CC=gcc
+CXX=g++
+
+[conf]
+tools.cmake.cmaketoolchain:generator=Ninja
+tools.build:cxxflags=["-D_GLIBCXX_ASSERTIONS"]

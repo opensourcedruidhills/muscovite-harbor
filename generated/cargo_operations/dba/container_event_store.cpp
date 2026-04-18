@@ -19,7 +19,7 @@ public:
         tx.exec_params(
             "INSERT INTO cargo_operations.container_events "
             "(id, aggregate_id, event_type, payload, sequence_number, created_at) "
-            "VALUES (uuidv7(), $1, $2, $3, $4, NOW())",
+            "VALUES (gen_random_uuid(), $1, $2, $3, $4, NOW())",
             aggregate_id, event_type, payload, expected_version + 1);
         tx.commit();
     }

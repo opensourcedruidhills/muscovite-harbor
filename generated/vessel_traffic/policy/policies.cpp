@@ -6,14 +6,15 @@
 
 namespace vessel_traffic {
 
-auto AutoDispatchPilotPolicyHandler::matches(const VesselAnnounced& /*event*/) const -> bool {
-    // TODO: implement condition check for AutoDispatchPilot
-    return true;
+auto AutoDispatchPilotPolicyHandler::matches(const VesselAnnounced& event) const -> bool {
+    // WHY: #1476 — compiled from DSL policy condition
+    (void)event;
+    return ;
 }
 
-auto AutoDispatchPilotPolicyHandler::execute(const VesselAnnounced& /*event*/) const -> PolicyResult {
+auto AutoDispatchPilotPolicyHandler::execute(const VesselAnnounced& event) const -> PolicyResult {
+    (void)event;
     // Invoke command: DispatchPilot
-    // TODO: implement policy action
     return PolicyResult::Success;
 }
 

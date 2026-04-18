@@ -22,7 +22,7 @@ SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'intermod
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'intermodal_transfer' AND table_name = 'truck_visits' AND column_name = 'created_by';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'intermodal_transfer' AND table_name = 'truck_visits' AND column_name = 'updated_at';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'intermodal_transfer' AND table_name = 'truck_visits' AND column_name = 'updated_by';
-SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'intermodal_transfer' AND table_name = 'truck_visits' AND column_name = 'truck_visit_id';
+SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'intermodal_transfer' AND table_name = 'truck_visits' AND column_name = 'transfer_slot_id';
 SELECT 1/COUNT(*) FROM information_schema.tables WHERE table_schema = 'intermodal_transfer' AND table_name = 'rail_wagons';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'intermodal_transfer' AND table_name = 'rail_wagons' AND column_name = 'id';
 SELECT 1/COUNT(*) FROM information_schema.columns WHERE table_schema = 'intermodal_transfer' AND table_name = 'rail_wagons' AND column_name = 'wagon_number';

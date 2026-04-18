@@ -21,21 +21,35 @@ SafetyZoneGrpcBinding::SafetyZoneGrpcBinding(QObject* parent)
 
 void SafetyZoneGrpcBinding::createSafetyZone(const QVariantMap& data) {
     try {
-        // Map QVariantMap to CreateSafetyZoneRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto zoneCode = data.value(QStringLiteral("zoneCode"));
-        [[maybe_unused]] auto zoneName = data.value(QStringLiteral("zoneName"));
-        [[maybe_unused]] auto securityLevel = data.value(QStringLiteral("securityLevel"));
-        [[maybe_unused]] auto maxHazmatClass = data.value(QStringLiteral("maxHazmatClass"));
-        [[maybe_unused]] auto isRestricted = data.value(QStringLiteral("isRestricted"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = SafetyZoneService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateSafetyZone(&ctx, request, &response);
-
+        auto stub = SafetyZoneService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        CreateSafetyZoneRequest request;
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("zoneCode"))) {
+            request.set_zoneCode(data.value(QStringLiteral("zoneCode")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("zoneName"))) {
+            request.set_zoneName(data.value(QStringLiteral("zoneName")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("securityLevel"))) {
+            request.set_securityLevel(data.value(QStringLiteral("securityLevel")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("maxHazmatClass"))) {
+            request.set_maxHazmatClass(data.value(QStringLiteral("maxHazmatClass")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("isRestricted"))) {
+            request.set_isRestricted(data.value(QStringLiteral("isRestricted")).toString().toStdString());
+        }
+        CreateSafetyZoneResponse response;
+        auto status = stub->CreateSafetyZone(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT createCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("SafetyZoneGrpcBinding::create failed: {}", ex.what());
@@ -45,14 +59,18 @@ void SafetyZoneGrpcBinding::createSafetyZone(const QVariantMap& data) {
 
 void SafetyZoneGrpcBinding::readSafetyZone(const QString& id) {
     try {
-        spdlog::debug("SafetyZoneGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = SafetyZoneService::NewStub(channel_);
-        // GetSafetyZoneRequest request;
-        // request.set_id(id.toStdString());
-
+        auto stub = SafetyZoneService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        GetSafetyZoneRequest request;
+        request.set_id(id.toStdString());
+        GetSafetyZoneResponse response;
+        auto status = stub->GetSafetyZone(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
-        result[QStringLiteral("id")] = id;
+        result[QStringLiteral("id")] = QString::fromStdString(response.id());
         Q_EMIT readCompleted(result);
     } catch (const std::exception& ex) {
         spdlog::error("SafetyZoneGrpcBinding::read failed: {}", ex.what());
@@ -62,15 +80,34 @@ void SafetyZoneGrpcBinding::readSafetyZone(const QString& id) {
 
 void SafetyZoneGrpcBinding::updateSafetyZone(const QString& id, const QVariantMap& data) {
     try {
-        spdlog::debug("SafetyZoneGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto zoneCode = data.value(QStringLiteral("zoneCode"));
-        [[maybe_unused]] auto zoneName = data.value(QStringLiteral("zoneName"));
-        [[maybe_unused]] auto securityLevel = data.value(QStringLiteral("securityLevel"));
-        [[maybe_unused]] auto maxHazmatClass = data.value(QStringLiteral("maxHazmatClass"));
-        [[maybe_unused]] auto isRestricted = data.value(QStringLiteral("isRestricted"));
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = SafetyZoneService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        UpdateSafetyZoneRequest request;
+        request.set_id(id.toStdString());
+        if (data.contains(QStringLiteral("id"))) {
+            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("zoneCode"))) {
+            request.set_zoneCode(data.value(QStringLiteral("zoneCode")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("zoneName"))) {
+            request.set_zoneName(data.value(QStringLiteral("zoneName")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("securityLevel"))) {
+            request.set_securityLevel(data.value(QStringLiteral("securityLevel")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("maxHazmatClass"))) {
+            request.set_maxHazmatClass(data.value(QStringLiteral("maxHazmatClass")).toString().toStdString());
+        }
+        if (data.contains(QStringLiteral("isRestricted"))) {
+            request.set_isRestricted(data.value(QStringLiteral("isRestricted")).toString().toStdString());
+        }
+        UpdateSafetyZoneResponse response;
+        auto status = stub->UpdateSafetyZone(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantMap result;
         result[QStringLiteral("id")] = id;
         Q_EMIT updateCompleted(result);
@@ -82,9 +119,16 @@ void SafetyZoneGrpcBinding::updateSafetyZone(const QString& id, const QVariantMa
 
 void SafetyZoneGrpcBinding::deleteSafetyZone(const QString& id) {
     try {
-        spdlog::debug("SafetyZoneGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = SafetyZoneService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        DeleteSafetyZoneRequest request;
+        request.set_id(id.toStdString());
+        DeleteSafetyZoneResponse response;
+        auto status = stub->DeleteSafetyZone(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         Q_EMIT deleteCompleted();
     } catch (const std::exception& ex) {
         spdlog::error("SafetyZoneGrpcBinding::delete failed: {}", ex.what());
@@ -94,11 +138,19 @@ void SafetyZoneGrpcBinding::deleteSafetyZone(const QString& id) {
 
 void SafetyZoneGrpcBinding::listSafetyZone(int page, int pageSize) {
     try {
-        spdlog::debug("SafetyZoneGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
+        auto stub = SafetyZoneService::NewStub(channel_);
+        grpc::ClientContext ctx;
+        ListSafetyZoneRequest request;
+        request.set_page(page);
+        request.set_page_size(pageSize);
+        ListSafetyZoneResponse response;
+        auto status = stub->ListSafetyZone(&ctx, request, &response);
+        if (!status.ok()) {
+            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
+            return;
+        }
         QVariantList results;
-        Q_EMIT listCompleted(results, 0);
+        Q_EMIT listCompleted(results, response.total_count());
     } catch (const std::exception& ex) {
         spdlog::error("SafetyZoneGrpcBinding::list failed: {}", ex.what());
         handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));

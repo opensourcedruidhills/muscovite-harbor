@@ -5,7 +5,6 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <string>
-#include <string>
 
 namespace intermodal_transfer {
 

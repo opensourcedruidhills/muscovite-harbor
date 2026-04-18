@@ -6,7 +6,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <muscovite/dba/timestamp.hpp>
 #include <string>
-#include <string>
 
 namespace cargo_operations {
 
