@@ -19,6 +19,8 @@ set(cargo_operations_grpc_proto_PROTO_FILES
   proto/container_stack_service.proto
   proto/load_plan_execution_service.proto
   proto/services.proto
+  proto/version.proto
+  proto/error_details.proto
 )
 
 add_library(cargo_operations_grpc_proto STATIC)

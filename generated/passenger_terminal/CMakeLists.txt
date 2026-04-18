@@ -15,6 +15,10 @@ set(passenger_terminal_grpc_proto_PROTO_FILES
   proto/passenger_name.proto
   proto/embarkation_service.proto
   proto/services.proto
+  proto/version.proto
+  proto/error_details.proto
+  proto/event_streaming.proto
+  proto/state_machine_service.proto
 )
 
 add_library(passenger_terminal_grpc_proto STATIC)

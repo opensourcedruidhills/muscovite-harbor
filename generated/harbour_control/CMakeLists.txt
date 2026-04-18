@@ -13,6 +13,9 @@ set(harbour_control_grpc_proto_PROTO_FILES
   proto/hazmat_permit.proto
   proto/invoice_line.proto
   proto/port_call.proto
+  proto/version.proto
+  proto/error_details.proto
+  proto/event_streaming.proto
 )
 
 add_library(harbour_control_grpc_proto STATIC)

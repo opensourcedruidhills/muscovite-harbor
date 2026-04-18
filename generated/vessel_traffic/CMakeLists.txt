@@ -20,6 +20,10 @@ set(vessel_traffic_grpc_proto_PROTO_FILES
   proto/time_window.proto
   proto/vessel_call_service.proto
   proto/services.proto
+  proto/version.proto
+  proto/error_details.proto
+  proto/event_streaming.proto
+  proto/state_machine_service.proto
 )
 
 add_library(vessel_traffic_grpc_proto STATIC)
