@@ -25,7 +25,7 @@
         "002-vessel_traffic"
       ],
       "deploy": "deploy/003-cargo_operations.sql",
-      "hash": "fnv1a:bdc70c19fba3f288",
+      "hash": "fnv1a:8da806a6df14b074",
       "name": "003-cargo_operations",
       "note": "Schema cargo_operations",
       "revert": "revert/003-cargo_operations.sql",

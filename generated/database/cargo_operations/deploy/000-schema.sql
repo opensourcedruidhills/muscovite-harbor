@@ -111,7 +111,6 @@ CREATE TABLE cargo_operations.container_stack_events (
 )
 WITH (fillfactor = 100);
 
-ALTER TABLE cargo_operations.containers ADD CONSTRAINT uq_containers_id UNIQUE (id);
 CREATE INDEX idx_reefer_units_reefer_unit_id ON cargo_operations.reefer_units USING btree (container_id);
 CREATE INDEX idx_discharge_sequences_discharge_sequence_id ON cargo_operations.discharge_sequences USING btree (load_plan_id);
 CREATE UNIQUE INDEX ux_container_stack_events_agg_seq ON cargo_operations.container_stack_events USING btree (aggregate_id, sequence_number);

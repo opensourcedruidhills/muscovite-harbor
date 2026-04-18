@@ -39,6 +39,10 @@ add_subdirectory(harbour_control)
 # ── gRPC server binary (FTR-1488) ─────────────────────────────────
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/server_main.cpp)
     add_executable(muscovite_harbor_server src/server_main.cpp)
+    target_include_directories(muscovite_harbor_server PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}
+    )
     target_link_libraries(muscovite_harbor_server PRIVATE
         vessel_traffic_dba
         vessel_traffic_grpc_proto
