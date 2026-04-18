@@ -68,6 +68,7 @@ CREATE TABLE harbour_control.outbox (
     published_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
+CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE harbour_control.dead_letter_queue (
     id UUID NOT NULL DEFAULT gen_random_uuid(),
@@ -79,6 +80,7 @@ CREATE TABLE harbour_control.dead_letter_queue (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
+CREATE TABLE dead_letter_queue_default PARTITION OF dead_letter_queue DEFAULT;
 
 CREATE TABLE harbour_control.idempotency_keys (
     key TEXT NOT NULL,

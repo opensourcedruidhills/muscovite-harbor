@@ -32,8 +32,9 @@ CREATE TABLE cargo_operations.containers (
     created_by UUID,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_by UUID,
-    CONSTRAINT pk_containers PRIMARY KEY (id, created_at)
-) PARTITION BY RANGE (created_at);
+    CONSTRAINT pk_containers PRIMARY KEY (id)
+)
+WITH (fillfactor = 100);
 
 CREATE TABLE cargo_operations.yard_slots (
     id UUID NOT NULL,

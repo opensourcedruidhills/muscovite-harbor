@@ -14,7 +14,7 @@
         "001-extensions"
       ],
       "deploy": "deploy/002-vessel_traffic.sql",
-      "hash": "fnv1a:dc7d55225faba4b4",
+      "hash": "fnv1a:a922d9757cb78bbe",
       "name": "002-vessel_traffic",
       "note": "Schema vessel_traffic",
       "revert": "revert/002-vessel_traffic.sql",
@@ -25,7 +25,7 @@
         "002-vessel_traffic"
       ],
       "deploy": "deploy/003-cargo_operations.sql",
-      "hash": "fnv1a:8da806a6df14b074",
+      "hash": "fnv1a:658df2b2b481d9ae",
       "name": "003-cargo_operations",
       "note": "Schema cargo_operations",
       "revert": "revert/003-cargo_operations.sql",
@@ -36,7 +36,7 @@
         "003-cargo_operations"
       ],
       "deploy": "deploy/004-passenger_terminal.sql",
-      "hash": "fnv1a:62712fcfc8f9cf13",
+      "hash": "fnv1a:571b88a988d1f083",
       "name": "004-passenger_terminal",
       "note": "Schema passenger_terminal",
       "revert": "revert/004-passenger_terminal.sql",
@@ -47,7 +47,7 @@
         "004-passenger_terminal"
       ],
       "deploy": "deploy/005-intermodal_transfer.sql",
-      "hash": "fnv1a:56abfcbca2b9e96d",
+      "hash": "fnv1a:f3032e6ac05a3503",
       "name": "005-intermodal_transfer",
       "note": "Schema intermodal_transfer",
       "revert": "revert/005-intermodal_transfer.sql",
@@ -58,7 +58,7 @@
         "005-intermodal_transfer"
       ],
       "deploy": "deploy/006-cargo_decomposition.sql",
-      "hash": "fnv1a:03290354e624b6dd",
+      "hash": "fnv1a:48d0c7c332cc781d",
       "name": "006-cargo_decomposition",
       "note": "Schema cargo_decomposition",
       "revert": "revert/006-cargo_decomposition.sql",
@@ -69,7 +69,7 @@
         "006-cargo_decomposition"
       ],
       "deploy": "deploy/007-harbour_control.sql",
-      "hash": "fnv1a:aea36f69b8ee02a6",
+      "hash": "fnv1a:2c9f43904f6132bc",
       "name": "007-harbour_control",
       "note": "Schema harbour_control",
       "revert": "revert/007-harbour_control.sql",

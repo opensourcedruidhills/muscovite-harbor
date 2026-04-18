@@ -16,7 +16,10 @@
 #include <string>
 #include <grpcpp/grpcpp.h>
 
-namespace muscovite_harbor {
+#include "passenger_terminal/proto/version.grpc.pb.h"
+#include "passenger_terminal/proto/version.pb.h"
+
+namespace passenger_terminal {
 
 struct VersionInfo {
     static constexpr auto project_name = "MuscoviteHarbor";
@@ -33,5 +36,19 @@ struct VersionInfo {
     ;
 };
 
-} // namespace muscovite_harbor
+class VersionServiceImpl final : public passengerterminal::VersionService::Service {
+public:
+    ::grpc::Status GetVersion(
+            ::grpc::ServerContext* /*context*/, const passengerterminal::VersionRequest* /*request*/,
+            passengerterminal::VersionResponse* response) override {
+        auto* info = response->mutable_info();
+        info->set_project_name(VersionInfo::project_name);
+        info->set_version(VersionInfo::version);
+        info->set_build_date(VersionInfo::build_date);
+        info->set_compiler_info(VersionInfo::compiler_info);
+        return ::grpc::Status::OK;
+    }
+};
+
+} // namespace passenger_terminal
 
