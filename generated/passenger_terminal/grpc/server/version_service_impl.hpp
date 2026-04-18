@@ -16,8 +16,8 @@
 #include <string>
 #include <grpcpp/grpcpp.h>
 
-#include "passenger_terminal/version.grpc.pb.h"
-#include "passenger_terminal/version.pb.h"
+#include "passenger_terminal/passenger_terminal_version.grpc.pb.h"
+#include "passenger_terminal/passenger_terminal_version.pb.h"
 
 namespace passenger_terminal {
 

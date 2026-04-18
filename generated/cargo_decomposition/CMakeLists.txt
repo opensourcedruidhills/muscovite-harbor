@@ -18,9 +18,9 @@ set(cargo_decomposition_grpc_proto_PROTO_FILES
   proto/container_unpack_service.proto
   proto/pallet_dispatch_service.proto
   proto/services.proto
-  proto/version.proto
-  proto/error_details.proto
-  proto/event_streaming.proto
+  proto/cargo_decomposition_version.proto
+  proto/cargo_decomposition_error_details.proto
+  proto/cargo_decomposition_event_streaming.proto
 )
 
 add_library(cargo_decomposition_grpc_proto STATIC)

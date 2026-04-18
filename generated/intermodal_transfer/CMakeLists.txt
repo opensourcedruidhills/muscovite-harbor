@@ -16,10 +16,10 @@ set(intermodal_transfer_grpc_proto_PROTO_FILES
   proto/chassis_unit.proto
   proto/intermodal_handoff_service.proto
   proto/services.proto
-  proto/version.proto
-  proto/error_details.proto
-  proto/event_streaming.proto
-  proto/saga_service.proto
+  proto/intermodal_transfer_version.proto
+  proto/intermodal_transfer_error_details.proto
+  proto/intermodal_transfer_event_streaming.proto
+  proto/intermodal_transfer_saga_service.proto
 )
 
 add_library(intermodal_transfer_grpc_proto STATIC)

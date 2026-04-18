@@ -16,8 +16,8 @@
 #include <string>
 #include <grpcpp/grpcpp.h>
 
-#include "cargo_operations/version.grpc.pb.h"
-#include "cargo_operations/version.pb.h"
+#include "cargo_operations/cargo_operations_version.grpc.pb.h"
+#include "cargo_operations/cargo_operations_version.pb.h"
 
 namespace cargo_operations {
 

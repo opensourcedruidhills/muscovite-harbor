@@ -16,8 +16,8 @@
 #include <string>
 #include <grpcpp/grpcpp.h>
 
-#include "cargo_decomposition/version.grpc.pb.h"
-#include "cargo_decomposition/version.pb.h"
+#include "cargo_decomposition/cargo_decomposition_version.grpc.pb.h"
+#include "cargo_decomposition/cargo_decomposition_version.pb.h"
 
 namespace cargo_decomposition {
 
