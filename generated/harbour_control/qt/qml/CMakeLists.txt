@@ -7,15 +7,26 @@ qt_add_qml_module(harbour_control_qml_viewmodels
     VERSION 1.0
     QML_FILES
         SafetyZoneDialog.qml
+        SafetyZoneListView.qml
         HazmatPermitDialog.qml
+        HazmatPermitListView.qml
         InvoiceLineDialog.qml
+        InvoiceLineListView.qml
+        Navigation.qml
+        SearchView.qml
     SOURCES
         viewmodels/safety_zone_viewmodel.cpp
         viewmodels/safety_zone_viewmodel.hpp
+        viewmodels/safety_zone_grpc_binding.cpp
+        viewmodels/safety_zone_grpc_binding.hpp
         viewmodels/hazmat_permit_viewmodel.cpp
         viewmodels/hazmat_permit_viewmodel.hpp
+        viewmodels/hazmat_permit_grpc_binding.cpp
+        viewmodels/hazmat_permit_grpc_binding.hpp
         viewmodels/invoice_line_viewmodel.cpp
         viewmodels/invoice_line_viewmodel.hpp
+        viewmodels/invoice_line_grpc_binding.cpp
+        viewmodels/invoice_line_grpc_binding.hpp
 )
 
 target_link_libraries(harbour_control_qml_viewmodels PUBLIC
@@ -42,8 +53,13 @@ find_program(QMLLINT_EXECUTABLE qmllint HINTS ${Qt6_DIR}/../../../bin)
 if(QMLLINT_EXECUTABLE)
     set(_qml_files)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/SafetyZoneDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/SafetyZoneListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/HazmatPermitDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/HazmatPermitListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/InvoiceLineDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/InvoiceLineListView.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/Navigation.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/SearchView.qml)
     add_custom_target(harbour_control_qmllint
         COMMAND ${QMLLINT_EXECUTABLE} ${_qml_files}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

@@ -17,10 +17,10 @@ class MuscoviteHarborConan(ConanFile):
     }
 
     def requirements(self):
-        self.requires("muscovite/2.25.12")
+        self.requires("muscovite/2.25.14")
 
     def build_requirements(self):
-        self.tool_requires("muscomp/2.25.12")
+        self.tool_requires("muscomp/2.25.14")
 
     def layout(self):
         cmake_layout(self)
@@ -31,11 +31,14 @@ class MuscoviteHarborConan(ConanFile):
         tc = CMakeToolchain(self)
         tc.generate()
 
-        # Workaround: Several Conan recipes (protobuf, abseil, gRPC, spdlog,
-        # fmt, boost, etc.) use cpp_info.components but leave component-level
-        # includedirs empty.  When system -devel packages provide headers at
-        # /usr/include, the compiler picks up the wrong version — causing ABI
-        # mismatches or link failures.
+        # Workaround: Several Conan recipes (spdlog, fmt, boost, etc.) use
+        # cpp_info.components but leave component-level includedirs empty.
+        # When system -devel packages provide headers at /usr/include, the
+        # compiler picks up the wrong version — causing ABI mismatches or
+        # link failures.
+        #
+        # Note: protobuf, gRPC, and abseil are system packages since
+        # muscovite 2.25.14 — they are NOT patched here.
         #
         # Fix: iterate every imported target and, if its namespace matches a
         # Conan package, unconditionally append that package's include dir.
@@ -53,15 +56,13 @@ class MuscoviteHarborConan(ConanFile):
 
         # Map CMake target namespace prefixes → Conan dependency ref names.
         # Keys are regex-safe prefixes used in if(_t MATCHES "^<prefix>::").
+        # protobuf, gRPC, abseil, and re2 are system packages since
+        # muscovite 2.25.14 — do NOT include them here.
         ns_to_dep = {
-            "protobuf":       "protobuf",
-            "gRPC":           "grpc",
-            "absl":           "abseil",
             "spdlog":         "spdlog",
             "fmt":            "fmt",
             "Boost":          "boost",
             "boost":          "boost",
-            "re2":            "re2",
             "openssl":        "openssl",
             "OpenSSL":        "openssl",
             "opentelemetry":  "opentelemetry-cpp",

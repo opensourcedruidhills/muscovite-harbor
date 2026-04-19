@@ -13,67 +13,67 @@
       "dependencies": [
         "001-extensions"
       ],
-      "deploy": "deploy/002-vessel_traffic.sql",
+      "deploy": "vessel_traffic/deploy/000-schema.sql",
       "hash": "fnv1a:a922d9757cb78bbe",
       "name": "002-vessel_traffic",
       "note": "Schema vessel_traffic",
-      "revert": "revert/002-vessel_traffic.sql",
-      "verify": "verify/002-vessel_traffic.sql"
+      "revert": "vessel_traffic/revert/000-schema.sql",
+      "verify": "vessel_traffic/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "002-vessel_traffic"
       ],
-      "deploy": "deploy/003-cargo_operations.sql",
+      "deploy": "cargo_operations/deploy/000-schema.sql",
       "hash": "fnv1a:658df2b2b481d9ae",
       "name": "003-cargo_operations",
       "note": "Schema cargo_operations",
-      "revert": "revert/003-cargo_operations.sql",
-      "verify": "verify/003-cargo_operations.sql"
+      "revert": "cargo_operations/revert/000-schema.sql",
+      "verify": "cargo_operations/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "003-cargo_operations"
       ],
-      "deploy": "deploy/004-passenger_terminal.sql",
+      "deploy": "passenger_terminal/deploy/000-schema.sql",
       "hash": "fnv1a:571b88a988d1f083",
       "name": "004-passenger_terminal",
       "note": "Schema passenger_terminal",
-      "revert": "revert/004-passenger_terminal.sql",
-      "verify": "verify/004-passenger_terminal.sql"
+      "revert": "passenger_terminal/revert/000-schema.sql",
+      "verify": "passenger_terminal/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "004-passenger_terminal"
       ],
-      "deploy": "deploy/005-intermodal_transfer.sql",
+      "deploy": "intermodal_transfer/deploy/000-schema.sql",
       "hash": "fnv1a:f3032e6ac05a3503",
       "name": "005-intermodal_transfer",
       "note": "Schema intermodal_transfer",
-      "revert": "revert/005-intermodal_transfer.sql",
-      "verify": "verify/005-intermodal_transfer.sql"
+      "revert": "intermodal_transfer/revert/000-schema.sql",
+      "verify": "intermodal_transfer/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "005-intermodal_transfer"
       ],
-      "deploy": "deploy/006-cargo_decomposition.sql",
+      "deploy": "cargo_decomposition/deploy/000-schema.sql",
       "hash": "fnv1a:48d0c7c332cc781d",
       "name": "006-cargo_decomposition",
       "note": "Schema cargo_decomposition",
-      "revert": "revert/006-cargo_decomposition.sql",
-      "verify": "verify/006-cargo_decomposition.sql"
+      "revert": "cargo_decomposition/revert/000-schema.sql",
+      "verify": "cargo_decomposition/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "006-cargo_decomposition"
       ],
-      "deploy": "deploy/007-harbour_control.sql",
+      "deploy": "harbour_control/deploy/000-schema.sql",
       "hash": "fnv1a:2c9f43904f6132bc",
       "name": "007-harbour_control",
       "note": "Schema harbour_control",
-      "revert": "revert/007-harbour_control.sql",
-      "verify": "verify/007-harbour_control.sql"
+      "revert": "harbour_control/revert/000-schema.sql",
+      "verify": "harbour_control/verify/000-schema.sql"
     },
     {
       "dependencies": [

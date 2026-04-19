@@ -7,24 +7,44 @@ qt_add_qml_module(cargo_operations_qml_viewmodels
     VERSION 1.0
     QML_FILES
         ContainerDialog.qml
+        ContainerListView.qml
         YardSlotDialog.qml
+        YardSlotListView.qml
         CraneDialog.qml
+        CraneListView.qml
         ReeferUnitDialog.qml
+        ReeferUnitListView.qml
         LoadPlanDialog.qml
+        LoadPlanListView.qml
         DischargeSequenceDialog.qml
+        DischargeSequenceListView.qml
+        Navigation.qml
+        SearchView.qml
     SOURCES
         viewmodels/container_viewmodel.cpp
         viewmodels/container_viewmodel.hpp
+        viewmodels/container_grpc_binding.cpp
+        viewmodels/container_grpc_binding.hpp
         viewmodels/yard_slot_viewmodel.cpp
         viewmodels/yard_slot_viewmodel.hpp
+        viewmodels/yard_slot_grpc_binding.cpp
+        viewmodels/yard_slot_grpc_binding.hpp
         viewmodels/crane_viewmodel.cpp
         viewmodels/crane_viewmodel.hpp
+        viewmodels/crane_grpc_binding.cpp
+        viewmodels/crane_grpc_binding.hpp
         viewmodels/reefer_unit_viewmodel.cpp
         viewmodels/reefer_unit_viewmodel.hpp
+        viewmodels/reefer_unit_grpc_binding.cpp
+        viewmodels/reefer_unit_grpc_binding.hpp
         viewmodels/load_plan_viewmodel.cpp
         viewmodels/load_plan_viewmodel.hpp
+        viewmodels/load_plan_grpc_binding.cpp
+        viewmodels/load_plan_grpc_binding.hpp
         viewmodels/discharge_sequence_viewmodel.cpp
         viewmodels/discharge_sequence_viewmodel.hpp
+        viewmodels/discharge_sequence_grpc_binding.cpp
+        viewmodels/discharge_sequence_grpc_binding.hpp
 )
 
 target_link_libraries(cargo_operations_qml_viewmodels PUBLIC
@@ -51,11 +71,19 @@ find_program(QMLLINT_EXECUTABLE qmllint HINTS ${Qt6_DIR}/../../../bin)
 if(QMLLINT_EXECUTABLE)
     set(_qml_files)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/ContainerDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/ContainerListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/YardSlotDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/YardSlotListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/CraneDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/CraneListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/ReeferUnitDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/ReeferUnitListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/LoadPlanDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/LoadPlanListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/DischargeSequenceDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/DischargeSequenceListView.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/Navigation.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/SearchView.qml)
     add_custom_target(cargo_operations_qmllint
         COMMAND ${QMLLINT_EXECUTABLE} ${_qml_files}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

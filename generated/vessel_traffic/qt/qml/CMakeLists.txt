@@ -7,24 +7,44 @@ qt_add_qml_module(vessel_traffic_qml_viewmodels
     VERSION 1.0
     QML_FILES
         VesselDialog.qml
+        VesselListView.qml
         BerthDialog.qml
+        BerthListView.qml
         VoyageDialog.qml
+        VoyageListView.qml
         PilotAssignmentDialog.qml
+        PilotAssignmentListView.qml
         TugBookingDialog.qml
+        TugBookingListView.qml
         TideWindowDialog.qml
+        TideWindowListView.qml
+        Navigation.qml
+        SearchView.qml
     SOURCES
         viewmodels/vessel_viewmodel.cpp
         viewmodels/vessel_viewmodel.hpp
+        viewmodels/vessel_grpc_binding.cpp
+        viewmodels/vessel_grpc_binding.hpp
         viewmodels/berth_viewmodel.cpp
         viewmodels/berth_viewmodel.hpp
+        viewmodels/berth_grpc_binding.cpp
+        viewmodels/berth_grpc_binding.hpp
         viewmodels/voyage_viewmodel.cpp
         viewmodels/voyage_viewmodel.hpp
+        viewmodels/voyage_grpc_binding.cpp
+        viewmodels/voyage_grpc_binding.hpp
         viewmodels/pilot_assignment_viewmodel.cpp
         viewmodels/pilot_assignment_viewmodel.hpp
+        viewmodels/pilot_assignment_grpc_binding.cpp
+        viewmodels/pilot_assignment_grpc_binding.hpp
         viewmodels/tug_booking_viewmodel.cpp
         viewmodels/tug_booking_viewmodel.hpp
+        viewmodels/tug_booking_grpc_binding.cpp
+        viewmodels/tug_booking_grpc_binding.hpp
         viewmodels/tide_window_viewmodel.cpp
         viewmodels/tide_window_viewmodel.hpp
+        viewmodels/tide_window_grpc_binding.cpp
+        viewmodels/tide_window_grpc_binding.hpp
 )
 
 target_link_libraries(vessel_traffic_qml_viewmodels PUBLIC
@@ -51,11 +71,19 @@ find_program(QMLLINT_EXECUTABLE qmllint HINTS ${Qt6_DIR}/../../../bin)
 if(QMLLINT_EXECUTABLE)
     set(_qml_files)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/VesselDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/VesselListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/BerthDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/BerthListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/VoyageDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/VoyageListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/PilotAssignmentDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/PilotAssignmentListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/TugBookingDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/TugBookingListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/TideWindowDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/TideWindowListView.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/Navigation.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/SearchView.qml)
     add_custom_target(vessel_traffic_qmllint
         COMMAND ${QMLLINT_EXECUTABLE} ${_qml_files}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

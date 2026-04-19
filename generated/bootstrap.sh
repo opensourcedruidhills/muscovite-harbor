@@ -8,6 +8,6 @@ echo "Starting infrastructure services..."
 docker compose -f "$SCRIPT_DIR/docker-compose.yml" up -d
 
 echo "Waiting for PostgreSQL..."
-until docker compose exec postgres pg_isready -q; do sleep 1; done
+until docker compose -f "$SCRIPT_DIR/docker-compose.yml" exec -T postgres pg_isready -U "${POSTGRES_USER:-muscovite_harbor}" 2>/dev/null; do sleep 1; done
 
 echo "Infrastructure ready."

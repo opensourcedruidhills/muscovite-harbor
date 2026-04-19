@@ -7,21 +7,38 @@ qt_add_qml_module(intermodal_transfer_qml_viewmodels
     VERSION 1.0
     QML_FILES
         TransferSlotDialog.qml
+        TransferSlotListView.qml
         TruckVisitDialog.qml
+        TruckVisitListView.qml
         RailWagonDialog.qml
+        RailWagonListView.qml
         BargeBookingDialog.qml
+        BargeBookingListView.qml
         ChassisUnitDialog.qml
+        ChassisUnitListView.qml
+        Navigation.qml
+        SearchView.qml
     SOURCES
         viewmodels/transfer_slot_viewmodel.cpp
         viewmodels/transfer_slot_viewmodel.hpp
+        viewmodels/transfer_slot_grpc_binding.cpp
+        viewmodels/transfer_slot_grpc_binding.hpp
         viewmodels/truck_visit_viewmodel.cpp
         viewmodels/truck_visit_viewmodel.hpp
+        viewmodels/truck_visit_grpc_binding.cpp
+        viewmodels/truck_visit_grpc_binding.hpp
         viewmodels/rail_wagon_viewmodel.cpp
         viewmodels/rail_wagon_viewmodel.hpp
+        viewmodels/rail_wagon_grpc_binding.cpp
+        viewmodels/rail_wagon_grpc_binding.hpp
         viewmodels/barge_booking_viewmodel.cpp
         viewmodels/barge_booking_viewmodel.hpp
+        viewmodels/barge_booking_grpc_binding.cpp
+        viewmodels/barge_booking_grpc_binding.hpp
         viewmodels/chassis_unit_viewmodel.cpp
         viewmodels/chassis_unit_viewmodel.hpp
+        viewmodels/chassis_unit_grpc_binding.cpp
+        viewmodels/chassis_unit_grpc_binding.hpp
 )
 
 target_link_libraries(intermodal_transfer_qml_viewmodels PUBLIC
@@ -48,10 +65,17 @@ find_program(QMLLINT_EXECUTABLE qmllint HINTS ${Qt6_DIR}/../../../bin)
 if(QMLLINT_EXECUTABLE)
     set(_qml_files)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/TransferSlotDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/TransferSlotListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/TruckVisitDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/TruckVisitListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/RailWagonDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/RailWagonListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/BargeBookingDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/BargeBookingListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/ChassisUnitDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/ChassisUnitListView.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/Navigation.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/SearchView.qml)
     add_custom_target(intermodal_transfer_qmllint
         COMMAND ${QMLLINT_EXECUTABLE} ${_qml_files}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
