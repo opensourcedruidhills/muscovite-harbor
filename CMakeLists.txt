@@ -16,16 +16,9 @@ find_package(gRPC CONFIG REQUIRED)
 # protobuf/gRPC/abseil are system packages now and NOT patched here.
 include(${CMAKE_BINARY_DIR}/generators/conan_include_fixup.cmake)
 
-# Workaround: muscomp 2.25.14 QML CMakeLists omits AUTOMOC, which Qt 6.11+
-# requires for qt_add_qml_module metatype generation.
-# Also emits qt_import_qml_modules() which should be qt_import_qml_plugins().
-# TODO: remove both workarounds once muscomp fixes QML generation
+# Workaround: muscomp QML CMakeLists omits AUTOMOC, which Qt 6.11+ requires
+# for qt_add_qml_module metatype generation (muscovite#1534)
 set(CMAKE_AUTOMOC ON)
-if(NOT COMMAND qt_import_qml_modules)
-    function(qt_import_qml_modules target)
-        qt_import_qml_plugins(${target})
-    endfunction()
-endif()
 
 # muscomp generates the build system in generated/CMakeLists.txt (not generated/src/)
 # See opensourcedruidhills/muscovite#1455

@@ -34,5 +34,5 @@ target_include_directories(muscovite_harbor_qml_app PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../harbour_control/qt/qml
 )
 
-qt_import_qml_modules(muscovite_harbor_qml_app)
+qt_import_qml_plugins(muscovite_harbor_qml_app)
 

@@ -2,6 +2,8 @@
 
 cmake_minimum_required(VERSION 3.25)
 
+set(CMAKE_AUTOMOC ON)
+
 qt_add_qml_module(harbour_control_qml_viewmodels
     URI "com.MuscoviteHarbor.harbour_control.viewmodels"
     VERSION 1.0
@@ -33,6 +35,7 @@ target_link_libraries(harbour_control_qml_viewmodels PUBLIC
     Qt6::Core
     Qt6::Qml
     Qt6::Quick
+    spdlog::spdlog
 )
 
 # Aggregate type registration target (Qt 6.11+)
