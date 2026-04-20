@@ -14,165 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::vessel_traffic::qml {
 
-BerthGrpcBinding::BerthGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+BerthGrpcBinding::BerthGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void BerthGrpcBinding::createBerth(const QVariantMap& data) {
-    try {
-        auto stub = BerthService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        CreateBerthRequest request;
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("code"))) {
-            request.set_code(data.value(QStringLiteral("code")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("name"))) {
-            request.set_name(data.value(QStringLiteral("name")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("maxLoaMetres"))) {
-            request.set_maxLoaMetres(data.value(QStringLiteral("maxLoaMetres")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("maxDraftMetres"))) {
-            request.set_maxDraftMetres(data.value(QStringLiteral("maxDraftMetres")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("maxBeamMetres"))) {
-            request.set_maxBeamMetres(data.value(QStringLiteral("maxBeamMetres")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("hasCraneAccess"))) {
-            request.set_hasCraneAccess(data.value(QStringLiteral("hasCraneAccess")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("hasReeferPlugs"))) {
-            request.set_hasReeferPlugs(data.value(QStringLiteral("hasReeferPlugs")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("isActive"))) {
-            request.set_isActive(data.value(QStringLiteral("isActive")).toString().toStdString());
-        }
-        CreateBerthResponse response;
-        auto status = stub->CreateBerth(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("BerthGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("BerthGrpcBinding::createBerth called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void BerthGrpcBinding::readBerth(const QString& id) {
-    try {
-        auto stub = BerthService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        GetBerthRequest request;
-        request.set_id(id.toStdString());
-        GetBerthResponse response;
-        auto status = stub->GetBerth(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("BerthGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("BerthGrpcBinding::readBerth {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void BerthGrpcBinding::updateBerth(const QString& id, const QVariantMap& data) {
-    try {
-        auto stub = BerthService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        UpdateBerthRequest request;
-        request.set_id(id.toStdString());
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("code"))) {
-            request.set_code(data.value(QStringLiteral("code")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("name"))) {
-            request.set_name(data.value(QStringLiteral("name")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("maxLoaMetres"))) {
-            request.set_maxLoaMetres(data.value(QStringLiteral("maxLoaMetres")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("maxDraftMetres"))) {
-            request.set_maxDraftMetres(data.value(QStringLiteral("maxDraftMetres")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("maxBeamMetres"))) {
-            request.set_maxBeamMetres(data.value(QStringLiteral("maxBeamMetres")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("hasCraneAccess"))) {
-            request.set_hasCraneAccess(data.value(QStringLiteral("hasCraneAccess")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("hasReeferPlugs"))) {
-            request.set_hasReeferPlugs(data.value(QStringLiteral("hasReeferPlugs")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("isActive"))) {
-            request.set_isActive(data.value(QStringLiteral("isActive")).toString().toStdString());
-        }
-        UpdateBerthResponse response;
-        auto status = stub->UpdateBerth(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("BerthGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("BerthGrpcBinding::updateBerth {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void BerthGrpcBinding::deleteBerth(const QString& id) {
-    try {
-        auto stub = BerthService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        DeleteBerthRequest request;
-        request.set_id(id.toStdString());
-        DeleteBerthResponse response;
-        auto status = stub->DeleteBerth(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("BerthGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("BerthGrpcBinding::deleteBerth {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void BerthGrpcBinding::listBerth(int page, int pageSize) {
-    try {
-        auto stub = BerthService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        ListBerthRequest request;
-        request.set_page(page);
-        request.set_page_size(pageSize);
-        ListBerthResponse response;
-        auto status = stub->ListBerth(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantList results;
-        Q_EMIT listCompleted(results, response.total_count());
-    } catch (const std::exception& ex) {
-        spdlog::error("BerthGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("BerthGrpcBinding::listBerth page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void BerthGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -187,5 +68,5 @@ void BerthGrpcBinding::handleGrpcError(const QString& operation, int statusCode,
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::vessel_traffic::qml
 

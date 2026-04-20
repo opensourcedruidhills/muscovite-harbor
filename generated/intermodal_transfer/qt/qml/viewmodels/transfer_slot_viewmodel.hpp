@@ -16,7 +16,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::intermodal_transfer::qml {
 
 class TransferSlotViewModel : public QObject {
     Q_OBJECT
@@ -72,5 +72,5 @@ private:
     QString m_status;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::intermodal_transfer::qml
 

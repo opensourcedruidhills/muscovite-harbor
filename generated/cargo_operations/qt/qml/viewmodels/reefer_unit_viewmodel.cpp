@@ -13,7 +13,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_operations::qml {
 
 ReeferUnitViewModel::ReeferUnitViewModel(QObject* parent)
     : QObject{parent} {}
@@ -105,5 +105,5 @@ void ReeferUnitViewModel::remove() {
     Q_EMIT removed();
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_operations::qml
 

@@ -15,7 +15,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_operations::qml {
 
 class YardSlotViewModel : public QObject {
     Q_OBJECT
@@ -71,5 +71,5 @@ private:
     bool m_is_occupied = false;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_operations::qml
 

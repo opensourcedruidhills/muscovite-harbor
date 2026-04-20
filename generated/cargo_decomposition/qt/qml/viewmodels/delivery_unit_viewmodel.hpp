@@ -16,7 +16,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_decomposition::qml {
 
 class DeliveryUnitViewModel : public QObject {
     Q_OBJECT
@@ -67,5 +67,5 @@ private:
     QDateTime m_dispatched_at;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_decomposition::qml
 

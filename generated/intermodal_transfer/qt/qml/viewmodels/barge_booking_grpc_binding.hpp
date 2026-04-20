@@ -13,15 +13,19 @@
 
 #include <QObject>
 #include <QString>
+#include <QVariantList>
 #include <QVariantMap>
 
-namespace muscovite_harbor::qml {
+#include <grpcpp/grpcpp.h>
+#include <memory>
+
+namespace muscovite_harbor::intermodal_transfer::qml {
 
 class BargeBookingGrpcBinding : public QObject {
     Q_OBJECT
 
 public:
-    explicit BargeBookingGrpcBinding(QObject* parent = nullptr);
+    explicit BargeBookingGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent = nullptr);
 
     void createBargeBooking(const QVariantMap& data);
     void readBargeBooking(const QString& id);
@@ -38,8 +42,9 @@ Q_SIGNALS:
     void error(const QString& operation, const QString& message);
 
 private:
+    std::shared_ptr<grpc::Channel> channel_;
     void handleGrpcError(const QString& operation, int statusCode, const QString& message);
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::intermodal_transfer::qml
 

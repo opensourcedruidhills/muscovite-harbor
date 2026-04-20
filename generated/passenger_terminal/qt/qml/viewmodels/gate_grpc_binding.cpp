@@ -14,147 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::passenger_terminal::qml {
 
-GateGrpcBinding::GateGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+GateGrpcBinding::GateGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void GateGrpcBinding::createGate(const QVariantMap& data) {
-    try {
-        auto stub = GateService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        CreateGateRequest request;
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("code"))) {
-            request.set_code(data.value(QStringLiteral("code")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("name"))) {
-            request.set_name(data.value(QStringLiteral("name")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("capacity"))) {
-            request.set_capacity(data.value(QStringLiteral("capacity")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("status"))) {
-            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("voyageId"))) {
-            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
-        }
-        CreateGateResponse response;
-        auto status = stub->CreateGate(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("GateGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("GateGrpcBinding::createGate called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void GateGrpcBinding::readGate(const QString& id) {
-    try {
-        auto stub = GateService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        GetGateRequest request;
-        request.set_id(id.toStdString());
-        GetGateResponse response;
-        auto status = stub->GetGate(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("GateGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("GateGrpcBinding::readGate {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void GateGrpcBinding::updateGate(const QString& id, const QVariantMap& data) {
-    try {
-        auto stub = GateService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        UpdateGateRequest request;
-        request.set_id(id.toStdString());
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("code"))) {
-            request.set_code(data.value(QStringLiteral("code")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("name"))) {
-            request.set_name(data.value(QStringLiteral("name")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("capacity"))) {
-            request.set_capacity(data.value(QStringLiteral("capacity")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("status"))) {
-            request.set_status(data.value(QStringLiteral("status")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("voyageId"))) {
-            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
-        }
-        UpdateGateResponse response;
-        auto status = stub->UpdateGate(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("GateGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("GateGrpcBinding::updateGate {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void GateGrpcBinding::deleteGate(const QString& id) {
-    try {
-        auto stub = GateService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        DeleteGateRequest request;
-        request.set_id(id.toStdString());
-        DeleteGateResponse response;
-        auto status = stub->DeleteGate(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("GateGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("GateGrpcBinding::deleteGate {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void GateGrpcBinding::listGate(int page, int pageSize) {
-    try {
-        auto stub = GateService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        ListGateRequest request;
-        request.set_page(page);
-        request.set_page_size(pageSize);
-        ListGateResponse response;
-        auto status = stub->ListGate(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantList results;
-        Q_EMIT listCompleted(results, response.total_count());
-    } catch (const std::exception& ex) {
-        spdlog::error("GateGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("GateGrpcBinding::listGate page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void GateGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -169,5 +68,5 @@ void GateGrpcBinding::handleGrpcError(const QString& operation, int statusCode, 
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::passenger_terminal::qml
 

@@ -17,10 +17,10 @@ class MuscoviteHarborConan(ConanFile):
     }
 
     def requirements(self):
-        self.requires("muscovite/2.25.15")
+        self.requires("muscovite/2.25.16")
 
     def build_requirements(self):
-        self.tool_requires("muscomp/2.25.15")
+        self.tool_requires("muscomp/2.25.16")
 
     def layout(self):
         cmake_layout(self)

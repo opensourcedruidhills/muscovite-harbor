@@ -14,159 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_decomposition::qml {
 
-PalletGrpcBinding::PalletGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+PalletGrpcBinding::PalletGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void PalletGrpcBinding::createPallet(const QVariantMap& data) {
-    try {
-        auto stub = PalletService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        CreatePalletRequest request;
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("palletId"))) {
-            request.set_palletId(data.value(QStringLiteral("palletId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("containerId"))) {
-            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("weightKg"))) {
-            request.set_weightKg(data.value(QStringLiteral("weightKg")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("lengthCm"))) {
-            request.set_lengthCm(data.value(QStringLiteral("lengthCm")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("widthCm"))) {
-            request.set_widthCm(data.value(QStringLiteral("widthCm")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("heightCm"))) {
-            request.set_heightCm(data.value(QStringLiteral("heightCm")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("hsCode"))) {
-            request.set_hsCode(data.value(QStringLiteral("hsCode")).toString().toStdString());
-        }
-        CreatePalletResponse response;
-        auto status = stub->CreatePallet(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("PalletGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("PalletGrpcBinding::createPallet called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void PalletGrpcBinding::readPallet(const QString& id) {
-    try {
-        auto stub = PalletService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        GetPalletRequest request;
-        request.set_id(id.toStdString());
-        GetPalletResponse response;
-        auto status = stub->GetPallet(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("PalletGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("PalletGrpcBinding::readPallet {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void PalletGrpcBinding::updatePallet(const QString& id, const QVariantMap& data) {
-    try {
-        auto stub = PalletService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        UpdatePalletRequest request;
-        request.set_id(id.toStdString());
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("palletId"))) {
-            request.set_palletId(data.value(QStringLiteral("palletId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("containerId"))) {
-            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("weightKg"))) {
-            request.set_weightKg(data.value(QStringLiteral("weightKg")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("lengthCm"))) {
-            request.set_lengthCm(data.value(QStringLiteral("lengthCm")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("widthCm"))) {
-            request.set_widthCm(data.value(QStringLiteral("widthCm")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("heightCm"))) {
-            request.set_heightCm(data.value(QStringLiteral("heightCm")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("hsCode"))) {
-            request.set_hsCode(data.value(QStringLiteral("hsCode")).toString().toStdString());
-        }
-        UpdatePalletResponse response;
-        auto status = stub->UpdatePallet(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("PalletGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("PalletGrpcBinding::updatePallet {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void PalletGrpcBinding::deletePallet(const QString& id) {
-    try {
-        auto stub = PalletService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        DeletePalletRequest request;
-        request.set_id(id.toStdString());
-        DeletePalletResponse response;
-        auto status = stub->DeletePallet(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("PalletGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("PalletGrpcBinding::deletePallet {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void PalletGrpcBinding::listPallet(int page, int pageSize) {
-    try {
-        auto stub = PalletService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        ListPalletRequest request;
-        request.set_page(page);
-        request.set_page_size(pageSize);
-        ListPalletResponse response;
-        auto status = stub->ListPallet(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantList results;
-        Q_EMIT listCompleted(results, response.total_count());
-    } catch (const std::exception& ex) {
-        spdlog::error("PalletGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("PalletGrpcBinding::listPallet page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void PalletGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -181,5 +68,5 @@ void PalletGrpcBinding::handleGrpcError(const QString& operation, int statusCode
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_decomposition::qml
 

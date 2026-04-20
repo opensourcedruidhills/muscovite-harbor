@@ -14,141 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_operations::qml {
 
-DischargeSequenceGrpcBinding::DischargeSequenceGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+DischargeSequenceGrpcBinding::DischargeSequenceGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void DischargeSequenceGrpcBinding::createDischargeSequence(const QVariantMap& data) {
-    try {
-        auto stub = DischargeSequenceService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        CreateDischargeSequenceRequest request;
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("loadPlanId"))) {
-            request.set_loadPlanId(data.value(QStringLiteral("loadPlanId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("containerId"))) {
-            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("sequenceOrder"))) {
-            request.set_sequenceOrder(data.value(QStringLiteral("sequenceOrder")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("craneId"))) {
-            request.set_craneId(data.value(QStringLiteral("craneId")).toString().toStdString());
-        }
-        CreateDischargeSequenceResponse response;
-        auto status = stub->CreateDischargeSequence(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("DischargeSequenceGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("DischargeSequenceGrpcBinding::createDischargeSequence called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void DischargeSequenceGrpcBinding::readDischargeSequence(const QString& id) {
-    try {
-        auto stub = DischargeSequenceService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        GetDischargeSequenceRequest request;
-        request.set_id(id.toStdString());
-        GetDischargeSequenceResponse response;
-        auto status = stub->GetDischargeSequence(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("DischargeSequenceGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("DischargeSequenceGrpcBinding::readDischargeSequence {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void DischargeSequenceGrpcBinding::updateDischargeSequence(const QString& id, const QVariantMap& data) {
-    try {
-        auto stub = DischargeSequenceService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        UpdateDischargeSequenceRequest request;
-        request.set_id(id.toStdString());
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("loadPlanId"))) {
-            request.set_loadPlanId(data.value(QStringLiteral("loadPlanId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("containerId"))) {
-            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("sequenceOrder"))) {
-            request.set_sequenceOrder(data.value(QStringLiteral("sequenceOrder")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("craneId"))) {
-            request.set_craneId(data.value(QStringLiteral("craneId")).toString().toStdString());
-        }
-        UpdateDischargeSequenceResponse response;
-        auto status = stub->UpdateDischargeSequence(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("DischargeSequenceGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("DischargeSequenceGrpcBinding::updateDischargeSequence {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void DischargeSequenceGrpcBinding::deleteDischargeSequence(const QString& id) {
-    try {
-        auto stub = DischargeSequenceService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        DeleteDischargeSequenceRequest request;
-        request.set_id(id.toStdString());
-        DeleteDischargeSequenceResponse response;
-        auto status = stub->DeleteDischargeSequence(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("DischargeSequenceGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("DischargeSequenceGrpcBinding::deleteDischargeSequence {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void DischargeSequenceGrpcBinding::listDischargeSequence(int page, int pageSize) {
-    try {
-        auto stub = DischargeSequenceService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        ListDischargeSequenceRequest request;
-        request.set_page(page);
-        request.set_page_size(pageSize);
-        ListDischargeSequenceResponse response;
-        auto status = stub->ListDischargeSequence(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantList results;
-        Q_EMIT listCompleted(results, response.total_count());
-    } catch (const std::exception& ex) {
-        spdlog::error("DischargeSequenceGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("DischargeSequenceGrpcBinding::listDischargeSequence page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void DischargeSequenceGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -163,5 +68,5 @@ void DischargeSequenceGrpcBinding::handleGrpcError(const QString& operation, int
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_operations::qml
 

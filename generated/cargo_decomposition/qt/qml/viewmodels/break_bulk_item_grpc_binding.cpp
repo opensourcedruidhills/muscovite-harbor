@@ -14,141 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_decomposition::qml {
 
-BreakBulkItemGrpcBinding::BreakBulkItemGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+BreakBulkItemGrpcBinding::BreakBulkItemGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void BreakBulkItemGrpcBinding::createBreakBulkItem(const QVariantMap& data) {
-    try {
-        auto stub = BreakBulkItemService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        CreateBreakBulkItemRequest request;
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("containerId"))) {
-            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("itemType"))) {
-            request.set_itemType(data.value(QStringLiteral("itemType")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("weightKg"))) {
-            request.set_weightKg(data.value(QStringLiteral("weightKg")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("requiresCrane"))) {
-            request.set_requiresCrane(data.value(QStringLiteral("requiresCrane")).toString().toStdString());
-        }
-        CreateBreakBulkItemResponse response;
-        auto status = stub->CreateBreakBulkItem(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("BreakBulkItemGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("BreakBulkItemGrpcBinding::createBreakBulkItem called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void BreakBulkItemGrpcBinding::readBreakBulkItem(const QString& id) {
-    try {
-        auto stub = BreakBulkItemService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        GetBreakBulkItemRequest request;
-        request.set_id(id.toStdString());
-        GetBreakBulkItemResponse response;
-        auto status = stub->GetBreakBulkItem(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("BreakBulkItemGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("BreakBulkItemGrpcBinding::readBreakBulkItem {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void BreakBulkItemGrpcBinding::updateBreakBulkItem(const QString& id, const QVariantMap& data) {
-    try {
-        auto stub = BreakBulkItemService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        UpdateBreakBulkItemRequest request;
-        request.set_id(id.toStdString());
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("containerId"))) {
-            request.set_containerId(data.value(QStringLiteral("containerId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("itemType"))) {
-            request.set_itemType(data.value(QStringLiteral("itemType")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("weightKg"))) {
-            request.set_weightKg(data.value(QStringLiteral("weightKg")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("requiresCrane"))) {
-            request.set_requiresCrane(data.value(QStringLiteral("requiresCrane")).toString().toStdString());
-        }
-        UpdateBreakBulkItemResponse response;
-        auto status = stub->UpdateBreakBulkItem(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("BreakBulkItemGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("BreakBulkItemGrpcBinding::updateBreakBulkItem {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void BreakBulkItemGrpcBinding::deleteBreakBulkItem(const QString& id) {
-    try {
-        auto stub = BreakBulkItemService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        DeleteBreakBulkItemRequest request;
-        request.set_id(id.toStdString());
-        DeleteBreakBulkItemResponse response;
-        auto status = stub->DeleteBreakBulkItem(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("BreakBulkItemGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("BreakBulkItemGrpcBinding::deleteBreakBulkItem {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void BreakBulkItemGrpcBinding::listBreakBulkItem(int page, int pageSize) {
-    try {
-        auto stub = BreakBulkItemService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        ListBreakBulkItemRequest request;
-        request.set_page(page);
-        request.set_page_size(pageSize);
-        ListBreakBulkItemResponse response;
-        auto status = stub->ListBreakBulkItem(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantList results;
-        Q_EMIT listCompleted(results, response.total_count());
-    } catch (const std::exception& ex) {
-        spdlog::error("BreakBulkItemGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("BreakBulkItemGrpcBinding::listBreakBulkItem page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void BreakBulkItemGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -163,5 +68,5 @@ void BreakBulkItemGrpcBinding::handleGrpcError(const QString& operation, int sta
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_decomposition::qml
 

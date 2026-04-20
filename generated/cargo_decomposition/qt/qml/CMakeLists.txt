@@ -42,6 +42,9 @@ target_link_libraries(cargo_decomposition_qml_viewmodels PUBLIC
     Qt6::Qml
     Qt6::Quick
     spdlog::spdlog
+    gRPC::grpc++
+    protobuf::libprotobuf
+    cargo_decomposition_grpc_proto
 )
 
 # Aggregate type registration target (Qt 6.11+)

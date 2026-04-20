@@ -16,7 +16,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::vessel_traffic::qml {
 
 class PilotAssignmentViewModel : public QObject {
     Q_OBJECT
@@ -72,5 +72,5 @@ private:
     QDateTime m_disembark_time;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::vessel_traffic::qml
 

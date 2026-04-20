@@ -15,7 +15,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::harbour_control::qml {
 
 class SafetyZoneViewModel : public QObject {
     Q_OBJECT
@@ -71,5 +71,5 @@ private:
     bool m_is_restricted = false;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::harbour_control::qml
 

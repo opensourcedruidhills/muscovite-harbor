@@ -8,17 +8,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(muscovite CONFIG REQUIRED COMPONENTS dba server grpc)
 
 # protobuf + gRPC are system packages since muscovite 2.25.14 — resolve them
-# from /usr/lib64/cmake/ before the generated subdirectory needs their targets.
+# before the generated subdirectory needs their targets.
 find_package(Protobuf REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 
 # Fix Conan component recipes with empty include dirs (spdlog, fmt, boost, etc.).
 # protobuf/gRPC/abseil are system packages now and NOT patched here.
 include(${CMAKE_BINARY_DIR}/generators/conan_include_fixup.cmake)
-
-# Workaround: muscomp QML CMakeLists omits AUTOMOC, which Qt 6.11+ requires
-# for qt_add_qml_module metatype generation (muscovite#1534)
-set(CMAKE_AUTOMOC ON)
 
 # muscomp generates the build system in generated/CMakeLists.txt (not generated/src/)
 # See opensourcedruidhills/muscovite#1455

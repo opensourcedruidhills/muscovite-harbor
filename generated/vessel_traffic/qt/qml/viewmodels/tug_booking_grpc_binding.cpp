@@ -14,141 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::vessel_traffic::qml {
 
-TugBookingGrpcBinding::TugBookingGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+TugBookingGrpcBinding::TugBookingGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void TugBookingGrpcBinding::createTugBooking(const QVariantMap& data) {
-    try {
-        auto stub = TugBookingService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        CreateTugBookingRequest request;
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("voyageId"))) {
-            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("tugName"))) {
-            request.set_tugName(data.value(QStringLiteral("tugName")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("bollardPullT"))) {
-            request.set_bollardPullT(data.value(QStringLiteral("bollardPullT")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("isConfirmed"))) {
-            request.set_isConfirmed(data.value(QStringLiteral("isConfirmed")).toString().toStdString());
-        }
-        CreateTugBookingResponse response;
-        auto status = stub->CreateTugBooking(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("create"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("TugBookingGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("TugBookingGrpcBinding::createTugBooking called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void TugBookingGrpcBinding::readTugBooking(const QString& id) {
-    try {
-        auto stub = TugBookingService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        GetTugBookingRequest request;
-        request.set_id(id.toStdString());
-        GetTugBookingResponse response;
-        auto status = stub->GetTugBooking(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("read"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = QString::fromStdString(response.id());
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("TugBookingGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("TugBookingGrpcBinding::readTugBooking {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void TugBookingGrpcBinding::updateTugBooking(const QString& id, const QVariantMap& data) {
-    try {
-        auto stub = TugBookingService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        UpdateTugBookingRequest request;
-        request.set_id(id.toStdString());
-        if (data.contains(QStringLiteral("id"))) {
-            request.set_id(data.value(QStringLiteral("id")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("voyageId"))) {
-            request.set_voyageId(data.value(QStringLiteral("voyageId")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("tugName"))) {
-            request.set_tugName(data.value(QStringLiteral("tugName")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("bollardPullT"))) {
-            request.set_bollardPullT(data.value(QStringLiteral("bollardPullT")).toString().toStdString());
-        }
-        if (data.contains(QStringLiteral("isConfirmed"))) {
-            request.set_isConfirmed(data.value(QStringLiteral("isConfirmed")).toString().toStdString());
-        }
-        UpdateTugBookingResponse response;
-        auto status = stub->UpdateTugBooking(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("update"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("TugBookingGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("TugBookingGrpcBinding::updateTugBooking {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void TugBookingGrpcBinding::deleteTugBooking(const QString& id) {
-    try {
-        auto stub = TugBookingService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        DeleteTugBookingRequest request;
-        request.set_id(id.toStdString());
-        DeleteTugBookingResponse response;
-        auto status = stub->DeleteTugBooking(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("delete"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("TugBookingGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("TugBookingGrpcBinding::deleteTugBooking {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void TugBookingGrpcBinding::listTugBooking(int page, int pageSize) {
-    try {
-        auto stub = TugBookingService::NewStub(channel_);
-        grpc::ClientContext ctx;
-        ListTugBookingRequest request;
-        request.set_page(page);
-        request.set_page_size(pageSize);
-        ListTugBookingResponse response;
-        auto status = stub->ListTugBooking(&ctx, request, &response);
-        if (!status.ok()) {
-            handleGrpcError(QStringLiteral("list"), status.error_code(), QString::fromStdString(status.error_message()));
-            return;
-        }
-        QVariantList results;
-        Q_EMIT listCompleted(results, response.total_count());
-    } catch (const std::exception& ex) {
-        spdlog::error("TugBookingGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("TugBookingGrpcBinding::listTugBooking page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void TugBookingGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -163,5 +68,5 @@ void TugBookingGrpcBinding::handleGrpcError(const QString& operation, int status
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::vessel_traffic::qml
 

@@ -15,7 +15,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_decomposition::qml {
 
 class BreakBulkItemViewModel : public QObject {
     Q_OBJECT
@@ -66,5 +66,5 @@ private:
     bool m_requires_crane = false;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_decomposition::qml
 
