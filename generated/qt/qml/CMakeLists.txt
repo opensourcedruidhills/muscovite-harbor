@@ -2,6 +2,8 @@
 
 cmake_minimum_required(VERSION 3.25)
 
+set(CMAKE_AUTOMOC ON)
+
 qt_add_executable(muscovite_harbor_qml_app
     main.cpp
 )

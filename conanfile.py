@@ -13,14 +13,14 @@ class MuscoviteHarborConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
     default_options = {
-        "muscovite/*:shared": False,
+        "muscovite/*:shared": True,
     }
 
     def requirements(self):
-        self.requires("muscovite/2.25.16")
+        self.requires("muscovite/2.25.18")
 
     def build_requirements(self):
-        self.tool_requires("muscomp/2.25.16")
+        self.tool_requires("muscomp/2.25.18")
 
     def layout(self):
         cmake_layout(self)

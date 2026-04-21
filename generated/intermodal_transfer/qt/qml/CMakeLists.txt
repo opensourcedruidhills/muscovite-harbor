@@ -43,6 +43,10 @@ qt_add_qml_module(intermodal_transfer_qml_viewmodels
         viewmodels/chassis_unit_grpc_binding.hpp
 )
 
+target_include_directories(intermodal_transfer_qml_viewmodels PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/viewmodels
+)
+
 target_link_libraries(intermodal_transfer_qml_viewmodels PUBLIC
     Qt6::Core
     Qt6::Qml

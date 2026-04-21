@@ -31,6 +31,10 @@ qt_add_qml_module(passenger_terminal_qml_viewmodels
         viewmodels/boarding_pass_grpc_binding.hpp
 )
 
+target_include_directories(passenger_terminal_qml_viewmodels PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/viewmodels
+)
+
 target_link_libraries(passenger_terminal_qml_viewmodels PUBLIC
     Qt6::Core
     Qt6::Qml

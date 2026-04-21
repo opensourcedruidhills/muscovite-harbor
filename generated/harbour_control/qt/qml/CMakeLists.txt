@@ -31,6 +31,10 @@ qt_add_qml_module(harbour_control_qml_viewmodels
         viewmodels/invoice_line_grpc_binding.hpp
 )
 
+target_include_directories(harbour_control_qml_viewmodels PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/viewmodels
+)
+
 target_link_libraries(harbour_control_qml_viewmodels PUBLIC
     Qt6::Core
     Qt6::Qml

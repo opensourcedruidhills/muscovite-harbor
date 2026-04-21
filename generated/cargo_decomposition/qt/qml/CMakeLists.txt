@@ -37,6 +37,10 @@ qt_add_qml_module(cargo_decomposition_qml_viewmodels
         viewmodels/break_bulk_item_grpc_binding.hpp
 )
 
+target_include_directories(cargo_decomposition_qml_viewmodels PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/viewmodels
+)
+
 target_link_libraries(cargo_decomposition_qml_viewmodels PUBLIC
     Qt6::Core
     Qt6::Qml

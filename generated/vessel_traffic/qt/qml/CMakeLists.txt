@@ -49,6 +49,10 @@ qt_add_qml_module(vessel_traffic_qml_viewmodels
         viewmodels/tide_window_grpc_binding.hpp
 )
 
+target_include_directories(vessel_traffic_qml_viewmodels PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/viewmodels
+)
+
 target_link_libraries(vessel_traffic_qml_viewmodels PUBLIC
     Qt6::Core
     Qt6::Qml
