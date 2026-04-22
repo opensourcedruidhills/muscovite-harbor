@@ -20,37 +20,49 @@ public:
         auto tx = conn_.begin();
         tx.exec_params(
             "INSERT INTO intermodal_transfer.container_handoff_saga "
-            "(id, status, current_step, payload, created_at, updated_at) "
-            "VALUES ($1, 'pending', $2, $3, NOW(), NOW())",
+            "(id, status, current_step, payload, created_at, updated_at, version) "
+            "VALUES ($1, 'pending', $2, $3, NOW(), NOW(), 0)",
             data.saga_id, "ReserveYardExit", data.payload);
         tx.commit();
         return data.saga_id;
     }
 
-    auto advance(const std::string& saga_id, const std::string& step) -> void override {
+    auto advance(const std::string& saga_id, const std::string& step, int expected_version) -> void override {
         auto tx = conn_.begin();
-        tx.exec_params(
+        auto result = tx.exec_params(
             "UPDATE intermodal_transfer.container_handoff_saga "
-            "SET current_step = $2, status = 'in_progress', updated_at = NOW() WHERE id = $1",
-            saga_id, step);
+            "SET current_step = $2, status = 'in_progress', version = version + 1, updated_at = NOW() "
+            "WHERE id = $1 AND version = $3",
+            saga_id, step, expected_version);
+        if (result.affected_rows() == 0) {
+            throw std::runtime_error("Saga optimistic lock conflict on advance: version mismatch");
+        }
         tx.commit();
     }
 
-    auto complete(const std::string& saga_id) -> void override {
+    auto complete(const std::string& saga_id, int expected_version) -> void override {
         auto tx = conn_.begin();
-        tx.exec_params(
+        auto result = tx.exec_params(
             "UPDATE intermodal_transfer.container_handoff_saga "
-            "SET status = 'completed', updated_at = NOW() WHERE id = $1",
-            saga_id);
+            "SET status = 'completed', version = version + 1, updated_at = NOW() "
+            "WHERE id = $1 AND version = $2",
+            saga_id, expected_version);
+        if (result.affected_rows() == 0) {
+            throw std::runtime_error("Saga optimistic lock conflict on complete: version mismatch");
+        }
         tx.commit();
     }
 
-    auto fail(const std::string& saga_id, const std::string& reason) -> void override {
+    auto fail(const std::string& saga_id, const std::string& reason, int expected_version) -> void override {
         auto tx = conn_.begin();
-        tx.exec_params(
+        auto result = tx.exec_params(
             "UPDATE intermodal_transfer.container_handoff_saga "
-            "SET status = 'failed', updated_at = NOW() WHERE id = $1",
-            saga_id);
+            "SET status = 'failed', failure_reason = $2, version = version + 1, updated_at = NOW() "
+            "WHERE id = $1 AND version = $3",
+            saga_id, reason, expected_version);
+        if (result.affected_rows() == 0) {
+            throw std::runtime_error("Saga optimistic lock conflict on fail: version mismatch");
+        }
         tx.commit();
     }
 
@@ -58,10 +70,16 @@ public:
         auto tx = conn_.begin();
         tx.exec_params(
             "INSERT INTO intermodal_transfer.container_handoff_step_log "
-            "(saga_id, step_name, status, result, started_at, completed_at) "
-            "VALUES ($1, $2, $3, $4, NOW(), NOW())",
-            entry.saga_id, entry.step_name, entry.status,
-            entry.result.value_or(""));
+            "(saga_id, step_name, status, started_at) "
+            "VALUES ($1, $2, 'pending', NOW())",
+            entry.saga_id, entry.step_name);
+        if (!entry.result.value_or("").empty()) {
+            tx.exec_params(
+                "UPDATE intermodal_transfer.container_handoff_step_log "
+                "SET status = $2, result = $3, completed_at = NOW() "
+                "WHERE saga_id = $1 AND step_name = $4 AND completed_at IS NULL",
+                entry.saga_id, entry.status, entry.result.value_or(""), entry.step_name);
+        }
         tx.commit();
     }
 
@@ -82,7 +100,7 @@ public:
     [[nodiscard]] auto find_by_id(const std::string& saga_id) -> std::optional<ContainerHandoffInstance> override {
         auto tx = conn_.begin();
         auto result = tx.exec_params(
-            "SELECT id, status, current_step, payload, created_at, updated_at "
+            "SELECT id, status, current_step, payload, created_at, updated_at, version "
             "FROM intermodal_transfer.container_handoff_saga WHERE id = $1",
             saga_id);
         tx.commit();
@@ -95,6 +113,7 @@ public:
             .payload = row[3].as<std::string>(),
             .created_at = row[4].as<std::string>(),
             .updated_at = row[5].as<std::string>(),
+            .version = row[6].as<int>(),
         };
     }
 

@@ -15,7 +15,6 @@ syntax = "proto3";
 package cargooperations;
 
 import "container.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 service ContainerService {

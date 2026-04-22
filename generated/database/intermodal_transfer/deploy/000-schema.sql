@@ -81,19 +81,20 @@ CREATE TABLE intermodal_transfer.chassis_units (
 );
 
 CREATE TABLE intermodal_transfer.outbox (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     aggregate_type TEXT NOT NULL,
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    published_at TIMESTAMPTZ,
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    processed_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
 CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE intermodal_transfer.dead_letter_queue (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     original_event_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
@@ -112,17 +113,17 @@ CREATE TABLE intermodal_transfer.idempotency_keys (
 );
 
 CREATE TABLE intermodal_transfer.container_handoff_saga (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     status TEXT NOT NULL DEFAULT 'pending',
     current_step TEXT,
-    payload TEXT NOT NULL,
+    payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT pk_container_handoff_saga PRIMARY KEY (id)
 );
 
 CREATE TABLE intermodal_transfer.container_handoff_step_log (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     saga_id UUID NOT NULL,
     step_name TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending',
@@ -133,7 +134,11 @@ CREATE TABLE intermodal_transfer.container_handoff_step_log (
 )
 WITH (fillfactor = 100);
 
+ALTER TABLE intermodal_transfer.transfer_slots ADD CONSTRAINT uq_transfer_slots_reference UNIQUE (reference);
+ALTER TABLE intermodal_transfer.rail_wagons ADD CONSTRAINT uq_rail_wagons_wagon_number UNIQUE (wagon_number);
+ALTER TABLE intermodal_transfer.chassis_units ADD CONSTRAINT uq_chassis_units_chassis_number UNIQUE (chassis_number);
 CREATE INDEX idx_truck_visits_truck_visit_id ON intermodal_transfer.truck_visits USING btree (transfer_slot_id);
+CREATE INDEX idx_outbox_unprocessed ON intermodal_transfer.outbox USING btree (created_at) WHERE processed_at IS NULL;
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 

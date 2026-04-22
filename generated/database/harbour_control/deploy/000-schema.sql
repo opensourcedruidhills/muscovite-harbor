@@ -59,19 +59,20 @@ CREATE TABLE harbour_control.invoice_lines (
 );
 
 CREATE TABLE harbour_control.outbox (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     aggregate_type TEXT NOT NULL,
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    published_at TIMESTAMPTZ,
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    processed_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
 CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE harbour_control.dead_letter_queue (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     original_event_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
@@ -88,6 +89,10 @@ CREATE TABLE harbour_control.idempotency_keys (
     expires_at TIMESTAMPTZ NOT NULL,
     CONSTRAINT pk_idempotency_keys PRIMARY KEY (key)
 );
+
+ALTER TABLE harbour_control.safety_zones ADD CONSTRAINT uq_safety_zones_zone_code UNIQUE (zone_code);
+ALTER TABLE harbour_control.hazmat_permits ADD CONSTRAINT uq_hazmat_permits_permit_number UNIQUE (permit_number);
+CREATE INDEX idx_outbox_unprocessed ON harbour_control.outbox USING btree (created_at) WHERE processed_at IS NULL;
 
 CREATE OR REPLACE FUNCTION harbour_control.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 

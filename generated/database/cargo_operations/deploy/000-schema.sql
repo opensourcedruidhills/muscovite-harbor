@@ -101,7 +101,7 @@ CREATE TABLE cargo_operations.discharge_sequences (
 );
 
 CREATE TABLE cargo_operations.container_stack_events (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload TEXT NOT NULL,
@@ -112,6 +112,8 @@ CREATE TABLE cargo_operations.container_stack_events (
 )
 WITH (fillfactor = 100);
 
+ALTER TABLE cargo_operations.containers ADD CONSTRAINT uq_containers_container_number UNIQUE (container_number);
+ALTER TABLE cargo_operations.yard_slots ADD CONSTRAINT uq_yard_slots_code UNIQUE (code);
 CREATE INDEX idx_reefer_units_reefer_unit_id ON cargo_operations.reefer_units USING btree (container_id);
 CREATE INDEX idx_discharge_sequences_discharge_sequence_id ON cargo_operations.discharge_sequences USING btree (load_plan_id);
 CREATE UNIQUE INDEX ux_container_stack_events_agg_seq ON cargo_operations.container_stack_events USING btree (aggregate_id, sequence_number);

@@ -9,7 +9,6 @@
 #include <iostream>
 #include <string>
 #include <thread>
-#include <unordered_set>
 #include <vector>
 
 #include <pqxx/pqxx>
@@ -37,6 +36,16 @@ void signal_handler(int /*signum*/) {
     return std::chrono::milliseconds{delay};
 }
 
+[[nodiscard]] auto quote_ident(const std::string& name) -> std::string {
+    std::string result{"\""};
+    for (char c : name) {
+        if (c == '"') result += '"';
+        result += c;
+    }
+    result += '"';
+    return result;
+}
+
 struct OutboxRelay {
     std::string context_name;
     std::string nats_subject_prefix;
@@ -45,7 +54,6 @@ struct OutboxRelay {
     int poll_interval_ms{100};
     int batch_size{100};
     int max_retries{5};
-    std::unordered_set<std::string> sent_message_ids;
     natsConnection* nats_conn_{nullptr};
 
     void connect_nats() {
@@ -64,22 +72,20 @@ struct OutboxRelay {
         pqxx::work tx{conn};
 
         auto result = tx.exec_params(
-            "SELECT id, message_id, subject, payload "
-            "FROM " + context_name + ".outbox "
-            "WHERE sent = false ORDER BY created_at LIMIT $1",
+            "SELECT id, aggregate_type, aggregate_id, event_type, payload, retry_count "
+            "FROM " + quote_ident(context_name) + ".\"outbox\" "
+            "WHERE processed_at IS NULL ORDER BY created_at LIMIT $1 FOR UPDATE SKIP LOCKED",
             batch_size);
 
         for (const auto& row : result) {
-            auto id = row[0].as<std::string>();
-            auto message_id = row[1].as<std::string>();
-            auto subject = row[2].as<std::string>();
-            auto payload = row[3].as<std::string>();
-
-            // Deduplication: skip already-sent messages
-            if (sent_message_ids.contains(message_id)) { continue; }
+            auto message_id      = row[0].as<std::string>();
+            auto aggregate_type = row[1].as<std::string>();
+            auto aggregate_id   = row[2].as<std::string>();
+            auto event_type     = row[3].as<std::string>();
+            auto payload        = row[4].as<std::string>();
 
             // Publish to NATS
-            auto full_subject = nats_subject_prefix + "." + subject;
+            auto full_subject = nats_subject_prefix + "." + event_type;
             auto status = natsConnection_Publish(nats_conn_,
                 full_subject.c_str(),
                 reinterpret_cast<const void*>(payload.data()),
@@ -88,12 +94,10 @@ struct OutboxRelay {
                 throw std::runtime_error("NATS publish failed: " + std::string(natsStatus_GetText(status)));
             }
 
-            // Mark as sent
+            // Mark as processed
             tx.exec_params(
-                "UPDATE " + context_name + ".outbox SET sent = true, sent_at = NOW() WHERE id = $1",
-                id);
-
-            sent_message_ids.insert(message_id);
+                "UPDATE " + quote_ident(context_name) + ".\"outbox\" SET processed_at = NOW() WHERE id = $1",
+                message_id);
         }
 
         tx.commit();

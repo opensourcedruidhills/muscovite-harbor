@@ -29,6 +29,7 @@ CREATE TABLE passenger_terminal.passengers (
     created_by UUID,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_by UUID,
+    status_id UUID NOT NULL,
     CONSTRAINT pk_passengers PRIMARY KEY (id)
 );
 
@@ -43,6 +44,7 @@ CREATE TABLE passenger_terminal.gates (
     created_by UUID,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_by UUID,
+    status_id UUID NOT NULL,
     CONSTRAINT pk_gates PRIMARY KEY (id)
 );
 
@@ -62,19 +64,20 @@ CREATE TABLE passenger_terminal.boarding_passes (
 );
 
 CREATE TABLE passenger_terminal.outbox (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     aggregate_type TEXT NOT NULL,
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    published_at TIMESTAMPTZ,
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    processed_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
 CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE passenger_terminal.dead_letter_queue (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     original_event_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
@@ -93,13 +96,13 @@ CREATE TABLE passenger_terminal.idempotency_keys (
 );
 
 CREATE TABLE passenger_terminal.gate_status_states (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     name TEXT NOT NULL,
     CONSTRAINT pk_gate_status_states PRIMARY KEY (id)
 );
 
 CREATE TABLE passenger_terminal.gate_status_transitions (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     entity_id UUID NOT NULL,
     from_state TEXT NOT NULL,
     to_state TEXT NOT NULL,
@@ -110,13 +113,13 @@ CREATE TABLE passenger_terminal.gate_status_transitions (
 WITH (fillfactor = 100);
 
 CREATE TABLE passenger_terminal.passenger_status_states (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     name TEXT NOT NULL,
     CONSTRAINT pk_passenger_status_states PRIMARY KEY (id)
 );
 
 CREATE TABLE passenger_terminal.passenger_status_transitions (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     entity_id UUID NOT NULL,
     from_state TEXT NOT NULL,
     to_state TEXT NOT NULL,
@@ -126,6 +129,8 @@ CREATE TABLE passenger_terminal.passenger_status_transitions (
 )
 WITH (fillfactor = 100);
 
+ALTER TABLE passenger_terminal.passengers ADD CONSTRAINT uq_passengers_booking_ref UNIQUE (booking_ref);
+ALTER TABLE passenger_terminal.gates ADD CONSTRAINT uq_gates_code UNIQUE (code);
 -- CHECK: chk_gate_status_transitions_from_state
 ALTER TABLE passenger_terminal.gate_status_transitions ADD CONSTRAINT chk_gate_status_transitions_from_state
     CHECK (from_state IN ('CLOSED', 'CHECK_IN_OPEN', 'BOARDING', 'FINAL_CALL'));
@@ -143,6 +148,7 @@ ALTER TABLE passenger_terminal.passenger_status_transitions ADD CONSTRAINT chk_p
     CHECK (to_state IN ('CHECKED_IN', 'SECURITY_CLEARED', 'BOARDED', 'DISEMBARKED'));
 
 CREATE INDEX idx_boarding_passes_boarding_pass_id ON passenger_terminal.boarding_passes USING btree (passenger_id);
+CREATE INDEX idx_outbox_unprocessed ON passenger_terminal.outbox USING btree (created_at) WHERE processed_at IS NULL;
 
 CREATE OR REPLACE FUNCTION passenger_terminal.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 

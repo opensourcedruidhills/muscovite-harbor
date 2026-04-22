@@ -15,9 +15,9 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QLineEdit>
-#include <QScopedPointer>
 #include <QSpinBox>
 #include <QVBoxLayout>
+#include <memory>
 
 namespace muscovite_harbor::widgets {
 
@@ -28,9 +28,9 @@ public:
 
     /// Create and show dialog safely. Ownership transfers to Qt on success.
     static void showSafe(QWidget* parent) {
-        auto dlg = QScopedPointer<GateEditDialog>{new GateEditDialog{parent}};
+        auto dlg = std::unique_ptr<GateEditDialog>{new GateEditDialog{parent}};
         dlg->setAttribute(Qt::WA_DeleteOnClose);
-        dlg.take()->show();
+        dlg.release()->show();
     }
 
     [[nodiscard]] auto id() const -> QString;

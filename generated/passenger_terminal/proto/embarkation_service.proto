@@ -16,7 +16,6 @@ package passengerterminal;
 
 import "passenger.proto";
 import "boarding_pass.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 message AddBoardingPassRequest {

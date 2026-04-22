@@ -13,7 +13,7 @@
 
 #include <QMetaObject>
 #include <QObject>
-#include <QScopedPointer>
+#include <memory>
 
 #include <vector>
 
@@ -69,9 +69,9 @@ auto showDialogSafe(QWidget* parent, bool connected) -> bool {
     if (!connected) {
         return false;  // Caller should show error message
     }
-    auto dlg = QScopedPointer<Dialog>{new Dialog{parent}};
+    auto dlg = std::unique_ptr<Dialog>{new Dialog{parent}};
     dlg->setAttribute(Qt::WA_DeleteOnClose);
-    dlg.take()->show();
+    dlg.release()->show();
     return true;
 }
 

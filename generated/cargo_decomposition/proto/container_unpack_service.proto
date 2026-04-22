@@ -16,7 +16,6 @@ package cargodecomposition;
 
 import "pallet.proto";
 import "parcel.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 message AddParcelRequest {

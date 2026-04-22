@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <string>
+#include <pqxx/pqxx>
 
 namespace passenger_terminal {
 
@@ -11,6 +12,7 @@ namespace passenger_terminal {
 /// Only generated for contexts with ON_DEMAND or SCHEDULED projections.
 class ProjectionService {
 public:
+    explicit ProjectionService(pqxx::connection& conn, int refresh_interval_seconds = 3600);
     virtual ~ProjectionService() = default;
 
     /// Refresh all materialized views in this context.
@@ -19,6 +21,9 @@ public:
     auto refresh_departure_board() -> void;
 
     [[nodiscard]] auto is_stale_departure_board() const -> bool;
+private:
+    pqxx::connection& conn_;
+    int refresh_interval_seconds_;
 };
 
 } // namespace passenger_terminal

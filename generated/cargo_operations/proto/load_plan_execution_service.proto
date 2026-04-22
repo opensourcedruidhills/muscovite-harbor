@@ -16,7 +16,6 @@ package cargooperations;
 
 import "load_plan.proto";
 import "discharge_sequence.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 message AddDischargeSequenceRequest {

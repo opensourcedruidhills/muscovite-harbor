@@ -4,7 +4,6 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QQmlContext>
 
 #include "viewmodels/vessel_viewmodel.hpp"
 #include "viewmodels/berth_viewmodel.hpp"
@@ -46,12 +45,7 @@ auto main(int argc, char* argv[]) -> int {
         engine.addImportPath(QStringLiteral("qrc:/"));
     }
 
-    const QUrl url(QStringLiteral("qrc:/main.qml"));
-    QObject::connect(
-        &engine, &QQmlApplicationEngine::objectCreationFailed,
-        &app, []() { QCoreApplication::exit(-1); },
-        Qt::QueuedConnection);
-    engine.load(url);
+    engine.loadFromModule(QStringLiteral("com.muscovite_harbor.app"), QStringLiteral("Main"));
 
     return QGuiApplication::exec();
 }

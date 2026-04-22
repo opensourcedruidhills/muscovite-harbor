@@ -16,9 +16,9 @@ public:
     virtual ~ContainerHandoffCommandRepository() = default;
 
     virtual auto start(const ContainerHandoffData& data) -> std::string = 0;
-    virtual auto advance(const std::string& saga_id, const std::string& step) -> void = 0;
-    virtual auto complete(const std::string& saga_id) -> void = 0;
-    virtual auto fail(const std::string& saga_id, const std::string& reason) -> void = 0;
+    virtual auto advance(const std::string& saga_id, const std::string& step, int expected_version) -> void = 0;
+    virtual auto complete(const std::string& saga_id, int expected_version) -> void = 0;
+    virtual auto fail(const std::string& saga_id, const std::string& reason, int expected_version) -> void = 0;
     virtual auto log_step(const ContainerHandoffStepLogEntry& entry) -> void = 0;
     virtual auto log_compensation(const ContainerHandoffStepLogEntry& entry) -> void = 0;
 };

@@ -1,0 +1,82 @@
+#pragma once
+// SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+// Copyright (c) 2025-2026 Johannes Lochmann
+// GENERATED FILE — DO NOT EDIT
+
+#include "truck_visit.hpp"
+#include <optional>
+#include <stdexcept>
+#include <string>
+
+namespace intermodal_transfer {
+
+/// Concrete CRTP repository implementation for TruckVisit.
+/// Satisfies RepositoryBase<TruckVisitRepositoryImpl<C>, TruckVisit> contract.
+/// Uses parameterised SQL (pqxx) — no stored procedures (ADR 20260120).
+template<typename Connection>
+class TruckVisitRepositoryImpl {
+public:
+    explicit TruckVisitRepositoryImpl(Connection& conn) : conn_{conn} {}
+
+    [[nodiscard]] auto build_select_by_id_query() const -> std::string {
+        return "SELECT id, id, truck_plate, carrier_name, slot_id, arrived_at, departed_at FROM intermodal_transfer.truck_visit WHERE id = $1";
+    }
+
+    [[nodiscard]] auto build_insert_query() const -> std::string {
+        return "INSERT INTO intermodal_transfer.truck_visit (id, id, truck_plate, carrier_name, slot_id, arrived_at, departed_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id";
+    }
+
+    [[nodiscard]] auto build_update_query() const -> std::string {
+        return "UPDATE intermodal_transfer.truck_visit SET id = $2, truck_plate = $3, carrier_name = $4, slot_id = $5, arrived_at = $6, departed_at = $7 WHERE id = $1";
+    }
+
+    [[nodiscard]] auto build_delete_query() const -> std::string {
+        return "DELETE FROM intermodal_transfer.truck_visit WHERE id = $1";
+    }
+
+    [[nodiscard]] auto map_row(const pqxx::row& row) const -> TruckVisit {
+        return TruckVisit{
+            .id = row[0].as<std::string>(),
+            .id = row[1].as<std::string>(),
+            .truck_plate = row[2].as<std::string>(),
+            .carrier_name = row[3].as<std::string>(),
+            .slot_id = row[4].as<std::string>(),
+            .arrived_at = row[5].as<std::string>(),
+            .departed_at = row[6].as<std::string>(),
+        };
+    }
+
+    auto save(const TruckVisit& entity) -> void {
+        auto tx = conn_.begin();
+        tx.exec_params(build_insert_query(), entity.id, entity.id, entity.truck_plate, entity.carrier_name, entity.slot_id, entity.arrived_at, entity.departed_at);
+        tx.commit();
+    }
+
+    auto update(const TruckVisit& entity) -> void {
+        auto tx = conn_.begin();
+        auto result = tx.exec_params(build_update_query(), entity.id, entity.id, entity.truck_plate, entity.carrier_name, entity.slot_id, entity.arrived_at, entity.departed_at);
+        if (result.affected_rows() == 0) {
+            throw std::runtime_error("TruckVisit not found: " + entity.id);
+        }
+        tx.commit();
+    }
+
+    auto remove(const std::string& id) -> void {
+        auto tx = conn_.begin();
+        tx.exec_params(build_delete_query(), id);
+        tx.commit();
+    }
+
+    [[nodiscard]] auto find_by_id(const std::string& id) -> std::optional<TruckVisit> {
+        auto tx = conn_.begin();
+        auto result = tx.exec_params(build_select_by_id_query(), id);
+        tx.commit();
+        if (result.empty()) { return std::nullopt; }
+        return map_row(result[0]);
+    }
+
+private:
+    Connection& conn_;
+};
+
+} // namespace intermodal_transfer

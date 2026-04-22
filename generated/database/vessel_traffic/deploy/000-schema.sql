@@ -80,6 +80,7 @@ CREATE TABLE vessel_traffic.voyages (
     created_by UUID,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_by UUID,
+    status_id UUID NOT NULL,
     CONSTRAINT pk_voyages PRIMARY KEY (id)
 );
 
@@ -127,19 +128,20 @@ CREATE TABLE vessel_traffic.tide_windows (
 );
 
 CREATE TABLE vessel_traffic.outbox (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     aggregate_type TEXT NOT NULL,
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    published_at TIMESTAMPTZ,
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    processed_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
 CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE vessel_traffic.dead_letter_queue (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     original_event_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
@@ -158,13 +160,13 @@ CREATE TABLE vessel_traffic.idempotency_keys (
 );
 
 CREATE TABLE vessel_traffic.voyage_status_states (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     name TEXT NOT NULL,
     CONSTRAINT pk_voyage_status_states PRIMARY KEY (id)
 );
 
 CREATE TABLE vessel_traffic.voyage_status_transitions (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     entity_id UUID NOT NULL,
     from_state TEXT NOT NULL,
     to_state TEXT NOT NULL,
@@ -174,6 +176,10 @@ CREATE TABLE vessel_traffic.voyage_status_transitions (
 )
 WITH (fillfactor = 100);
 
+ALTER TABLE vessel_traffic.vessels ADD CONSTRAINT uq_vessels_imo_number UNIQUE (imo_number);
+ALTER TABLE vessel_traffic.vessels ADD CONSTRAINT uq_vessels_mmsi UNIQUE (mmsi);
+ALTER TABLE vessel_traffic.berths ADD CONSTRAINT uq_berths_code UNIQUE (code);
+ALTER TABLE vessel_traffic.voyages ADD CONSTRAINT uq_voyages_voyage_number UNIQUE (voyage_number);
 -- CHECK: chk_voyage_status_transitions_from_state
 ALTER TABLE vessel_traffic.voyage_status_transitions ADD CONSTRAINT chk_voyage_status_transitions_from_state
     CHECK (from_state IN ('ANNOUNCED', 'PILOT_ORDERED', 'APPROACHING', 'BERTHING', 'MOORED', 'CARGO_OPS', 'DEPARTURE_PREP', 'UNMOORED', 'DEPARTED'));
@@ -186,6 +192,7 @@ CREATE INDEX idx_voyages_voyage_id ON vessel_traffic.voyages USING btree (vessel
 CREATE INDEX idx_pilot_assignments_pilot_assignment_id ON vessel_traffic.pilot_assignments USING btree (voyage_id);
 CREATE INDEX idx_tug_bookings_tug_booking_id ON vessel_traffic.tug_bookings USING btree (voyage_id);
 CREATE INDEX idx_tide_windows_tide_window_id ON vessel_traffic.tide_windows USING btree (berth_id);
+CREATE INDEX idx_outbox_unprocessed ON vessel_traffic.outbox USING btree (created_at) WHERE processed_at IS NULL;
 
 CREATE OR REPLACE FUNCTION vessel_traffic.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 

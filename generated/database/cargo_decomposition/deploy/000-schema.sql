@@ -83,19 +83,20 @@ CREATE TABLE cargo_decomposition.break_bulk_items (
 );
 
 CREATE TABLE cargo_decomposition.outbox (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     aggregate_type TEXT NOT NULL,
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    published_at TIMESTAMPTZ,
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    processed_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
 CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE cargo_decomposition.dead_letter_queue (
-    id UUID NOT NULL DEFAULT gen_random_uuid(),
+    id UUID NOT NULL DEFAULT uuidv7(),
     original_event_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload JSONB NOT NULL,
@@ -113,8 +114,11 @@ CREATE TABLE cargo_decomposition.idempotency_keys (
     CONSTRAINT pk_idempotency_keys PRIMARY KEY (key)
 );
 
+ALTER TABLE cargo_decomposition.pallets ADD CONSTRAINT uq_pallets_pallet_id UNIQUE (pallet_id);
+ALTER TABLE cargo_decomposition.parcels ADD CONSTRAINT uq_parcels_tracking_number UNIQUE (tracking_number);
 CREATE INDEX idx_parcels_parcel_id ON cargo_decomposition.parcels USING btree (pallet_id);
 CREATE INDEX idx_delivery_units_delivery_unit_id ON cargo_decomposition.delivery_units USING btree (parcel_id);
+CREATE INDEX idx_outbox_unprocessed ON cargo_decomposition.outbox USING btree (created_at) WHERE processed_at IS NULL;
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 

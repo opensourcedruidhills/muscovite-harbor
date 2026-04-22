@@ -31,9 +31,11 @@ struct ContainerHandoffInstance {
     std::string id{};
     std::string status{}; // pending, in_progress, completed, failed, compensating
     std::string current_step{};
-    ContainerHandoffData data{};
-    std::chrono::system_clock::time_point created_at{};
-    std::chrono::system_clock::time_point updated_at{};
+    std::string payload{};
+    std::string created_at{};
+    std::string updated_at{};
+    std::optional<std::string> failure_reason{};
+    int version{0};
 };
 
 /// Log entry for a single step execution within a ContainerHandoff saga.

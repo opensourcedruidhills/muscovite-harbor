@@ -17,7 +17,6 @@ package vesseltraffic;
 import "voyage.proto";
 import "pilot_assignment.proto";
 import "tug_booking.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 message AddPilotAssignmentRequest {
