@@ -53,6 +53,7 @@ CXX=g++
 # ====================
 [conf]
 tools.cmake.cmaketoolchain:generator=Ninja
+tools.build:jobs=4
 tools.build:cxxflags=["-D_GLIBCXX_ASSERTIONS"]
 # Use Ninja as the CMake generator for faster builds than Unix Makefiles
 #
