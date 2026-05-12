@@ -8,5 +8,5 @@ package vesseltraffic;
 // Pilotage zones within harbour limits
 enum PilotZone {
   PILOT_ZONE_UNSPECIFIED = 0;
-   = 1;
+  ZONE_DESCRIPTION = 1;
 }

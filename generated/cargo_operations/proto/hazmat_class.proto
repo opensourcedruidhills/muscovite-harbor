@@ -8,5 +8,5 @@ package cargooperations;
 // IMO hazardous materials classification
 enum HazmatClass {
   HAZMAT_CLASS_UNSPECIFIED = 0;
-   = 1;
+  DESCRIPTION = 1;
 }

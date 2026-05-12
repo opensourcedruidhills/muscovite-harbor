@@ -17,9 +17,13 @@ struct HazmatClass {
     std::string name{};
     std::string code{};
 
+    // Extra fields
+    std::string description{};
+
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
     [[nodiscard]] auto get_name() const noexcept -> const std::string& { return name; }
     [[nodiscard]] auto get_code() const noexcept -> const std::string& { return code; }
+    [[nodiscard]] auto get_description() const noexcept -> const std::string& { return description; }
 
     auto operator==(const HazmatClass&) const -> bool = default;
 };

@@ -17,9 +17,13 @@ struct PilotZone {
     std::string name{};
     std::string code{};
 
+    // Extra fields
+    std::string zone_description{};
+
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
     [[nodiscard]] auto get_name() const noexcept -> const std::string& { return name; }
     [[nodiscard]] auto get_code() const noexcept -> const std::string& { return code; }
+    [[nodiscard]] auto get_zone_description() const noexcept -> const std::string& { return zone_description; }
 
     auto operator==(const PilotZone&) const -> bool = default;
 };
