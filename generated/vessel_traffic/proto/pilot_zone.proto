@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+// Copyright (c) 2025-2026 Johannes Lochmann
+
+syntax = "proto3";
+
+package vesseltraffic;
+
+// Pilotage zones within harbour limits
+enum PilotZone {
+  PILOT_ZONE_UNSPECIFIED = 0;
+   = 1;
+}

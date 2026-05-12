@@ -12,6 +12,8 @@
 #pragma once
 
 #include <cstdlib>
+#include <fstream>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <optional>
@@ -19,21 +21,29 @@
 #include <grpcpp/grpcpp.h>
 #include <spdlog/spdlog.h>
 
+#include "grpc/server/auth_interceptor.hpp"
+#include "grpc/server/jwt_auth_provider.hpp"
+#include "grpc/server/auth_service_impl.hpp"
 #include "vessel_traffic/grpc/server/version_service_impl.hpp"
-#include "vessel_traffic/grpc/server/auth_interceptor.hpp"
+#include "vessel_traffic/grpc/server/voyage_service_impl.hpp"
+#include "vessel_traffic/grpc/server/voyage_status_service_impl.hpp"
 #include "cargo_operations/grpc/server/version_service_impl.hpp"
-#include "cargo_operations/grpc/server/auth_interceptor.hpp"
+#include "cargo_operations/grpc/server/container_service_impl.hpp"
+#include "cargo_operations/grpc/server/load_plan_service_impl.hpp"
 #include "passenger_terminal/grpc/server/version_service_impl.hpp"
-#include "passenger_terminal/grpc/server/auth_interceptor.hpp"
+#include "passenger_terminal/grpc/server/passenger_service_impl.hpp"
+#include "passenger_terminal/grpc/server/gate_status_service_impl.hpp"
+#include "passenger_terminal/grpc/server/passenger_status_service_impl.hpp"
 #include "intermodal_transfer/grpc/server/version_service_impl.hpp"
-#include "intermodal_transfer/grpc/server/auth_interceptor.hpp"
+#include "intermodal_transfer/grpc/server/transfer_slot_service_impl.hpp"
+#include "intermodal_transfer/grpc/server/container_handoff_service_impl.hpp"
 #include "cargo_decomposition/grpc/server/version_service_impl.hpp"
-#include "cargo_decomposition/grpc/server/auth_interceptor.hpp"
+#include "cargo_decomposition/grpc/server/pallet_service_impl.hpp"
+#include "cargo_decomposition/grpc/server/parcel_service_impl.hpp"
 #include "harbour_control/grpc/server/version_service_impl.hpp"
-#include "harbour_control/grpc/server/auth_interceptor.hpp"
 
 #ifdef MUSCOVITE_DEV_AUTH
-#include "vessel_traffic/grpc/server/dev_auth_provider.hpp"
+#include "grpc/server/dev_auth_provider.hpp"
 #endif
 
 namespace muscovite_harbor {
@@ -41,9 +51,24 @@ namespace muscovite_harbor {
 /// Server configuration from environment variables (FTR-1408)
 struct ServerConfig {
     std::string grpc_address = "0.0.0.0:50051";
+    std::string grpc_credentials_mode = "insecure";
+    std::string grpc_tls_cert_chain;
+    std::string grpc_tls_private_key;
+    std::string grpc_tls_root_certs;
     std::string database_url;
     std::string nats_url = "nats://localhost:4222";
     int worker_threads = 4;
+
+    static auto read_file(const char* path) -> std::string {
+        if (path == nullptr || *path == '\0') {
+            return {};
+        }
+        auto stream = std::ifstream{path};
+        if (!stream.is_open()) {
+            return {};
+        }
+        return std::string{std::istreambuf_iterator<char>{stream}, std::istreambuf_iterator<char>{}};
+    }
 
     static auto from_env() -> ServerConfig {
         ServerConfig cfg;
@@ -56,6 +81,12 @@ struct ServerConfig {
         if (auto* v = std::getenv("NATS_URL")) {
             cfg.nats_url = v;
         }
+        if (auto* v = std::getenv("GRPC_CREDENTIALS_MODE")) {
+            cfg.grpc_credentials_mode = v;
+        }
+        cfg.grpc_tls_cert_chain = read_file(std::getenv("GRPC_TLS_CERT_CHAIN_FILE"));
+        cfg.grpc_tls_private_key = read_file(std::getenv("GRPC_TLS_PRIVATE_KEY_FILE"));
+        cfg.grpc_tls_root_certs = read_file(std::getenv("GRPC_TLS_ROOT_CERTS_FILE"));
         if (auto* v = std::getenv("GRPC_WORKER_THREADS")) {
             cfg.worker_threads = std::atoi(v);
         }
@@ -76,31 +107,90 @@ inline auto run_server(int /*argc*/, char** /*argv*/) -> int {
     spdlog::info("NATS: {}", config.nats_url);
 
     ::grpc::ServerBuilder builder;
-    builder.AddListeningPort(config.grpc_address, ::grpc::InsecureServerCredentials());
+    std::shared_ptr<::grpc::ServerCredentials> server_credentials;
+    if (config.grpc_credentials_mode == "tls") {
+        if (config.grpc_tls_cert_chain.empty() || config.grpc_tls_private_key.empty()) {
+            spdlog::error("TLS mode selected but cert/key files are missing (GRPC_TLS_CERT_CHAIN_FILE, GRPC_TLS_PRIVATE_KEY_FILE)");
+            return 1;
+        }
+        ::grpc::SslServerCredentialsOptions ssl_opts;
+        ssl_opts.pem_root_certs = config.grpc_tls_root_certs;
+        auto key_pair = ::grpc::SslServerCredentialsOptions::PemKeyCertPair{
+            config.grpc_tls_private_key,
+            config.grpc_tls_cert_chain,
+        };
+        ssl_opts.pem_key_cert_pairs.push_back(key_pair);
+        server_credentials = ::grpc::SslServerCredentials(ssl_opts);
+    } else if (config.grpc_credentials_mode == "insecure") {
+        auto insecure_factory = &::grpc::InsecureServerCredentials;
+        server_credentials = insecure_factory();
+    } else {
+        spdlog::error("Unsupported GRPC_CREDENTIALS_MODE: {}", config.grpc_credentials_mode);
+        return 1;
+    }
+    builder.AddListeningPort(config.grpc_address, server_credentials);
 
     // VesselTraffic context services
     auto vessel_traffic_version_svc = vessel_traffic::VersionServiceImpl{};
     builder.RegisterService(&vessel_traffic_version_svc);
 
+    auto voyage_svc = vessel_traffic::VoyageServiceImpl{};
+    builder.RegisterService(&voyage_svc);
+    auto voyage_status_svc = vessel_traffic::VoyageStatusServiceImpl{};
+    builder.RegisterService(&voyage_status_svc);
+
     // CargoOperations context services
     auto cargo_operations_version_svc = cargo_operations::VersionServiceImpl{};
     builder.RegisterService(&cargo_operations_version_svc);
+
+    auto container_svc = cargo_operations::ContainerServiceImpl{};
+    builder.RegisterService(&container_svc);
+    auto load_plan_svc = cargo_operations::LoadPlanServiceImpl{};
+    builder.RegisterService(&load_plan_svc);
 
     // PassengerTerminal context services
     auto passenger_terminal_version_svc = passenger_terminal::VersionServiceImpl{};
     builder.RegisterService(&passenger_terminal_version_svc);
 
+    auto passenger_svc = passenger_terminal::PassengerServiceImpl{};
+    builder.RegisterService(&passenger_svc);
+    auto gate_status_svc = passenger_terminal::GateStatusServiceImpl{};
+    builder.RegisterService(&gate_status_svc);
+    auto passenger_status_svc = passenger_terminal::PassengerStatusServiceImpl{};
+    builder.RegisterService(&passenger_status_svc);
+
     // IntermodalTransfer context services
     auto intermodal_transfer_version_svc = intermodal_transfer::VersionServiceImpl{};
     builder.RegisterService(&intermodal_transfer_version_svc);
+
+    auto transfer_slot_svc = intermodal_transfer::TransferSlotServiceImpl{};
+    builder.RegisterService(&transfer_slot_svc);
+    auto container_handoff_svc = intermodal_transfer::ContainerHandoffServiceImpl{};
+    builder.RegisterService(&container_handoff_svc);
 
     // CargoDecomposition context services
     auto cargo_decomposition_version_svc = cargo_decomposition::VersionServiceImpl{};
     builder.RegisterService(&cargo_decomposition_version_svc);
 
+    auto pallet_svc = cargo_decomposition::PalletServiceImpl{};
+    builder.RegisterService(&pallet_svc);
+    auto parcel_svc = cargo_decomposition::ParcelServiceImpl{};
+    builder.RegisterService(&parcel_svc);
+
     // HarbourControl context services
     auto harbour_control_version_svc = harbour_control::VersionServiceImpl{};
     builder.RegisterService(&harbour_control_version_svc);
+
+
+    std::shared_ptr<IUserRepository> user_repo{};
+    auto jwt_auth = std::make_shared<JwtAuthProvider>(user_repo, "development-secret");
+    auto auth_svc = AuthServiceImpl{jwt_auth};
+    builder.RegisterService(&auth_svc);
+
+    auto auth_interceptor_factory = std::make_unique<AuthInterceptorFactory>(jwt_auth);
+    std::vector<std::unique_ptr<grpc::experimental::ServerInterceptorFactoryInterface>> interceptors;
+    interceptors.push_back(std::move(auth_interceptor_factory));
+    builder.SetInterceptorCreators(std::move(interceptors));
 
     auto server = builder.BuildAndStart();
     if (!server) {

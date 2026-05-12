@@ -5,8 +5,8 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
-#include <muscovite/dba/decimal.hpp>
-#include <string>
+#include <muscovite/dba/type_converters.hpp>
+#include "types/yard_slot_code.hpp"
 
 namespace cargo_operations {
 

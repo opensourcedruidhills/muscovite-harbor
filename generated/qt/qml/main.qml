@@ -14,6 +14,10 @@ ApplicationWindow {
     // Hot-reload support: set QML_HOT_RELOAD=1 in environment
     property bool hotReloadEnabled: typeof process !== "undefined"
 
+    AuthViewModel {
+        id: authViewModel
+    }
+
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
@@ -37,6 +41,8 @@ ApplicationWindow {
         id: drawer
         width: root.width * 0.3
         height: root.height
+        enabled: authViewModel.isAuthenticated
+        visible: authViewModel.isAuthenticated
 
         ListView {
             id: navList
@@ -81,10 +87,34 @@ ApplicationWindow {
         }
     }
 
+    Component {
+        id: homePageComponent
+        Page { title: qsTr("Home") }
+    }
+
+    Component {
+        id: loginPageComponent
+        LoginPage {
+            onLoginRequested: authViewModel.login(username, password)
+        }
+    }
+
     StackView {
         id: stackView
         anchors.fill: parent
-        initialItem: Page { title: qsTr("Home") }
+        initialItem: authViewModel.isAuthenticated ? homePageComponent : loginPageComponent
+    }
+
+    Connections {
+        target: authViewModel
+        function onAuthenticatedChanged() {
+            stackView.clear()
+            if (authViewModel.isAuthenticated) {
+                stackView.push(homePageComponent)
+            } else {
+                stackView.push(loginPageComponent)
+            }
+        }
     }
 }
 

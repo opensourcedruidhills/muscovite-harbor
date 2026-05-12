@@ -49,6 +49,7 @@ auto ChassisUnitModel::headerData(int section, Qt::Orientation orientation, int 
     }
 }
 
+// Populate model from a gRPC List response.
 void ChassisUnitModel::setRows(std::vector<Row> rows) {
     beginResetModel();
     rows_ = std::move(rows);

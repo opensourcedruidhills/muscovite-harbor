@@ -11,10 +11,12 @@
 
 #include "crane_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 CraneEditDialog::CraneEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit Crane"));
     setupUi();
 }
@@ -38,7 +40,10 @@ void CraneEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &CraneEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -83,8 +88,20 @@ void CraneEditDialog::setIsActive(const bool& value) {
 }
 
 void CraneEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto CraneEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("name"), QVariant::fromValue(name()));
+    payload.insert(QStringLiteral("craneType"), QVariant::fromValue(craneType()));
+    payload.insert(QStringLiteral("maxLiftKg"), QVariant::fromValue(maxLiftKg()));
+    payload.insert(QStringLiteral("isActive"), QVariant::fromValue(isActive()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

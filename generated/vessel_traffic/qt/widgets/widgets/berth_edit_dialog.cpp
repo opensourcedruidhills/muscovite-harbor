@@ -11,10 +11,12 @@
 
 #include "berth_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 BerthEditDialog::BerthEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit Berth"));
     setupUi();
 }
@@ -46,7 +48,10 @@ void BerthEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &BerthEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -123,8 +128,24 @@ void BerthEditDialog::setIsActive(const bool& value) {
 }
 
 void BerthEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto BerthEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("code"), QVariant::fromValue(code()));
+    payload.insert(QStringLiteral("name"), QVariant::fromValue(name()));
+    payload.insert(QStringLiteral("maxLoaMetres"), QVariant::fromValue(maxLoaMetres()));
+    payload.insert(QStringLiteral("maxDraftMetres"), QVariant::fromValue(maxDraftMetres()));
+    payload.insert(QStringLiteral("maxBeamMetres"), QVariant::fromValue(maxBeamMetres()));
+    payload.insert(QStringLiteral("hasCraneAccess"), QVariant::fromValue(hasCraneAccess()));
+    payload.insert(QStringLiteral("hasReeferPlugs"), QVariant::fromValue(hasReeferPlugs()));
+    payload.insert(QStringLiteral("isActive"), QVariant::fromValue(isActive()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

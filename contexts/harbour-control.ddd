@@ -214,6 +214,18 @@ CONTEXT HarbourControl @uuid "bb000060-0001-4000-8000-000000000001"
     ) DOC "Hazmat permit approved by port authority";
 
     -- ====================================================================
+    -- Policy
+    -- ====================================================================
+
+    POLICY LogHazmatApproval
+        WHEN HazmatPermitApproved
+        WHERE "permit_number IS NOT NULL"
+        THEN INVOKE AuditHazmatPermit(permit_number = "permit_number", vessel_id = "vessel_id")
+        RETRY 2
+        TIMEOUT "5m"
+        DOC "Audit hazmat permit approval for port authority compliance";
+
+    -- ====================================================================
     -- Observe
     -- ====================================================================
 

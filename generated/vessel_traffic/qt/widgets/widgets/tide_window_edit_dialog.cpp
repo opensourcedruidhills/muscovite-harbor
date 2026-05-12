@@ -11,10 +11,12 @@
 
 #include "tide_window_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 TideWindowEditDialog::TideWindowEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit TideWindow"));
     setupUi();
 }
@@ -36,7 +38,10 @@ void TideWindowEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &TideWindowEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -73,8 +78,19 @@ void TideWindowEditDialog::setAvailableDraft(const QString& value) {
 }
 
 void TideWindowEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto TideWindowEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("berthId"), QVariant::fromValue(berthId()));
+    payload.insert(QStringLiteral("tideHeightMetres"), QVariant::fromValue(tideHeightMetres()));
+    payload.insert(QStringLiteral("availableDraft"), QVariant::fromValue(availableDraft()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

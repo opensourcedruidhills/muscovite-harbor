@@ -23,13 +23,12 @@ message PilotAssignment {
   string pilot_zone = 4;
   google.protobuf.Timestamp boarding_time = 5;
   google.protobuf.Timestamp disembark_time = 6;
-  string pilot_assignment_id = 7;
-  google.protobuf.Timestamp created_at = 8;
-  optional string created_by = 9;
-  google.protobuf.Timestamp updated_at = 10;
-  optional string updated_by = 11;
-  optional string created_by_name = 12;
-  optional string updated_by_name = 13;
+  google.protobuf.Timestamp created_at = 7;
+  optional string created_by = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  optional string updated_by = 10;
+  optional string created_by_name = 11;
+  optional string updated_by_name = 12;
 }
 
 message CreatePilotAssignmentRequest {
@@ -38,8 +37,7 @@ message CreatePilotAssignmentRequest {
   string pilot_zone = 3;
   google.protobuf.Timestamp boarding_time = 4;
   google.protobuf.Timestamp disembark_time = 5;
-  string pilot_assignment_id = 6;
-  optional string idempotency_key = 7;
+  optional string idempotency_key = 6;
 }
 
 message CreatePilotAssignmentResponse {
@@ -61,8 +59,7 @@ message UpdatePilotAssignmentRequest {
   string pilot_zone = 4;
   google.protobuf.Timestamp boarding_time = 5;
   google.protobuf.Timestamp disembark_time = 6;
-  string pilot_assignment_id = 7;
-  optional string idempotency_key = 8;
+  optional string idempotency_key = 7;
 }
 
 message UpdatePilotAssignmentResponse {

@@ -17,6 +17,8 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QLineEdit>
+#include <QSortFilterProxyModel>
 
 #include "../models/voyage_model.hpp"
 
@@ -49,6 +51,8 @@ private:
     void setupToolbar();
 
     VoyageModel* model_ = nullptr;
+    QSortFilterProxyModel* proxy_model_ = nullptr;
+    QLineEdit* filter_bar_ = nullptr;
     QTableView* table_ = nullptr;
     QToolBar* toolbar_ = nullptr;
     QVBoxLayout* layout_ = nullptr;

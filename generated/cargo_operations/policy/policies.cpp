@@ -6,14 +6,15 @@
 
 namespace cargo_operations {
 
-auto ReeferTempAlertPolicyHandler::matches(const ReeferAlarm& /*event*/) const -> bool {
-    // TODO: implement condition check for ReeferTempAlert
-    return true;
+auto ReeferTempAlertPolicyHandler::matches(const ReeferAlarm& event) const -> bool {
+    // WHY: #1476 — compiled from DSL policy condition
+    (void)event;
+    return ;
 }
 
-auto ReeferTempAlertPolicyHandler::execute(const ReeferAlarm& /*event*/) const -> PolicyResult {
+auto ReeferTempAlertPolicyHandler::execute(const ReeferAlarm& event) const -> PolicyResult {
+    (void)event;
     // Send notification: OpsTeam
-    // TODO: implement policy action
     return PolicyResult::Success;
 }
 

@@ -13,7 +13,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_decomposition::qml {
 
 ParcelViewModel::ParcelViewModel(QObject* parent)
     : QObject{parent} {}
@@ -115,5 +115,5 @@ void ParcelViewModel::remove() {
     Q_EMIT removed();
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_decomposition::qml
 

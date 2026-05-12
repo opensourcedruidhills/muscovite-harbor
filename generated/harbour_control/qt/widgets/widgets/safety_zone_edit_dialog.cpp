@@ -11,10 +11,12 @@
 
 #include "safety_zone_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 SafetyZoneEditDialog::SafetyZoneEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit SafetyZone"));
     setupUi();
 }
@@ -40,7 +42,10 @@ void SafetyZoneEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &SafetyZoneEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -93,8 +98,21 @@ void SafetyZoneEditDialog::setIsRestricted(const bool& value) {
 }
 
 void SafetyZoneEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto SafetyZoneEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("zoneCode"), QVariant::fromValue(zoneCode()));
+    payload.insert(QStringLiteral("zoneName"), QVariant::fromValue(zoneName()));
+    payload.insert(QStringLiteral("securityLevel"), QVariant::fromValue(securityLevel()));
+    payload.insert(QStringLiteral("maxHazmatClass"), QVariant::fromValue(maxHazmatClass()));
+    payload.insert(QStringLiteral("isRestricted"), QVariant::fromValue(isRestricted()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

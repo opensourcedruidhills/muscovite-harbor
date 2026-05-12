@@ -13,7 +13,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::harbour_control::qml {
 
 HazmatPermitViewModel::HazmatPermitViewModel(QObject* parent)
     : QObject{parent} {}
@@ -135,5 +135,5 @@ void HazmatPermitViewModel::remove() {
     Q_EMIT removed();
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::harbour_control::qml
 

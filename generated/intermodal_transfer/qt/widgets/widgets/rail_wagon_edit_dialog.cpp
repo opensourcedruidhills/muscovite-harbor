@@ -11,10 +11,12 @@
 
 #include "rail_wagon_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 RailWagonEditDialog::RailWagonEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit RailWagon"));
     setupUi();
 }
@@ -36,7 +38,10 @@ void RailWagonEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &RailWagonEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -73,8 +78,19 @@ void RailWagonEditDialog::setSlotId(const QString& value) {
 }
 
 void RailWagonEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto RailWagonEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("wagonNumber"), QVariant::fromValue(wagonNumber()));
+    payload.insert(QStringLiteral("maxWeightKg"), QVariant::fromValue(maxWeightKg()));
+    payload.insert(QStringLiteral("slotId"), QVariant::fromValue(slotId()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

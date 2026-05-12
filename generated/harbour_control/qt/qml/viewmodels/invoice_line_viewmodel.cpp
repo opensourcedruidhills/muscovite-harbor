@@ -13,7 +13,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::harbour_control::qml {
 
 InvoiceLineViewModel::InvoiceLineViewModel(QObject* parent)
     : QObject{parent} {}
@@ -115,5 +115,5 @@ void InvoiceLineViewModel::remove() {
     Q_EMIT removed();
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::harbour_control::qml
 

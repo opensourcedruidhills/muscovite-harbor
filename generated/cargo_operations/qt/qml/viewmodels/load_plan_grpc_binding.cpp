@@ -14,91 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_operations::qml {
 
-LoadPlanGrpcBinding::LoadPlanGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+LoadPlanGrpcBinding::LoadPlanGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void LoadPlanGrpcBinding::createLoadPlan(const QVariantMap& data) {
-    try {
-        // Map QVariantMap to CreateLoadPlanRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        [[maybe_unused]] auto createdAt = data.value(QStringLiteral("createdAt"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = LoadPlanService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateLoadPlan(&ctx, request, &response);
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("LoadPlanGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("LoadPlanGrpcBinding::createLoadPlan called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void LoadPlanGrpcBinding::readLoadPlan(const QString& id) {
-    try {
-        spdlog::debug("LoadPlanGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = LoadPlanService::NewStub(channel_);
-        // GetLoadPlanRequest request;
-        // request.set_id(id.toStdString());
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("LoadPlanGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("LoadPlanGrpcBinding::readLoadPlan {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void LoadPlanGrpcBinding::updateLoadPlan(const QString& id, const QVariantMap& data) {
-    try {
-        spdlog::debug("LoadPlanGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto voyageId = data.value(QStringLiteral("voyageId"));
-        [[maybe_unused]] auto createdAt = data.value(QStringLiteral("createdAt"));
-        [[maybe_unused]] auto status = data.value(QStringLiteral("status"));
-        // TODO: Wire to generated gRPC stub
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("LoadPlanGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("LoadPlanGrpcBinding::updateLoadPlan {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void LoadPlanGrpcBinding::deleteLoadPlan(const QString& id) {
-    try {
-        spdlog::debug("LoadPlanGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("LoadPlanGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("LoadPlanGrpcBinding::deleteLoadPlan {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void LoadPlanGrpcBinding::listLoadPlan(int page, int pageSize) {
-    try {
-        spdlog::debug("LoadPlanGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
-        QVariantList results;
-        Q_EMIT listCompleted(results, 0);
-    } catch (const std::exception& ex) {
-        spdlog::error("LoadPlanGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("LoadPlanGrpcBinding::listLoadPlan page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void LoadPlanGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -113,5 +68,5 @@ void LoadPlanGrpcBinding::handleGrpcError(const QString& operation, int statusCo
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_operations::qml
 

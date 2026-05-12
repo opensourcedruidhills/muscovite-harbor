@@ -3,6 +3,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include "transfer_slot_domain_service.hpp"
+#include <stdexcept>
 
 namespace intermodal_transfer {
 
@@ -30,12 +31,16 @@ auto TransferSlotDomainService::find_all() -> std::vector<TransferSlot> {
 }
 
 auto TransferSlotDomainService::add_truck_visit(const TransferSlot::Id& parent_id, const TruckVisit& child) -> void {
-    // Validate parent exists, then delegate to command service
-    (void)parent_id; (void)child;
+    auto parent = query_service_.find_by_id(parent_id);
+    if (!parent) {
+        throw std::runtime_error("Parent TransferSlot not found");
+    }
+    command_service_.create(child);
 }
 
 auto TransferSlotDomainService::remove_truck_visit(const TransferSlot::Id& parent_id, const TruckVisit::Id& child_id) -> void {
-    (void)parent_id; (void)child_id;
+    (void)parent_id;
+    command_service_.remove(child_id);
 }
 
 } // namespace intermodal_transfer

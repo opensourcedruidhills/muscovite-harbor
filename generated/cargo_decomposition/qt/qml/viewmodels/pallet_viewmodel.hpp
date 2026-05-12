@@ -15,7 +15,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_decomposition::qml {
 
 class PalletViewModel : public QObject {
     Q_OBJECT
@@ -81,5 +81,5 @@ private:
     QString m_hs_code;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_decomposition::qml
 

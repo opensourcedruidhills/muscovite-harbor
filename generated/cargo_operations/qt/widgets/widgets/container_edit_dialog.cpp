@@ -11,10 +11,12 @@
 
 #include "container_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 ContainerEditDialog::ContainerEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit Container"));
     setupUi();
 }
@@ -42,7 +44,10 @@ void ContainerEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &ContainerEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -103,8 +108,22 @@ void ContainerEditDialog::setStatus(const QString& value) {
 }
 
 void ContainerEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto ContainerEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("containerNumber"), QVariant::fromValue(containerNumber()));
+    payload.insert(QStringLiteral("sizeCategory"), QVariant::fromValue(sizeCategory()));
+    payload.insert(QStringLiteral("hazmatClass"), QVariant::fromValue(hazmatClass()));
+    payload.insert(QStringLiteral("voyageId"), QVariant::fromValue(voyageId()));
+    payload.insert(QStringLiteral("yardSlotId"), QVariant::fromValue(yardSlotId()));
+    payload.insert(QStringLiteral("status"), QVariant::fromValue(status()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

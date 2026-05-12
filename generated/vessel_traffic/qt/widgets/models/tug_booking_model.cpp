@@ -51,6 +51,7 @@ auto TugBookingModel::headerData(int section, Qt::Orientation orientation, int r
     }
 }
 
+// Populate model from a gRPC List response.
 void TugBookingModel::setRows(std::vector<Row> rows) {
     beginResetModel();
     rows_ = std::move(rows);

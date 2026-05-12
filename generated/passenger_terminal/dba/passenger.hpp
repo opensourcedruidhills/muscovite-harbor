@@ -5,7 +5,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <string>
-#include <string>
+#include "types/booking_reference.hpp"
 
 namespace passenger_terminal {
 

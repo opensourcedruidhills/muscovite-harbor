@@ -16,7 +16,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::harbour_control::qml {
 
 class HazmatPermitViewModel : public QObject {
     Q_OBJECT
@@ -82,5 +82,5 @@ private:
     QDateTime m_valid_until;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::harbour_control::qml
 

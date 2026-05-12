@@ -93,10 +93,12 @@ SCENARIO("Passenger identity comparison") {
 SCENARIO("Add child BoardingPass to Passenger") {
     GIVEN("an existing Passenger aggregate root") {
         WHEN("a BoardingPass child is added") {
-            // auto result = cmd_service.add_child(parent_id, child);
+            auto child = BoardingPass{};
+            auto parent_id = Passenger::Id{};
+            domain_service.add_boarding_pass(parent_id, child);
 
             THEN("the child should be part of the aggregate") {
-                // CHECK(result.has_value());
+                CHECK_NOTHROW(domain_service.add_boarding_pass(parent_id, child));
             }
         }
     }

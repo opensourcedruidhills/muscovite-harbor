@@ -11,10 +11,12 @@
 
 #include "pilot_assignment_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 PilotAssignmentEditDialog::PilotAssignmentEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit PilotAssignment"));
     setupUi();
 }
@@ -40,7 +42,10 @@ void PilotAssignmentEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &PilotAssignmentEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -93,8 +98,21 @@ void PilotAssignmentEditDialog::setDisembarkTime(const QDateTime& value) {
 }
 
 void PilotAssignmentEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto PilotAssignmentEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("voyageId"), QVariant::fromValue(voyageId()));
+    payload.insert(QStringLiteral("pilotName"), QVariant::fromValue(pilotName()));
+    payload.insert(QStringLiteral("pilotZone"), QVariant::fromValue(pilotZone()));
+    payload.insert(QStringLiteral("boardingTime"), QVariant::fromValue(boardingTime()));
+    payload.insert(QStringLiteral("disembarkTime"), QVariant::fromValue(disembarkTime()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

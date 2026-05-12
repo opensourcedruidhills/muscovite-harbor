@@ -98,10 +98,12 @@ SCENARIO("TransferSlot identity comparison") {
 SCENARIO("Add child TruckVisit to TransferSlot") {
     GIVEN("an existing TransferSlot aggregate root") {
         WHEN("a TruckVisit child is added") {
-            // auto result = cmd_service.add_child(parent_id, child);
+            auto child = TruckVisit{};
+            auto parent_id = TransferSlot::Id{};
+            domain_service.add_truck_visit(parent_id, child);
 
             THEN("the child should be part of the aggregate") {
-                // CHECK(result.has_value());
+                CHECK_NOTHROW(domain_service.add_truck_visit(parent_id, child));
             }
         }
     }

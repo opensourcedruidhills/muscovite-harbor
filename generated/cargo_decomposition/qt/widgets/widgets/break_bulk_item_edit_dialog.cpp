@@ -11,10 +11,12 @@
 
 #include "break_bulk_item_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 BreakBulkItemEditDialog::BreakBulkItemEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit BreakBulkItem"));
     setupUi();
 }
@@ -38,7 +40,10 @@ void BreakBulkItemEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &BreakBulkItemEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -83,8 +88,20 @@ void BreakBulkItemEditDialog::setRequiresCrane(const bool& value) {
 }
 
 void BreakBulkItemEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto BreakBulkItemEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("containerId"), QVariant::fromValue(containerId()));
+    payload.insert(QStringLiteral("itemType"), QVariant::fromValue(itemType()));
+    payload.insert(QStringLiteral("weightKg"), QVariant::fromValue(weightKg()));
+    payload.insert(QStringLiteral("requiresCrane"), QVariant::fromValue(requiresCrane()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

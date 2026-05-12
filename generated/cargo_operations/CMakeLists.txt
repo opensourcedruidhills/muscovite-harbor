@@ -15,9 +15,12 @@ set(cargo_operations_grpc_proto_PROTO_FILES
   proto/reefer_unit.proto
   proto/load_plan.proto
   proto/discharge_sequence.proto
+  proto/container_dimensions.proto
   proto/container_stack_service.proto
   proto/load_plan_execution_service.proto
   proto/services.proto
+  proto/cargo_operations_version.proto
+  proto/cargo_operations_error_details.proto
 )
 
 add_library(cargo_operations_grpc_proto STATIC)
@@ -45,5 +48,11 @@ target_link_libraries(cargo_operations_grpc_proto PUBLIC
 
 target_include_directories(cargo_operations_grpc_proto PUBLIC
   ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+# ── DBA header-only library (FTR-1499) ────────────────────────
+add_library(cargo_operations_dba INTERFACE)
+target_include_directories(cargo_operations_dba INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 

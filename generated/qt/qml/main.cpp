@@ -4,7 +4,6 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QQmlContext>
 
 #include "viewmodels/vessel_viewmodel.hpp"
 #include "viewmodels/berth_viewmodel.hpp"
@@ -33,6 +32,7 @@
 #include "viewmodels/safety_zone_viewmodel.hpp"
 #include "viewmodels/hazmat_permit_viewmodel.hpp"
 #include "viewmodels/invoice_line_viewmodel.hpp"
+#include "viewmodels/auth_viewmodel.hpp"
 
 auto main(int argc, char* argv[]) -> int {
     QGuiApplication app(argc, argv);
@@ -46,12 +46,7 @@ auto main(int argc, char* argv[]) -> int {
         engine.addImportPath(QStringLiteral("qrc:/"));
     }
 
-    const QUrl url(QStringLiteral("qrc:/main.qml"));
-    QObject::connect(
-        &engine, &QQmlApplicationEngine::objectCreationFailed,
-        &app, []() { QCoreApplication::exit(-1); },
-        Qt::QueuedConnection);
-    engine.load(url);
+    engine.loadFromModule(QStringLiteral("com.MuscoviteHarbor.app"), QStringLiteral("Main"));
 
     return QGuiApplication::exec();
 }

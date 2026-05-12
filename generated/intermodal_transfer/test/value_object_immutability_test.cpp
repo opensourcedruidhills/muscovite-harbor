@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+// Copyright (c) 2025-2026 Johannes Lochmann
+// GENERATED FILE — DO NOT EDIT
+
+#include <doctest/doctest.h>
+#include <random>
+#include <string>
+#include <type_traits>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+// Value object immutability tests for IntermodalTransfer
+
+// No value objects defined in context IntermodalTransfer

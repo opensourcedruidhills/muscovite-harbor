@@ -11,10 +11,12 @@
 
 #include "discharge_sequence_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 DischargeSequenceEditDialog::DischargeSequenceEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit DischargeSequence"));
     setupUi();
 }
@@ -38,7 +40,10 @@ void DischargeSequenceEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &DischargeSequenceEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -83,8 +88,20 @@ void DischargeSequenceEditDialog::setCraneId(const QString& value) {
 }
 
 void DischargeSequenceEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto DischargeSequenceEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("loadPlanId"), QVariant::fromValue(loadPlanId()));
+    payload.insert(QStringLiteral("containerId"), QVariant::fromValue(containerId()));
+    payload.insert(QStringLiteral("sequenceOrder"), QVariant::fromValue(sequenceOrder()));
+    payload.insert(QStringLiteral("craneId"), QVariant::fromValue(craneId()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

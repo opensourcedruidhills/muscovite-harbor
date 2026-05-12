@@ -15,8 +15,15 @@ set(vessel_traffic_grpc_proto_PROTO_FILES
   proto/pilot_assignment.proto
   proto/tug_booking.proto
   proto/tide_window.proto
+  proto/dimensions.proto
+  proto/geo_position.proto
+  proto/time_window.proto
   proto/vessel_call_service.proto
   proto/services.proto
+  proto/vessel_traffic_version.proto
+  proto/vessel_traffic_error_details.proto
+  proto/vessel_traffic_event_streaming.proto
+  proto/vessel_traffic_state_machine_service.proto
 )
 
 add_library(vessel_traffic_grpc_proto STATIC)
@@ -44,5 +51,11 @@ target_link_libraries(vessel_traffic_grpc_proto PUBLIC
 
 target_include_directories(vessel_traffic_grpc_proto PUBLIC
   ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+# ── DBA header-only library (FTR-1499) ────────────────────────
+add_library(vessel_traffic_dba INTERFACE)
+target_include_directories(vessel_traffic_dba INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 

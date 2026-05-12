@@ -11,10 +11,12 @@
 
 #include "delivery_unit_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 DeliveryUnitEditDialog::DeliveryUnitEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit DeliveryUnit"));
     setupUi();
 }
@@ -38,7 +40,10 @@ void DeliveryUnitEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &DeliveryUnitEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -83,8 +88,20 @@ void DeliveryUnitEditDialog::setDispatchedAt(const QDateTime& value) {
 }
 
 void DeliveryUnitEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto DeliveryUnitEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("trackingNumber"), QVariant::fromValue(trackingNumber()));
+    payload.insert(QStringLiteral("destination"), QVariant::fromValue(destination()));
+    payload.insert(QStringLiteral("carrier"), QVariant::fromValue(carrier()));
+    payload.insert(QStringLiteral("dispatchedAt"), QVariant::fromValue(dispatchedAt()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

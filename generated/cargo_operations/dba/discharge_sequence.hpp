@@ -5,7 +5,6 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
-#include <string>
 
 namespace cargo_operations {
 

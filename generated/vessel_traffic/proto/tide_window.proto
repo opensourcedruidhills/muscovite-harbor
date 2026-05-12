@@ -23,21 +23,19 @@ message TideWindow {
   string tide_height_metres = 3;
   // Effective navigable draft = berth depth + tide height
   string available_draft = 4;
-  string tide_window_id = 5;
-  google.protobuf.Timestamp created_at = 6;
-  optional string created_by = 7;
-  google.protobuf.Timestamp updated_at = 8;
-  optional string updated_by = 9;
-  optional string created_by_name = 10;
-  optional string updated_by_name = 11;
+  google.protobuf.Timestamp created_at = 5;
+  optional string created_by = 6;
+  google.protobuf.Timestamp updated_at = 7;
+  optional string updated_by = 8;
+  optional string created_by_name = 9;
+  optional string updated_by_name = 10;
 }
 
 message CreateTideWindowRequest {
   string berth_id = 1;
   string tide_height_metres = 2;
   string available_draft = 3;
-  string tide_window_id = 4;
-  optional string idempotency_key = 5;
+  optional string idempotency_key = 4;
 }
 
 message CreateTideWindowResponse {
@@ -59,8 +57,7 @@ message UpdateTideWindowRequest {
   string berth_id = 2;
   string tide_height_metres = 3;
   string available_draft = 4;
-  string tide_window_id = 5;
-  optional string idempotency_key = 6;
+  optional string idempotency_key = 5;
 }
 
 message UpdateTideWindowResponse {
@@ -93,5 +90,30 @@ message GetHistoryTideWindowRequest {
 
 message GetHistoryTideWindowResponse {
   repeated TideWindow items = 1;
+}
+
+message AnnounceVesselRequest {
+  string vessel_id = 1;
+  google.protobuf.Timestamp eta = 2;
+  string cargo_category = 3;
+  bool requires_vessel_exists = 4;
+  optional string idempotency_key = 5;
+}
+
+message AnnounceVesselResponse {
+  bool success = 1;
+  repeated string emitted_events = 2;
+}
+
+message AllocateBerthRequest {
+  string berth_id = 1;
+  bool requires_voyage_announced = 2;
+  bool requires_berth_available = 3;
+  optional string idempotency_key = 4;
+}
+
+message AllocateBerthResponse {
+  bool success = 1;
+  repeated string emitted_events = 2;
 }
 

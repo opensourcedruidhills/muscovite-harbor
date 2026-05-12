@@ -29,6 +29,10 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../harbour_control/CMakeLists.txt)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../harbour_control harbour_control)
 endif()
 
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../security/CMakeLists.txt)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../security security)
+endif()
+
 # Aggregate interface target for consumer linking
 add_library(muscovite_harbor_generated INTERFACE)
 target_link_libraries(muscovite_harbor_generated INTERFACE
@@ -38,4 +42,5 @@ target_link_libraries(muscovite_harbor_generated INTERFACE
     intermodal_transfer_dba
     cargo_decomposition_dba
     harbour_control_dba
+    security_dba
 )

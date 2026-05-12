@@ -157,6 +157,18 @@ CONTEXT CargoDecomposition @uuid "bb000050-0001-4000-8000-000000000001"
     ) DOC "Parcel dispatched for last-mile delivery";
 
     -- ====================================================================
+    -- Policy
+    -- ====================================================================
+
+    POLICY TrackParcelDispatch
+        WHEN ParcelDispatched
+        WHERE "carrier IS NOT NULL"
+        THEN NOTIFY LogisticsOps(tracking_number = "tracking_number")
+        RETRY 2
+        TIMEOUT "5m"
+        DOC "Notify logistics ops when a parcel is dispatched for last-mile delivery";
+
+    -- ====================================================================
     -- Mapping (brownfield integration)
     -- ====================================================================
 

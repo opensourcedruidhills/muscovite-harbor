@@ -13,9 +13,14 @@ set(cargo_decomposition_grpc_proto_PROTO_FILES
   proto/parcel.proto
   proto/delivery_unit.proto
   proto/break_bulk_item.proto
+  proto/dimensions.proto
+  proto/weight.proto
   proto/container_unpack_service.proto
   proto/pallet_dispatch_service.proto
   proto/services.proto
+  proto/cargo_decomposition_version.proto
+  proto/cargo_decomposition_error_details.proto
+  proto/cargo_decomposition_event_streaming.proto
 )
 
 add_library(cargo_decomposition_grpc_proto STATIC)
@@ -43,5 +48,11 @@ target_link_libraries(cargo_decomposition_grpc_proto PUBLIC
 
 target_include_directories(cargo_decomposition_grpc_proto PUBLIC
   ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+# ── DBA header-only library (FTR-1499) ────────────────────────
+add_library(cargo_decomposition_dba INTERFACE)
+target_include_directories(cargo_decomposition_dba INTERFACE
+  ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 

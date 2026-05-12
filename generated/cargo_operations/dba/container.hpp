@@ -5,7 +5,7 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <string>
-#include <string>
+#include "types/container_number.hpp"
 
 namespace cargo_operations {
 

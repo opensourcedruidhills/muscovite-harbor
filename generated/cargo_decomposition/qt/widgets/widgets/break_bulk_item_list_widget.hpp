@@ -15,6 +15,8 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QLineEdit>
+#include <QSortFilterProxyModel>
 
 #include "../models/break_bulk_item_model.hpp"
 
@@ -45,6 +47,8 @@ private:
     void setupToolbar();
 
     BreakBulkItemModel* model_ = nullptr;
+    QSortFilterProxyModel* proxy_model_ = nullptr;
+    QLineEdit* filter_bar_ = nullptr;
     QTableView* table_ = nullptr;
     QToolBar* toolbar_ = nullptr;
     QVBoxLayout* layout_ = nullptr;

@@ -122,10 +122,12 @@ SCENARIO("Voyage identity comparison") {
 SCENARIO("Add child PilotAssignment to Voyage") {
     GIVEN("an existing Voyage aggregate root") {
         WHEN("a PilotAssignment child is added") {
-            // auto result = cmd_service.add_child(parent_id, child);
+            auto child = PilotAssignment{};
+            auto parent_id = Voyage::Id{};
+            domain_service.add_pilot_assignment(parent_id, child);
 
             THEN("the child should be part of the aggregate") {
-                // CHECK(result.has_value());
+                CHECK_NOTHROW(domain_service.add_pilot_assignment(parent_id, child));
             }
         }
     }
@@ -134,10 +136,12 @@ SCENARIO("Add child PilotAssignment to Voyage") {
 SCENARIO("Add child TugBooking to Voyage") {
     GIVEN("an existing Voyage aggregate root") {
         WHEN("a TugBooking child is added") {
-            // auto result = cmd_service.add_child(parent_id, child);
+            auto child = TugBooking{};
+            auto parent_id = Voyage::Id{};
+            domain_service.add_tug_booking(parent_id, child);
 
             THEN("the child should be part of the aggregate") {
-                // CHECK(result.has_value());
+                CHECK_NOTHROW(domain_service.add_tug_booking(parent_id, child));
             }
         }
     }

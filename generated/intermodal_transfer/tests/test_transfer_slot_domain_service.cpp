@@ -67,3 +67,25 @@ SCENARIO("TransferSlotDomainService manages TransferSlot lifecycle") {
         }
     }
 }
+
+SCENARIO("ContainerHandoff saga — compensation on step failure") {
+    GIVEN("a ContainerHandoff saga instance is in progress") {
+        WHEN("a step fails") {
+            THEN("compensation steps should execute in reverse order") {
+                // Step 'ReserveYardExit' has 1 compensation(s)
+                // Step 'CheckoutGate' has 1 compensation(s)
+                // Step 'LoadTransport' has 1 compensation(s)
+                // Step 'ConfirmDeparture' has 1 compensation(s)
+            }
+        }
+    }
+}
+
+SCENARIO("ContainerHandoff saga — retry on transient failure") {
+    GIVEN("a saga step encounters a transient failure") {
+        WHEN("the step is retried") {
+            THEN("the saga should continue from the failed step") {
+            }
+        }
+    }
+}

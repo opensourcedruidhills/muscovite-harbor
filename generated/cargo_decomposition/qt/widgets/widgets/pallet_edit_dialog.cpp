@@ -11,10 +11,12 @@
 
 #include "pallet_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 PalletEditDialog::PalletEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit Pallet"));
     setupUi();
 }
@@ -44,7 +46,10 @@ void PalletEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &PalletEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -113,8 +118,23 @@ void PalletEditDialog::setHsCode(const QString& value) {
 }
 
 void PalletEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto PalletEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("palletId"), QVariant::fromValue(palletId()));
+    payload.insert(QStringLiteral("containerId"), QVariant::fromValue(containerId()));
+    payload.insert(QStringLiteral("weightKg"), QVariant::fromValue(weightKg()));
+    payload.insert(QStringLiteral("lengthCm"), QVariant::fromValue(lengthCm()));
+    payload.insert(QStringLiteral("widthCm"), QVariant::fromValue(widthCm()));
+    payload.insert(QStringLiteral("heightCm"), QVariant::fromValue(heightCm()));
+    payload.insert(QStringLiteral("hsCode"), QVariant::fromValue(hsCode()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

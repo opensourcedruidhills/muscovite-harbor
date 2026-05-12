@@ -5,9 +5,8 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
-#include <muscovite/dba/decimal.hpp>
-#include <muscovite/dba/timestamp.hpp>
-#include <string>
+#include <muscovite/dba/type_converters.hpp>
+#include "types/permit_number.hpp"
 
 namespace harbour_control {
 

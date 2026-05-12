@@ -14,95 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_decomposition::qml {
 
-ParcelGrpcBinding::ParcelGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+ParcelGrpcBinding::ParcelGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void ParcelGrpcBinding::createParcel(const QVariantMap& data) {
-    try {
-        // Map QVariantMap to CreateParcelRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
-        [[maybe_unused]] auto palletId = data.value(QStringLiteral("palletId"));
-        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
-        [[maybe_unused]] auto hsCode = data.value(QStringLiteral("hsCode"));
-        [[maybe_unused]] auto description = data.value(QStringLiteral("description"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = ParcelService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateParcel(&ctx, request, &response);
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("ParcelGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("ParcelGrpcBinding::createParcel called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void ParcelGrpcBinding::readParcel(const QString& id) {
-    try {
-        spdlog::debug("ParcelGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = ParcelService::NewStub(channel_);
-        // GetParcelRequest request;
-        // request.set_id(id.toStdString());
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("ParcelGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("ParcelGrpcBinding::readParcel {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void ParcelGrpcBinding::updateParcel(const QString& id, const QVariantMap& data) {
-    try {
-        spdlog::debug("ParcelGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
-        [[maybe_unused]] auto palletId = data.value(QStringLiteral("palletId"));
-        [[maybe_unused]] auto weightKg = data.value(QStringLiteral("weightKg"));
-        [[maybe_unused]] auto hsCode = data.value(QStringLiteral("hsCode"));
-        [[maybe_unused]] auto description = data.value(QStringLiteral("description"));
-        // TODO: Wire to generated gRPC stub
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("ParcelGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("ParcelGrpcBinding::updateParcel {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void ParcelGrpcBinding::deleteParcel(const QString& id) {
-    try {
-        spdlog::debug("ParcelGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("ParcelGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("ParcelGrpcBinding::deleteParcel {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void ParcelGrpcBinding::listParcel(int page, int pageSize) {
-    try {
-        spdlog::debug("ParcelGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
-        QVariantList results;
-        Q_EMIT listCompleted(results, 0);
-    } catch (const std::exception& ex) {
-        spdlog::error("ParcelGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("ParcelGrpcBinding::listParcel page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void ParcelGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -117,5 +68,5 @@ void ParcelGrpcBinding::handleGrpcError(const QString& operation, int statusCode
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_decomposition::qml
 

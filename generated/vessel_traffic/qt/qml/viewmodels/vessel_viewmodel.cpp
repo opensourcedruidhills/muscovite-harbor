@@ -13,7 +13,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::vessel_traffic::qml {
 
 VesselViewModel::VesselViewModel(QObject* parent)
     : QObject{parent} {}
@@ -135,5 +135,5 @@ void VesselViewModel::remove() {
     Q_EMIT removed();
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::vessel_traffic::qml
 

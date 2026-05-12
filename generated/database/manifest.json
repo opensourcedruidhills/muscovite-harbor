@@ -3,7 +3,7 @@
     {
       "dependencies": [],
       "deploy": "deploy/001-extensions.sql",
-      "hash": "fnv1a:2b0b1d62be1c4390",
+      "hash": "fnv1a:4f5532452fb10b9c",
       "name": "001-extensions",
       "note": "Extensions",
       "revert": "revert/001-extensions.sql",
@@ -13,81 +13,104 @@
       "dependencies": [
         "001-extensions"
       ],
-      "deploy": "deploy/002-vessel_traffic.sql",
-      "hash": "fnv1a:3f047be3bbf55a44",
+      "deploy": "vessel_traffic/deploy/000-schema.sql",
+      "hash": "fnv1a:4092e8e6cbfdcd72",
       "name": "002-vessel_traffic",
       "note": "Schema vessel_traffic",
-      "revert": "revert/002-vessel_traffic.sql",
-      "verify": "verify/002-vessel_traffic.sql"
+      "revert": "vessel_traffic/revert/000-schema.sql",
+      "verify": "vessel_traffic/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "002-vessel_traffic"
       ],
-      "deploy": "deploy/003-cargo_operations.sql",
-      "hash": "fnv1a:58da0557666fa400",
+      "deploy": "cargo_operations/deploy/000-schema.sql",
+      "hash": "fnv1a:328c3447bac9bf49",
       "name": "003-cargo_operations",
       "note": "Schema cargo_operations",
-      "revert": "revert/003-cargo_operations.sql",
-      "verify": "verify/003-cargo_operations.sql"
+      "revert": "cargo_operations/revert/000-schema.sql",
+      "verify": "cargo_operations/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "003-cargo_operations"
       ],
-      "deploy": "deploy/004-passenger_terminal.sql",
-      "hash": "fnv1a:c6bea8ab5b3b472b",
+      "deploy": "passenger_terminal/deploy/000-schema.sql",
+      "hash": "fnv1a:9238db12bbcfaf9b",
       "name": "004-passenger_terminal",
       "note": "Schema passenger_terminal",
-      "revert": "revert/004-passenger_terminal.sql",
-      "verify": "verify/004-passenger_terminal.sql"
+      "revert": "passenger_terminal/revert/000-schema.sql",
+      "verify": "passenger_terminal/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "004-passenger_terminal"
       ],
-      "deploy": "deploy/005-intermodal_transfer.sql",
-      "hash": "fnv1a:41e55bf55856d6ac",
+      "deploy": "intermodal_transfer/deploy/000-schema.sql",
+      "hash": "fnv1a:dc3533a0dcfe05a5",
       "name": "005-intermodal_transfer",
       "note": "Schema intermodal_transfer",
-      "revert": "revert/005-intermodal_transfer.sql",
-      "verify": "verify/005-intermodal_transfer.sql"
+      "revert": "intermodal_transfer/revert/000-schema.sql",
+      "verify": "intermodal_transfer/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "005-intermodal_transfer"
       ],
-      "deploy": "deploy/006-cargo_decomposition.sql",
-      "hash": "fnv1a:4c00552a79a63f9a",
+      "deploy": "cargo_decomposition/deploy/000-schema.sql",
+      "hash": "fnv1a:825c15c7f67ef404",
       "name": "006-cargo_decomposition",
       "note": "Schema cargo_decomposition",
-      "revert": "revert/006-cargo_decomposition.sql",
-      "verify": "verify/006-cargo_decomposition.sql"
+      "revert": "cargo_decomposition/revert/000-schema.sql",
+      "verify": "cargo_decomposition/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "006-cargo_decomposition"
       ],
-      "deploy": "deploy/007-harbour_control.sql",
-      "hash": "fnv1a:736ff60ef61b6a13",
+      "deploy": "harbour_control/deploy/000-schema.sql",
+      "hash": "fnv1a:2c44c086668efc7f",
       "name": "007-harbour_control",
       "note": "Schema harbour_control",
-      "revert": "revert/007-harbour_control.sql",
-      "verify": "verify/007-harbour_control.sql"
+      "revert": "harbour_control/revert/000-schema.sql",
+      "verify": "harbour_control/verify/000-schema.sql"
     },
     {
       "dependencies": [
         "007-harbour_control"
       ],
-      "deploy": "deploy/008-security.sql",
-      "hash": "fnv1a:9d0ca07f43b367f0",
+      "deploy": "security/deploy/000-schema.sql",
+      "hash": "fnv1a:d66d269ab014c908",
       "name": "008-security",
+      "note": "Schema security",
+      "revert": "security/revert/000-schema.sql",
+      "verify": "security/verify/000-schema.sql"
+    },
+    {
+      "dependencies": [
+        "008-security"
+      ],
+      "deploy": "spatial/deploy/000-schema.sql",
+      "hash": "fnv1a:c2e0cce0fbf3b435",
+      "name": "009-spatial",
+      "note": "Schema spatial",
+      "revert": "spatial/revert/000-schema.sql",
+      "verify": "spatial/verify/000-schema.sql"
+    },
+    {
+      "dependencies": [
+        "009-spatial"
+      ],
+      "deploy": "deploy/010-security.sql",
+      "hash": "fnv1a:ec4f8eed0e7c3bca",
+      "name": "010-security",
       "note": "Roles and grants",
-      "revert": "revert/008-security.sql",
-      "verify": "verify/008-security.sql"
+      "revert": "revert/010-security.sql",
+      "verify": "verify/010-security.sql"
     }
   ],
   "generated_at": "2026-01-01T00:00:00Z",
+  "generated_by": "muscomp",
   "project": "MuscoviteHarbor",
   "version": "1.0"
 }

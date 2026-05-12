@@ -13,15 +13,19 @@
 
 #include <QObject>
 #include <QString>
+#include <QVariantList>
 #include <QVariantMap>
 
-namespace muscovite_harbor::qml {
+#include <grpcpp/grpcpp.h>
+#include <memory>
+
+namespace muscovite_harbor::cargo_operations::qml {
 
 class ReeferUnitGrpcBinding : public QObject {
     Q_OBJECT
 
 public:
-    explicit ReeferUnitGrpcBinding(QObject* parent = nullptr);
+    explicit ReeferUnitGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent = nullptr);
 
     void createReeferUnit(const QVariantMap& data);
     void readReeferUnit(const QString& id);
@@ -38,8 +42,9 @@ Q_SIGNALS:
     void error(const QString& operation, const QString& message);
 
 private:
+    std::shared_ptr<grpc::Channel> channel_;
     void handleGrpcError(const QString& operation, int statusCode, const QString& message);
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_operations::qml
 

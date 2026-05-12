@@ -11,10 +11,12 @@
 
 #include "hazmat_permit_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 HazmatPermitEditDialog::HazmatPermitEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit HazmatPermit"));
     setupUi();
 }
@@ -44,7 +46,10 @@ void HazmatPermitEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &HazmatPermitEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -113,8 +118,23 @@ void HazmatPermitEditDialog::setValidUntil(const QDateTime& value) {
 }
 
 void HazmatPermitEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto HazmatPermitEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("permitNumber"), QVariant::fromValue(permitNumber()));
+    payload.insert(QStringLiteral("vesselId"), QVariant::fromValue(vesselId()));
+    payload.insert(QStringLiteral("imoClass"), QVariant::fromValue(imoClass()));
+    payload.insert(QStringLiteral("quantityKg"), QVariant::fromValue(quantityKg()));
+    payload.insert(QStringLiteral("approved"), QVariant::fromValue(approved()));
+    payload.insert(QStringLiteral("validFrom"), QVariant::fromValue(validFrom()));
+    payload.insert(QStringLiteral("validUntil"), QVariant::fromValue(validUntil()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

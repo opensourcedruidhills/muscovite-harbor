@@ -8,12 +8,11 @@ namespace harbour_control {
 
 auto VTSRadarAdapter::translate_radar_track_to_vessel_position(const RadarTrack& source) const -> VesselPosition {
     auto result = VesselPosition{};
-    // TODO: implement complex field translations for RadarTrack → VesselPosition
-    // result.mmsi = <complex expression>;
-    // result.latitude = <complex expression>;
-    // result.longitude = <complex expression>;
-    // result.heading_degrees = <complex expression>;
-    // result.speed_knots = <complex expression>;
+    result.mmsi = entity.get_radar_track();
+    result.latitude = entity.get_radar_track();
+    result.longitude = entity.get_radar_track();
+    result.heading_degrees = entity.get_radar_track();
+    result.speed_knots = entity.get_radar_track();
     return result;
 }
 

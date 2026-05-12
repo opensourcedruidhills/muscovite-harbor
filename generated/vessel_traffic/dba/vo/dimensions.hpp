@@ -3,7 +3,7 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
-#include <muscovite/dba/decimal.hpp>
+#include <muscovite/dba/type_converters.hpp>
 
 namespace vessel_traffic {
 

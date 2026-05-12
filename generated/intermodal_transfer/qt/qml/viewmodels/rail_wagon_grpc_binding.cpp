@@ -14,91 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::intermodal_transfer::qml {
 
-RailWagonGrpcBinding::RailWagonGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+RailWagonGrpcBinding::RailWagonGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void RailWagonGrpcBinding::createRailWagon(const QVariantMap& data) {
-    try {
-        // Map QVariantMap to CreateRailWagonRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto wagonNumber = data.value(QStringLiteral("wagonNumber"));
-        [[maybe_unused]] auto maxWeightKg = data.value(QStringLiteral("maxWeightKg"));
-        [[maybe_unused]] auto slotId = data.value(QStringLiteral("slotId"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = RailWagonService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateRailWagon(&ctx, request, &response);
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("RailWagonGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("RailWagonGrpcBinding::createRailWagon called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void RailWagonGrpcBinding::readRailWagon(const QString& id) {
-    try {
-        spdlog::debug("RailWagonGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = RailWagonService::NewStub(channel_);
-        // GetRailWagonRequest request;
-        // request.set_id(id.toStdString());
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("RailWagonGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("RailWagonGrpcBinding::readRailWagon {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void RailWagonGrpcBinding::updateRailWagon(const QString& id, const QVariantMap& data) {
-    try {
-        spdlog::debug("RailWagonGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto wagonNumber = data.value(QStringLiteral("wagonNumber"));
-        [[maybe_unused]] auto maxWeightKg = data.value(QStringLiteral("maxWeightKg"));
-        [[maybe_unused]] auto slotId = data.value(QStringLiteral("slotId"));
-        // TODO: Wire to generated gRPC stub
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("RailWagonGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("RailWagonGrpcBinding::updateRailWagon {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void RailWagonGrpcBinding::deleteRailWagon(const QString& id) {
-    try {
-        spdlog::debug("RailWagonGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("RailWagonGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("RailWagonGrpcBinding::deleteRailWagon {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void RailWagonGrpcBinding::listRailWagon(int page, int pageSize) {
-    try {
-        spdlog::debug("RailWagonGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
-        QVariantList results;
-        Q_EMIT listCompleted(results, 0);
-    } catch (const std::exception& ex) {
-        spdlog::error("RailWagonGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("RailWagonGrpcBinding::listRailWagon page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void RailWagonGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -113,5 +68,5 @@ void RailWagonGrpcBinding::handleGrpcError(const QString& operation, int statusC
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::intermodal_transfer::qml
 

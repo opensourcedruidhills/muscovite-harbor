@@ -11,10 +11,12 @@
 
 #include "boarding_pass_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 BoardingPassEditDialog::BoardingPassEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit BoardingPass"));
     setupUi();
 }
@@ -42,7 +44,10 @@ void BoardingPassEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &BoardingPassEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -103,8 +108,22 @@ void BoardingPassEditDialog::setScannedAt(const QDateTime& value) {
 }
 
 void BoardingPassEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto BoardingPassEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("passengerId"), QVariant::fromValue(passengerId()));
+    payload.insert(QStringLiteral("gateId"), QVariant::fromValue(gateId()));
+    payload.insert(QStringLiteral("boardingGroup"), QVariant::fromValue(boardingGroup()));
+    payload.insert(QStringLiteral("seatNumber"), QVariant::fromValue(seatNumber()));
+    payload.insert(QStringLiteral("issuedAt"), QVariant::fromValue(issuedAt()));
+    payload.insert(QStringLiteral("scannedAt"), QVariant::fromValue(scannedAt()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

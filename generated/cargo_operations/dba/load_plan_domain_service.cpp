@@ -3,6 +3,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include "load_plan_domain_service.hpp"
+#include <stdexcept>
 
 namespace cargo_operations {
 
@@ -30,12 +31,16 @@ auto LoadPlanDomainService::find_all() -> std::vector<LoadPlan> {
 }
 
 auto LoadPlanDomainService::add_discharge_sequence(const LoadPlan::Id& parent_id, const DischargeSequence& child) -> void {
-    // Validate parent exists, then delegate to command service
-    (void)parent_id; (void)child;
+    auto parent = query_service_.find_by_id(parent_id);
+    if (!parent) {
+        throw std::runtime_error("Parent LoadPlan not found");
+    }
+    command_service_.create(child);
 }
 
 auto LoadPlanDomainService::remove_discharge_sequence(const LoadPlan::Id& parent_id, const DischargeSequence::Id& child_id) -> void {
-    (void)parent_id; (void)child_id;
+    (void)parent_id;
+    command_service_.remove(child_id);
 }
 
 } // namespace cargo_operations

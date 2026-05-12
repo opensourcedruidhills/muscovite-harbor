@@ -11,10 +11,12 @@
 
 #include "gate_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 GateEditDialog::GateEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit Gate"));
     setupUi();
 }
@@ -40,7 +42,10 @@ void GateEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &GateEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -93,8 +98,21 @@ void GateEditDialog::setVoyageId(const QString& value) {
 }
 
 void GateEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto GateEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("code"), QVariant::fromValue(code()));
+    payload.insert(QStringLiteral("name"), QVariant::fromValue(name()));
+    payload.insert(QStringLiteral("capacity"), QVariant::fromValue(capacity()));
+    payload.insert(QStringLiteral("status"), QVariant::fromValue(status()));
+    payload.insert(QStringLiteral("voyageId"), QVariant::fromValue(voyageId()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

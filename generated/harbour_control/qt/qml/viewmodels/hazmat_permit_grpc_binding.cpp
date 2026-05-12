@@ -14,99 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::harbour_control::qml {
 
-HazmatPermitGrpcBinding::HazmatPermitGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+HazmatPermitGrpcBinding::HazmatPermitGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void HazmatPermitGrpcBinding::createHazmatPermit(const QVariantMap& data) {
-    try {
-        // Map QVariantMap to CreateHazmatPermitRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto permitNumber = data.value(QStringLiteral("permitNumber"));
-        [[maybe_unused]] auto vesselId = data.value(QStringLiteral("vesselId"));
-        [[maybe_unused]] auto imoClass = data.value(QStringLiteral("imoClass"));
-        [[maybe_unused]] auto quantityKg = data.value(QStringLiteral("quantityKg"));
-        [[maybe_unused]] auto approved = data.value(QStringLiteral("approved"));
-        [[maybe_unused]] auto validFrom = data.value(QStringLiteral("validFrom"));
-        [[maybe_unused]] auto validUntil = data.value(QStringLiteral("validUntil"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = HazmatPermitService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateHazmatPermit(&ctx, request, &response);
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("HazmatPermitGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("HazmatPermitGrpcBinding::createHazmatPermit called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void HazmatPermitGrpcBinding::readHazmatPermit(const QString& id) {
-    try {
-        spdlog::debug("HazmatPermitGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = HazmatPermitService::NewStub(channel_);
-        // GetHazmatPermitRequest request;
-        // request.set_id(id.toStdString());
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("HazmatPermitGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("HazmatPermitGrpcBinding::readHazmatPermit {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void HazmatPermitGrpcBinding::updateHazmatPermit(const QString& id, const QVariantMap& data) {
-    try {
-        spdlog::debug("HazmatPermitGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto permitNumber = data.value(QStringLiteral("permitNumber"));
-        [[maybe_unused]] auto vesselId = data.value(QStringLiteral("vesselId"));
-        [[maybe_unused]] auto imoClass = data.value(QStringLiteral("imoClass"));
-        [[maybe_unused]] auto quantityKg = data.value(QStringLiteral("quantityKg"));
-        [[maybe_unused]] auto approved = data.value(QStringLiteral("approved"));
-        [[maybe_unused]] auto validFrom = data.value(QStringLiteral("validFrom"));
-        [[maybe_unused]] auto validUntil = data.value(QStringLiteral("validUntil"));
-        // TODO: Wire to generated gRPC stub
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("HazmatPermitGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("HazmatPermitGrpcBinding::updateHazmatPermit {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void HazmatPermitGrpcBinding::deleteHazmatPermit(const QString& id) {
-    try {
-        spdlog::debug("HazmatPermitGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("HazmatPermitGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("HazmatPermitGrpcBinding::deleteHazmatPermit {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void HazmatPermitGrpcBinding::listHazmatPermit(int page, int pageSize) {
-    try {
-        spdlog::debug("HazmatPermitGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
-        QVariantList results;
-        Q_EMIT listCompleted(results, 0);
-    } catch (const std::exception& ex) {
-        spdlog::error("HazmatPermitGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("HazmatPermitGrpcBinding::listHazmatPermit page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void HazmatPermitGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -121,5 +68,5 @@ void HazmatPermitGrpcBinding::handleGrpcError(const QString& operation, int stat
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::harbour_control::qml
 

@@ -11,10 +11,12 @@
 
 #include "yard_slot_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 YardSlotEditDialog::YardSlotEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit YardSlot"));
     setupUi();
 }
@@ -40,7 +42,10 @@ void YardSlotEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &YardSlotEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -93,8 +98,21 @@ void YardSlotEditDialog::setIsOccupied(const bool& value) {
 }
 
 void YardSlotEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto YardSlotEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("code"), QVariant::fromValue(code()));
+    payload.insert(QStringLiteral("maxWeightKg"), QVariant::fromValue(maxWeightKg()));
+    payload.insert(QStringLiteral("maxTier"), QVariant::fromValue(maxTier()));
+    payload.insert(QStringLiteral("hasPower"), QVariant::fromValue(hasPower()));
+    payload.insert(QStringLiteral("isOccupied"), QVariant::fromValue(isOccupied()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

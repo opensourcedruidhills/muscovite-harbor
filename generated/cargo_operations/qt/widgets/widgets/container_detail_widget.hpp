@@ -14,6 +14,7 @@
 #include <QWidget>
 #include <QFormLayout>
 #include <QLabel>
+#include <QTabWidget>
 #include <QVBoxLayout>
 
 namespace muscovite_harbor::widgets {
@@ -38,6 +39,7 @@ private:
 
     QLabel* header_label_ = nullptr;
     QLabel* id_label_ = nullptr;
+    QTabWidget* tab_widget_ = nullptr;
     QLabel* id_value_ = nullptr;
     QLabel* container_number_value_ = nullptr;
     QLabel* size_category_value_ = nullptr;

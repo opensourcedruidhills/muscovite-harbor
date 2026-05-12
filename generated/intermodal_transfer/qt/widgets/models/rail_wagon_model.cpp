@@ -49,6 +49,7 @@ auto RailWagonModel::headerData(int section, Qt::Orientation orientation, int ro
     }
 }
 
+// Populate model from a gRPC List response.
 void RailWagonModel::setRows(std::vector<Row> rows) {
     beginResetModel();
     rows_ = std::move(rows);

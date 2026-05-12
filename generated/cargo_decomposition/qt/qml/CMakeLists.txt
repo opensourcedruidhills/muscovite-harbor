@@ -2,29 +2,53 @@
 
 cmake_minimum_required(VERSION 3.25)
 
+set(CMAKE_AUTOMOC ON)
+
 qt_add_qml_module(cargo_decomposition_qml_viewmodels
     URI "com.MuscoviteHarbor.cargo_decomposition.viewmodels"
     VERSION 1.0
     QML_FILES
         PalletDialog.qml
+        PalletListView.qml
         ParcelDialog.qml
+        ParcelListView.qml
         DeliveryUnitDialog.qml
+        DeliveryUnitListView.qml
         BreakBulkItemDialog.qml
+        BreakBulkItemListView.qml
+        Navigation.qml
+        SearchView.qml
     SOURCES
         viewmodels/pallet_viewmodel.cpp
         viewmodels/pallet_viewmodel.hpp
+        viewmodels/pallet_grpc_binding.cpp
+        viewmodels/pallet_grpc_binding.hpp
         viewmodels/parcel_viewmodel.cpp
         viewmodels/parcel_viewmodel.hpp
+        viewmodels/parcel_grpc_binding.cpp
+        viewmodels/parcel_grpc_binding.hpp
         viewmodels/delivery_unit_viewmodel.cpp
         viewmodels/delivery_unit_viewmodel.hpp
+        viewmodels/delivery_unit_grpc_binding.cpp
+        viewmodels/delivery_unit_grpc_binding.hpp
         viewmodels/break_bulk_item_viewmodel.cpp
         viewmodels/break_bulk_item_viewmodel.hpp
+        viewmodels/break_bulk_item_grpc_binding.cpp
+        viewmodels/break_bulk_item_grpc_binding.hpp
+)
+
+target_include_directories(cargo_decomposition_qml_viewmodels PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/viewmodels
 )
 
 target_link_libraries(cargo_decomposition_qml_viewmodels PUBLIC
     Qt6::Core
     Qt6::Qml
     Qt6::Quick
+    spdlog::spdlog
+    gRPC::grpc++
+    protobuf::libprotobuf
+    cargo_decomposition_grpc_proto
 )
 
 # Aggregate type registration target (Qt 6.11+)
@@ -45,9 +69,15 @@ find_program(QMLLINT_EXECUTABLE qmllint HINTS ${Qt6_DIR}/../../../bin)
 if(QMLLINT_EXECUTABLE)
     set(_qml_files)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/PalletDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/PalletListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/ParcelDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/ParcelListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/DeliveryUnitDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/DeliveryUnitListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/BreakBulkItemDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/BreakBulkItemListView.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/Navigation.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/SearchView.qml)
     add_custom_target(cargo_decomposition_qmllint
         COMMAND ${QMLLINT_EXECUTABLE} ${_qml_files}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

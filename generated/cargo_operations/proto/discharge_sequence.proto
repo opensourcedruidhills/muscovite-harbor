@@ -22,13 +22,12 @@ message DischargeSequence {
   string container_id = 3;
   int32 sequence_order = 4;
   string crane_id = 5;
-  string discharge_sequence_id = 6;
-  google.protobuf.Timestamp created_at = 7;
-  optional string created_by = 8;
-  google.protobuf.Timestamp updated_at = 9;
-  optional string updated_by = 10;
-  optional string created_by_name = 11;
-  optional string updated_by_name = 12;
+  google.protobuf.Timestamp created_at = 6;
+  optional string created_by = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  optional string updated_by = 9;
+  optional string created_by_name = 10;
+  optional string updated_by_name = 11;
 }
 
 message CreateDischargeSequenceRequest {
@@ -36,10 +35,7 @@ message CreateDischargeSequenceRequest {
   string container_id = 2;
   int32 sequence_order = 3;
   string crane_id = 4;
-  string discharge_sequence_id = 5;
-  string discharge_sequence_id = 6;
-  optional string discharge_sequence_id = 7;
-  optional string idempotency_key = 8;
+  optional string idempotency_key = 5;
 }
 
 message CreateDischargeSequenceResponse {
@@ -60,10 +56,7 @@ message UpdateDischargeSequenceRequest {
   string container_id = 3;
   int32 sequence_order = 4;
   string crane_id = 5;
-  string discharge_sequence_id = 6;
-  string discharge_sequence_id = 7;
-  optional string discharge_sequence_id = 8;
-  optional string idempotency_key = 9;
+  optional string idempotency_key = 6;
 }
 
 message UpdateDischargeSequenceResponse {
@@ -88,5 +81,29 @@ message ListDischargeSequencesResponse {
   repeated DischargeSequence items = 1;
   string next_page_token = 2;
   int32 total_count = 3;
+}
+
+message PlaceContainerRequest {
+  string slot_id = 1;
+  int32 tier = 2;
+  bool requires_slot_empty = 3;
+  bool requires_weight_ok = 4;
+  optional string idempotency_key = 5;
+}
+
+message PlaceContainerResponse {
+  bool success = 1;
+  repeated string emitted_events = 2;
+}
+
+message PickContainerRequest {
+  string picked_by = 1;
+  bool requires_is_top = 2;
+  optional string idempotency_key = 3;
+}
+
+message PickContainerResponse {
+  bool success = 1;
+  repeated string emitted_events = 2;
 }
 

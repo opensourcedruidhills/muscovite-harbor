@@ -55,6 +55,7 @@ auto ContainerModel::headerData(int section, Qt::Orientation orientation, int ro
     }
 }
 
+// Populate model from a gRPC List response.
 void ContainerModel::setRows(std::vector<Row> rows) {
     beginResetModel();
     rows_ = std::move(rows);

@@ -13,7 +13,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./docker/init-schemas.sql:/docker-entrypoint-initdb.d/01-schemas.sql
+      - ./docker/init-schemas.sql:/docker-entrypoint-initdb.d/01-schemas.sql:z
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-muscovite_harbor}"]
       interval: 5s
@@ -28,7 +28,7 @@ services:
       - "${NATS_MONITOR_PORT:-8222}:8222"
     command: ["--js", "--http_port", "8222"]
     healthcheck:
-      test: ["CMD", "nats", "server", "check", "connection"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8222/healthz || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 3

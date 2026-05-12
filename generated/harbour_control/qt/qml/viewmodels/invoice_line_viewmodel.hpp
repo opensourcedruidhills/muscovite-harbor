@@ -16,7 +16,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::harbour_control::qml {
 
 class InvoiceLineViewModel : public QObject {
     Q_OBJECT
@@ -72,5 +72,5 @@ private:
     QDateTime m_issued_at;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::harbour_control::qml
 

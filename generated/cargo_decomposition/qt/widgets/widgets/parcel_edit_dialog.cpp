@@ -11,10 +11,12 @@
 
 #include "parcel_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 ParcelEditDialog::ParcelEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit Parcel"));
     setupUi();
 }
@@ -40,7 +42,10 @@ void ParcelEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &ParcelEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -93,8 +98,21 @@ void ParcelEditDialog::setDescription(const QString& value) {
 }
 
 void ParcelEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto ParcelEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("trackingNumber"), QVariant::fromValue(trackingNumber()));
+    payload.insert(QStringLiteral("palletId"), QVariant::fromValue(palletId()));
+    payload.insert(QStringLiteral("weightKg"), QVariant::fromValue(weightKg()));
+    payload.insert(QStringLiteral("hsCode"), QVariant::fromValue(hsCode()));
+    payload.insert(QStringLiteral("description"), QVariant::fromValue(description()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

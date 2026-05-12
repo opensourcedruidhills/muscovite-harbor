@@ -11,10 +11,12 @@
 
 #include "barge_booking_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 BargeBookingEditDialog::BargeBookingEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit BargeBooking"));
     setupUi();
 }
@@ -38,7 +40,10 @@ void BargeBookingEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &BargeBookingEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -83,8 +88,20 @@ void BargeBookingEditDialog::setStatus(const QString& value) {
 }
 
 void BargeBookingEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto BargeBookingEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("bargeName"), QVariant::fromValue(bargeName()));
+    payload.insert(QStringLiteral("capacityTeu"), QVariant::fromValue(capacityTeu()));
+    payload.insert(QStringLiteral("departureAt"), QVariant::fromValue(departureAt()));
+    payload.insert(QStringLiteral("status"), QVariant::fromValue(status()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

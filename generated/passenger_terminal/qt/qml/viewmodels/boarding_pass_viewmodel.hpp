@@ -16,7 +16,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::passenger_terminal::qml {
 
 class BoardingPassViewModel : public QObject {
     Q_OBJECT
@@ -77,5 +77,5 @@ private:
     QDateTime m_scanned_at;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::passenger_terminal::qml
 

@@ -53,6 +53,7 @@ auto YardSlotModel::headerData(int section, Qt::Orientation orientation, int rol
     }
 }
 
+// Populate model from a gRPC List response.
 void YardSlotModel::setRows(std::vector<Row> rows) {
     beginResetModel();
     rows_ = std::move(rows);

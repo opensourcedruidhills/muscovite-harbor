@@ -17,22 +17,24 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QLineEdit>
-#include <QScopedPointer>
 #include <QSpinBox>
 #include <QVBoxLayout>
+#include <memory>
+#include <QVariantMap>
+#include "common/entity_edit_dialog_base.hpp"
 
 namespace muscovite_harbor::widgets {
 
-class HazmatPermitEditDialog : public QDialog {
+class HazmatPermitEditDialog : public EntityEditDialogBase {
     Q_OBJECT
 public:
     explicit HazmatPermitEditDialog(QWidget* parent = nullptr);
 
     /// Create and show dialog safely. Ownership transfers to Qt on success.
     static void showSafe(QWidget* parent) {
-        auto dlg = QScopedPointer<HazmatPermitEditDialog>{new HazmatPermitEditDialog{parent}};
+        auto dlg = std::unique_ptr<HazmatPermitEditDialog>{new HazmatPermitEditDialog{parent}};
         dlg->setAttribute(Qt::WA_DeleteOnClose);
-        dlg.take()->show();
+        dlg.release()->show();
     }
 
     [[nodiscard]] auto id() const -> QString;
@@ -54,13 +56,16 @@ public:
     void setValidUntil(const QDateTime& value);
 
 Q_SIGNALS:
+    void saveRequested(const QVariantMap& payload);
     void entitySaved();
+    void deleteRequested();
 
 private Q_SLOTS:
     void onAccepted();
 
 private:
     void setupUi();
+    [[nodiscard]] auto buildPayload() const -> QVariantMap;
 
     QLineEdit* id_ = nullptr;
     QLineEdit* permit_number_ = nullptr;
@@ -72,6 +77,7 @@ private:
     QDateTimeEdit* valid_until_ = nullptr;
     QDialogButtonBox* button_box_ = nullptr;
     QFormLayout* form_ = nullptr;
+    ValidationDisplayWidget* validation_display_ = nullptr;
 };
 
 } // namespace muscovite_harbor::widgets

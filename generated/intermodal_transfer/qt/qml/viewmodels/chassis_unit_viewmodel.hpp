@@ -15,7 +15,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::intermodal_transfer::qml {
 
 class ChassisUnitViewModel : public QObject {
     Q_OBJECT
@@ -61,5 +61,5 @@ private:
     bool m_is_available = false;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::intermodal_transfer::qml
 

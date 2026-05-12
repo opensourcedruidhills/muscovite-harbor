@@ -6,14 +6,14 @@
 
 namespace vessel_traffic {
 
-auto AvailableBerthsSpec::is_satisfied_by(const Berth& /*entity*/) const -> bool {
-    // TODO: implement specification logic for AvailableBerths
-    return false;
+auto AvailableBerthsSpec::is_satisfied_by(const Berth& entity) const -> bool {
+    (void)entity;
+    return false; // No expression defined in DSL
 }
 
-auto VesselsByETASpec::is_satisfied_by(const Voyage& /*entity*/) const -> bool {
-    // TODO: implement specification logic for VesselsByETA
-    return false;
+auto VesselsByETASpec::is_satisfied_by(const Voyage& entity) const -> bool {
+    (void)entity;
+    return false; // No expression defined in DSL
 }
 
 } // namespace vessel_traffic

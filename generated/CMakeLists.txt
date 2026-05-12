@@ -10,7 +10,7 @@ string(STRIP ${MUSCOVITE_HARBOR_VERSION} MUSCOVITE_HARBOR_VERSION)
 
 # FTR-1433: Only declare project() at top-level, not in add_subdirectory()
 if(NOT CMAKE_PROJECT_NAME OR CMAKE_PROJECT_NAME STREQUAL "Project")
-    project(muscovite_harbor VERSION ${MUSCOVITE_HARBOR_VERSION} LANGUAGES CXX)
+    project(muscovite_harbor VERSION ${MUSCOVITE_HARBOR_VERSION} LANGUAGES C CXX)
 endif()
 
 set(CMAKE_CXX_STANDARD 23)
@@ -28,6 +28,12 @@ find_package(doctest REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
+# ── Qt6 (system package, not Conan) ──────────────────────────────
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 Qml)
+
+find_package(Protobuf REQUIRED)
+find_package(gRPC REQUIRED)
+
 # ── Per-context targets (FTR-1392) ────────────────────────────────
 add_subdirectory(vessel_traffic)
 add_subdirectory(cargo_operations)
@@ -35,24 +41,116 @@ add_subdirectory(passenger_terminal)
 add_subdirectory(intermodal_transfer)
 add_subdirectory(cargo_decomposition)
 add_subdirectory(harbour_control)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/security/CMakeLists.txt)
+    add_subdirectory(security)
+endif()
+
+# ── Qt frontend targets (FTR-1510) ────────────────────────────────
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/vessel_traffic/qt/widgets/CMakeLists.txt)
+    add_subdirectory(vessel_traffic/qt/widgets)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/vessel_traffic/qt/qml/CMakeLists.txt)
+    add_subdirectory(vessel_traffic/qt/qml)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cargo_operations/qt/widgets/CMakeLists.txt)
+    add_subdirectory(cargo_operations/qt/widgets)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cargo_operations/qt/qml/CMakeLists.txt)
+    add_subdirectory(cargo_operations/qt/qml)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/passenger_terminal/qt/widgets/CMakeLists.txt)
+    add_subdirectory(passenger_terminal/qt/widgets)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/passenger_terminal/qt/qml/CMakeLists.txt)
+    add_subdirectory(passenger_terminal/qt/qml)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/intermodal_transfer/qt/widgets/CMakeLists.txt)
+    add_subdirectory(intermodal_transfer/qt/widgets)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/intermodal_transfer/qt/qml/CMakeLists.txt)
+    add_subdirectory(intermodal_transfer/qt/qml)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cargo_decomposition/qt/widgets/CMakeLists.txt)
+    add_subdirectory(cargo_decomposition/qt/widgets)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cargo_decomposition/qt/qml/CMakeLists.txt)
+    add_subdirectory(cargo_decomposition/qt/qml)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/harbour_control/qt/widgets/CMakeLists.txt)
+    add_subdirectory(harbour_control/qt/widgets)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/harbour_control/qt/qml/CMakeLists.txt)
+    add_subdirectory(harbour_control/qt/qml)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/qt/widgets/CMakeLists.txt)
+    add_subdirectory(qt/widgets)
+endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/qt/qml/CMakeLists.txt)
+    add_subdirectory(qt/qml)
+endif()
+
+# ── gRPC server binary (FTR-1488) ─────────────────────────────────
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/server_main.cpp)
+    find_package(Protobuf REQUIRED)
+    find_package(gRPC REQUIRED)
+    find_package(libpqxx QUIET)
+    add_executable(muscovite_harbor_server src/server_main.cpp)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/grpc/server/jwt_auth_provider.cpp)
+        target_sources(muscovite_harbor_server PRIVATE src/grpc/server/jwt_auth_provider.cpp)
+    endif()
+    target_include_directories(muscovite_harbor_server PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_BINARY_DIR}
+    )
+    target_link_libraries(muscovite_harbor_server PRIVATE
+        vessel_traffic_dba
+        vessel_traffic_grpc_proto
+        cargo_operations_dba
+        cargo_operations_grpc_proto
+        passenger_terminal_dba
+        passenger_terminal_grpc_proto
+        intermodal_transfer_dba
+        intermodal_transfer_grpc_proto
+        cargo_decomposition_dba
+        cargo_decomposition_grpc_proto
+        harbour_control_dba
+        harbour_control_grpc_proto
+        security_dba
+        security_grpc_proto
+        muscovite::dba
+        gRPC::grpc++
+        spdlog::spdlog
+    )
+    if(TARGET libpqxx::pqxx)
+        target_link_libraries(muscovite_harbor_server PRIVATE libpqxx::pqxx)
+    endif()
+endif()
+
+# ── End-to-end smoke test target ───────────────────────────────────
+add_custom_target(smoke-test
+    COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -L smoke
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Run smoke tests"
+)
 
 # ── Tests ─────────────────────────────────────────────────────────
 enable_testing()
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/vessel_traffic/tests)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/vessel_traffic/tests/CMakeLists.txt)
     add_subdirectory(vessel_traffic/tests)
 endif()
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cargo_operations/tests)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cargo_operations/tests/CMakeLists.txt)
     add_subdirectory(cargo_operations/tests)
 endif()
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/passenger_terminal/tests)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/passenger_terminal/tests/CMakeLists.txt)
     add_subdirectory(passenger_terminal/tests)
 endif()
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/intermodal_transfer/tests)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/intermodal_transfer/tests/CMakeLists.txt)
     add_subdirectory(intermodal_transfer/tests)
 endif()
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cargo_decomposition/tests)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cargo_decomposition/tests/CMakeLists.txt)
     add_subdirectory(cargo_decomposition/tests)
 endif()
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/harbour_control/tests)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/harbour_control/tests/CMakeLists.txt)
     add_subdirectory(harbour_control/tests)
 endif()

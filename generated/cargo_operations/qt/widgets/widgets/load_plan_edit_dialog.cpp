@@ -11,10 +11,12 @@
 
 #include "load_plan_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 LoadPlanEditDialog::LoadPlanEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit LoadPlan"));
     setupUi();
 }
@@ -36,7 +38,10 @@ void LoadPlanEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &LoadPlanEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -73,8 +78,19 @@ void LoadPlanEditDialog::setStatus(const QString& value) {
 }
 
 void LoadPlanEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto LoadPlanEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("voyageId"), QVariant::fromValue(voyageId()));
+    payload.insert(QStringLiteral("createdAt"), QVariant::fromValue(createdAt()));
+    payload.insert(QStringLiteral("status"), QVariant::fromValue(status()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

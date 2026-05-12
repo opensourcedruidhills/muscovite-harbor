@@ -135,18 +135,21 @@ CONTEXT IntermodalTransfer @uuid "bb000040-0001-4000-8000-000000000001"
         STEP ReserveYardExit
             INVOKE ReserveYardExit(slot_id = "slot_id")
             ON FAILURE ReserveYardExit -> COMPENSATE -> FAILED
+            COMPENSATES_WITH ReleaseYardExit(slot_id = "slot_id")
             DOC "Reserve yard exit lane for container";
 
         STEP CheckoutGate
             INVOKE CheckoutGate(slot_id = "slot_id")
             ON SUCCESS CheckoutGate -> COMPLETED
             ON FAILURE CheckoutGate -> COMPENSATE -> FAILED
+            COMPENSATES_WITH RollbackGateCheckout(slot_id = "slot_id")
             DOC "Process container through gate checkpoint";
 
         STEP LoadTransport
             INVOKE LoadTransport(slot_id = "slot_id")
             ON FAILURE LoadTransport -> COMPENSATE -> FAILED
             ON TIMEOUT LoadTransport -> COMPENSATE -> FAILED
+            COMPENSATES_WITH UnloadTransport(slot_id = "slot_id")
             TIMEOUT "15m"
             DOC "Load container onto truck/rail/barge";
 
@@ -154,6 +157,7 @@ CONTEXT IntermodalTransfer @uuid "bb000040-0001-4000-8000-000000000001"
             INVOKE ConfirmDeparture(slot_id = "slot_id")
             ON SUCCESS ConfirmDeparture -> COMPLETED
             ON FAILURE ConfirmDeparture -> COMPENSATE -> FAILED
+            COMPENSATES_WITH CancelDeparture(slot_id = "slot_id")
             DOC "Confirm transport has departed and bill carrier";
 
     }

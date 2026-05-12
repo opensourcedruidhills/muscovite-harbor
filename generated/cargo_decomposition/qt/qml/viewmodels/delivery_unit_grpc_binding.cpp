@@ -14,93 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_decomposition::qml {
 
-DeliveryUnitGrpcBinding::DeliveryUnitGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+DeliveryUnitGrpcBinding::DeliveryUnitGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void DeliveryUnitGrpcBinding::createDeliveryUnit(const QVariantMap& data) {
-    try {
-        // Map QVariantMap to CreateDeliveryUnitRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
-        [[maybe_unused]] auto destination = data.value(QStringLiteral("destination"));
-        [[maybe_unused]] auto carrier = data.value(QStringLiteral("carrier"));
-        [[maybe_unused]] auto dispatchedAt = data.value(QStringLiteral("dispatchedAt"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = DeliveryUnitService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateDeliveryUnit(&ctx, request, &response);
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("DeliveryUnitGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("DeliveryUnitGrpcBinding::createDeliveryUnit called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void DeliveryUnitGrpcBinding::readDeliveryUnit(const QString& id) {
-    try {
-        spdlog::debug("DeliveryUnitGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = DeliveryUnitService::NewStub(channel_);
-        // GetDeliveryUnitRequest request;
-        // request.set_id(id.toStdString());
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("DeliveryUnitGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("DeliveryUnitGrpcBinding::readDeliveryUnit {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void DeliveryUnitGrpcBinding::updateDeliveryUnit(const QString& id, const QVariantMap& data) {
-    try {
-        spdlog::debug("DeliveryUnitGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto trackingNumber = data.value(QStringLiteral("trackingNumber"));
-        [[maybe_unused]] auto destination = data.value(QStringLiteral("destination"));
-        [[maybe_unused]] auto carrier = data.value(QStringLiteral("carrier"));
-        [[maybe_unused]] auto dispatchedAt = data.value(QStringLiteral("dispatchedAt"));
-        // TODO: Wire to generated gRPC stub
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("DeliveryUnitGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("DeliveryUnitGrpcBinding::updateDeliveryUnit {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void DeliveryUnitGrpcBinding::deleteDeliveryUnit(const QString& id) {
-    try {
-        spdlog::debug("DeliveryUnitGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("DeliveryUnitGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("DeliveryUnitGrpcBinding::deleteDeliveryUnit {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void DeliveryUnitGrpcBinding::listDeliveryUnit(int page, int pageSize) {
-    try {
-        spdlog::debug("DeliveryUnitGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
-        QVariantList results;
-        Q_EMIT listCompleted(results, 0);
-    } catch (const std::exception& ex) {
-        spdlog::error("DeliveryUnitGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("DeliveryUnitGrpcBinding::listDeliveryUnit page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void DeliveryUnitGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -115,5 +68,5 @@ void DeliveryUnitGrpcBinding::handleGrpcError(const QString& operation, int stat
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_decomposition::qml
 

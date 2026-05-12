@@ -15,7 +15,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::passenger_terminal::qml {
 
 class GateViewModel : public QObject {
     Q_OBJECT
@@ -71,5 +71,5 @@ private:
     QString m_voyage_id;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::passenger_terminal::qml
 

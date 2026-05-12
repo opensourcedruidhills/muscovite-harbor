@@ -14,95 +14,46 @@
 #include <QVariant>
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::harbour_control::qml {
 
-SafetyZoneGrpcBinding::SafetyZoneGrpcBinding(QObject* parent)
-    : QObject{parent} {}
+SafetyZoneGrpcBinding::SafetyZoneGrpcBinding(std::shared_ptr<grpc::Channel> channel, QObject* parent)
+    : QObject{parent}, channel_{std::move(channel)} {}
 
 void SafetyZoneGrpcBinding::createSafetyZone(const QVariantMap& data) {
-    try {
-        // Map QVariantMap to CreateSafetyZoneRequest protobuf fields
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto zoneCode = data.value(QStringLiteral("zoneCode"));
-        [[maybe_unused]] auto zoneName = data.value(QStringLiteral("zoneName"));
-        [[maybe_unused]] auto securityLevel = data.value(QStringLiteral("securityLevel"));
-        [[maybe_unused]] auto maxHazmatClass = data.value(QStringLiteral("maxHazmatClass"));
-        [[maybe_unused]] auto isRestricted = data.value(QStringLiteral("isRestricted"));
-
-        // TODO: Wire to generated gRPC stub when proto compilation is integrated
-        // auto stub = SafetyZoneService::NewStub(channel_);
-        // grpc::ClientContext ctx;
-        // auto status = stub->CreateSafetyZone(&ctx, request, &response);
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = data.value(QStringLiteral("id"));
-        Q_EMIT createCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("SafetyZoneGrpcBinding::create failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("create"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(data);
+    spdlog::debug("SafetyZoneGrpcBinding::createSafetyZone called");
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("create"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void SafetyZoneGrpcBinding::readSafetyZone(const QString& id) {
-    try {
-        spdlog::debug("SafetyZoneGrpcBinding::read {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-        // auto stub = SafetyZoneService::NewStub(channel_);
-        // GetSafetyZoneRequest request;
-        // request.set_id(id.toStdString());
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT readCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("SafetyZoneGrpcBinding::read failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("read"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("SafetyZoneGrpcBinding::readSafetyZone {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("read"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void SafetyZoneGrpcBinding::updateSafetyZone(const QString& id, const QVariantMap& data) {
-    try {
-        spdlog::debug("SafetyZoneGrpcBinding::update {}", id.toStdString());
-        [[maybe_unused]] auto id = data.value(QStringLiteral("id"));
-        [[maybe_unused]] auto zoneCode = data.value(QStringLiteral("zoneCode"));
-        [[maybe_unused]] auto zoneName = data.value(QStringLiteral("zoneName"));
-        [[maybe_unused]] auto securityLevel = data.value(QStringLiteral("securityLevel"));
-        [[maybe_unused]] auto maxHazmatClass = data.value(QStringLiteral("maxHazmatClass"));
-        [[maybe_unused]] auto isRestricted = data.value(QStringLiteral("isRestricted"));
-        // TODO: Wire to generated gRPC stub
-
-        QVariantMap result;
-        result[QStringLiteral("id")] = id;
-        Q_EMIT updateCompleted(result);
-    } catch (const std::exception& ex) {
-        spdlog::error("SafetyZoneGrpcBinding::update failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("update"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    Q_UNUSED(data);
+    spdlog::debug("SafetyZoneGrpcBinding::updateSafetyZone {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("update"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void SafetyZoneGrpcBinding::deleteSafetyZone(const QString& id) {
-    try {
-        spdlog::debug("SafetyZoneGrpcBinding::delete {}", id.toStdString());
-        // TODO: Wire to generated gRPC stub
-
-        Q_EMIT deleteCompleted();
-    } catch (const std::exception& ex) {
-        spdlog::error("SafetyZoneGrpcBinding::delete failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("delete"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(id);
+    spdlog::debug("SafetyZoneGrpcBinding::deleteSafetyZone {}", id.toStdString());
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("delete"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void SafetyZoneGrpcBinding::listSafetyZone(int page, int pageSize) {
-    try {
-        spdlog::debug("SafetyZoneGrpcBinding::list page={} size={}", page, pageSize);
-        // TODO: Wire to generated gRPC stub
-
-        QVariantList results;
-        Q_EMIT listCompleted(results, 0);
-    } catch (const std::exception& ex) {
-        spdlog::error("SafetyZoneGrpcBinding::list failed: {}", ex.what());
-        handleGrpcError(QStringLiteral("list"), 13, QString::fromStdString(ex.what()));
-    }
+    Q_UNUSED(page);
+    Q_UNUSED(pageSize);
+    spdlog::debug("SafetyZoneGrpcBinding::listSafetyZone page={} size={}", page, pageSize);
+    // TODO: Wire to aggregate service stub once service-to-entity mapping is generated
+    Q_EMIT error(QStringLiteral("list"), QStringLiteral("Not yet wired to gRPC service"));
 }
 
 void SafetyZoneGrpcBinding::handleGrpcError(const QString& operation, int statusCode, const QString& message) {
@@ -117,5 +68,5 @@ void SafetyZoneGrpcBinding::handleGrpcError(const QString& operation, int status
     Q_EMIT error(operation, userMessage);
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::harbour_control::qml
 

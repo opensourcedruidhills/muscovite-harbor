@@ -2,26 +2,47 @@
 
 cmake_minimum_required(VERSION 3.25)
 
+set(CMAKE_AUTOMOC ON)
+
 qt_add_qml_module(passenger_terminal_qml_viewmodels
     URI "com.MuscoviteHarbor.passenger_terminal.viewmodels"
     VERSION 1.0
     QML_FILES
         PassengerDialog.qml
+        PassengerListView.qml
         GateDialog.qml
+        GateListView.qml
         BoardingPassDialog.qml
+        BoardingPassListView.qml
+        Navigation.qml
+        SearchView.qml
     SOURCES
         viewmodels/passenger_viewmodel.cpp
         viewmodels/passenger_viewmodel.hpp
+        viewmodels/passenger_grpc_binding.cpp
+        viewmodels/passenger_grpc_binding.hpp
         viewmodels/gate_viewmodel.cpp
         viewmodels/gate_viewmodel.hpp
+        viewmodels/gate_grpc_binding.cpp
+        viewmodels/gate_grpc_binding.hpp
         viewmodels/boarding_pass_viewmodel.cpp
         viewmodels/boarding_pass_viewmodel.hpp
+        viewmodels/boarding_pass_grpc_binding.cpp
+        viewmodels/boarding_pass_grpc_binding.hpp
+)
+
+target_include_directories(passenger_terminal_qml_viewmodels PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/viewmodels
 )
 
 target_link_libraries(passenger_terminal_qml_viewmodels PUBLIC
     Qt6::Core
     Qt6::Qml
     Qt6::Quick
+    spdlog::spdlog
+    gRPC::grpc++
+    protobuf::libprotobuf
+    passenger_terminal_grpc_proto
 )
 
 # Aggregate type registration target (Qt 6.11+)
@@ -42,8 +63,13 @@ find_program(QMLLINT_EXECUTABLE qmllint HINTS ${Qt6_DIR}/../../../bin)
 if(QMLLINT_EXECUTABLE)
     set(_qml_files)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/PassengerDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/PassengerListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/GateDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/GateListView.qml)
     list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/BoardingPassDialog.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/BoardingPassListView.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/Navigation.qml)
+    list(APPEND _qml_files ${CMAKE_CURRENT_SOURCE_DIR}/SearchView.qml)
     add_custom_target(passenger_terminal_qmllint
         COMMAND ${QMLLINT_EXECUTABLE} ${_qml_files}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

@@ -15,7 +15,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::vessel_traffic::qml {
 
 class VesselViewModel : public QObject {
     Q_OBJECT
@@ -81,5 +81,5 @@ private:
     bool m_is_active = false;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::vessel_traffic::qml
 

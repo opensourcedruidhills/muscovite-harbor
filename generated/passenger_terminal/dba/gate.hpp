@@ -6,7 +6,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <string>
-#include <string>
+#include "types/gate_code.hpp"
 
 namespace passenger_terminal {
 

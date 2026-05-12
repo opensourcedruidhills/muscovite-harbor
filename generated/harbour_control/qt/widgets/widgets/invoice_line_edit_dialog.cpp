@@ -11,10 +11,12 @@
 
 #include "invoice_line_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 InvoiceLineEditDialog::InvoiceLineEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit InvoiceLine"));
     setupUi();
 }
@@ -40,7 +42,10 @@ void InvoiceLineEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &InvoiceLineEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -93,8 +98,21 @@ void InvoiceLineEditDialog::setIssuedAt(const QDateTime& value) {
 }
 
 void InvoiceLineEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto InvoiceLineEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("vesselId"), QVariant::fromValue(vesselId()));
+    payload.insert(QStringLiteral("serviceType"), QVariant::fromValue(serviceType()));
+    payload.insert(QStringLiteral("amount"), QVariant::fromValue(amount()));
+    payload.insert(QStringLiteral("currency"), QVariant::fromValue(currency()));
+    payload.insert(QStringLiteral("issuedAt"), QVariant::fromValue(issuedAt()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

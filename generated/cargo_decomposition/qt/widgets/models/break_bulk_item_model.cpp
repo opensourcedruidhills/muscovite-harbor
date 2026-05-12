@@ -51,6 +51,7 @@ auto BreakBulkItemModel::headerData(int section, Qt::Orientation orientation, in
     }
 }
 
+// Populate model from a gRPC List response.
 void BreakBulkItemModel::setRows(std::vector<Row> rows) {
     beginResetModel();
     rows_ = std::move(rows);

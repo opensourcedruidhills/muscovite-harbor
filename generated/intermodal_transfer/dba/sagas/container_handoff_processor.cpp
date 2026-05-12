@@ -63,6 +63,14 @@ auto ContainerHandoffProcessor::run_compensation(const std::string& saga_id) -> 
     if (!instance_opt) { return; }
     const auto& instance = *instance_opt;
 
+    compensate_confirm_departure(instance);
+    cmd_repo_.log_compensation({.saga_id = saga_id, .step_name = "ConfirmDeparture", .outcome = "compensated"});
+    compensate_load_transport(instance);
+    cmd_repo_.log_compensation({.saga_id = saga_id, .step_name = "LoadTransport", .outcome = "compensated"});
+    compensate_checkout_gate(instance);
+    cmd_repo_.log_compensation({.saga_id = saga_id, .step_name = "CheckoutGate", .outcome = "compensated"});
+    compensate_reserve_yard_exit(instance);
+    cmd_repo_.log_compensation({.saga_id = saga_id, .step_name = "ReserveYardExit", .outcome = "compensated"});
 }
 
 auto ContainerHandoffProcessor::check_timeouts(std::chrono::seconds threshold) -> void {

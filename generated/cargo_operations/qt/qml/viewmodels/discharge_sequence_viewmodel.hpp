@@ -15,7 +15,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::cargo_operations::qml {
 
 class DischargeSequenceViewModel : public QObject {
     Q_OBJECT
@@ -66,5 +66,5 @@ private:
     QString m_crane_id;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::cargo_operations::qml
 

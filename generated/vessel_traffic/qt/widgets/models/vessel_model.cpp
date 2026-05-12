@@ -57,6 +57,7 @@ auto VesselModel::headerData(int section, Qt::Orientation orientation, int role)
     }
 }
 
+// Populate model from a gRPC List response.
 void VesselModel::setRows(std::vector<Row> rows) {
     beginResetModel();
     rows_ = std::move(rows);

@@ -4,9 +4,9 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
-#include <muscovite/dba/timestamp.hpp>
+#include <muscovite/dba/type_converters.hpp>
 #include <string>
-#include <string>
+#include "types/truck_plate.hpp"
 
 namespace intermodal_transfer {
 

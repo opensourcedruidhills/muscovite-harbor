@@ -11,10 +11,12 @@
 
 #include "voyage_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 VoyageEditDialog::VoyageEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit Voyage"));
     setupUi();
 }
@@ -48,7 +50,10 @@ void VoyageEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &VoyageEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -133,8 +138,25 @@ void VoyageEditDialog::setStatus(const QString& value) {
 }
 
 void VoyageEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto VoyageEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("vesselId"), QVariant::fromValue(vesselId()));
+    payload.insert(QStringLiteral("berthId"), QVariant::fromValue(berthId()));
+    payload.insert(QStringLiteral("voyageNumber"), QVariant::fromValue(voyageNumber()));
+    payload.insert(QStringLiteral("eta"), QVariant::fromValue(eta()));
+    payload.insert(QStringLiteral("ata"), QVariant::fromValue(ata()));
+    payload.insert(QStringLiteral("etd"), QVariant::fromValue(etd()));
+    payload.insert(QStringLiteral("atd"), QVariant::fromValue(atd()));
+    payload.insert(QStringLiteral("cargoCategory"), QVariant::fromValue(cargoCategory()));
+    payload.insert(QStringLiteral("status"), QVariant::fromValue(status()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

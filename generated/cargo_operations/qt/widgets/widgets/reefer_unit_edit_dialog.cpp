@@ -11,10 +11,12 @@
 
 #include "reefer_unit_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 ReeferUnitEditDialog::ReeferUnitEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit ReeferUnit"));
     setupUi();
 }
@@ -38,7 +40,10 @@ void ReeferUnitEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &ReeferUnitEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -83,8 +88,20 @@ void ReeferUnitEditDialog::setIsPowered(const bool& value) {
 }
 
 void ReeferUnitEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto ReeferUnitEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("containerId"), QVariant::fromValue(containerId()));
+    payload.insert(QStringLiteral("targetTempC"), QVariant::fromValue(targetTempC()));
+    payload.insert(QStringLiteral("currentTempC"), QVariant::fromValue(currentTempC()));
+    payload.insert(QStringLiteral("isPowered"), QVariant::fromValue(isPowered()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

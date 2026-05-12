@@ -14,9 +14,31 @@ syntax = "proto3";
 
 package cargodecomposition;
 
-import "container_unpack.proto";
-import "google/protobuf/empty.proto";
+import "pallet.proto";
+import "parcel.proto";
 import "google/protobuf/timestamp.proto";
+
+message AddParcelRequest {
+  string parent_id = 1;
+  string tracking_number = 2;
+  string pallet_id = 3;
+  string weight_kg = 4;
+  string hs_code = 5;
+  string description = 6;
+}
+
+message AddParcelResponse {
+  string id = 1;
+}
+
+message RemoveParcelRequest {
+  string parent_id = 1;
+  string parcel_id = 2;
+}
+
+message RemoveParcelResponse {
+}
+
 
 service PalletService {
   // Root entity operations

@@ -11,10 +11,12 @@
 
 #include "transfer_slot_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 TransferSlotEditDialog::TransferSlotEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit TransferSlot"));
     setupUi();
 }
@@ -40,7 +42,10 @@ void TransferSlotEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &TransferSlotEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -93,8 +98,21 @@ void TransferSlotEditDialog::setStatus(const QString& value) {
 }
 
 void TransferSlotEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto TransferSlotEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("reference"), QVariant::fromValue(reference()));
+    payload.insert(QStringLiteral("containerId"), QVariant::fromValue(containerId()));
+    payload.insert(QStringLiteral("transportMode"), QVariant::fromValue(transportMode()));
+    payload.insert(QStringLiteral("scheduledAt"), QVariant::fromValue(scheduledAt()));
+    payload.insert(QStringLiteral("status"), QVariant::fromValue(status()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

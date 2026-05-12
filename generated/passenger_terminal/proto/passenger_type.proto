@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+// Copyright (c) 2025-2026 Johannes Lochmann
+
+syntax = "proto3";
+
+package passengerterminal;
+
+// Passenger classification
+enum PassengerType {
+  PASSENGER_TYPE_UNSPECIFIED = 0;
+}

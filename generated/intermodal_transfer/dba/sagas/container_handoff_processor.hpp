@@ -39,6 +39,12 @@ public:
     [[nodiscard]] virtual auto handle_load_transport(const ContainerHandoffInstance& instance) -> bool = 0;
     [[nodiscard]] virtual auto handle_confirm_departure(const ContainerHandoffInstance& instance) -> bool = 0;
 
+    // Compensation handlers
+    virtual auto compensate_reserve_yard_exit(const ContainerHandoffInstance& instance) -> void = 0;
+    virtual auto compensate_checkout_gate(const ContainerHandoffInstance& instance) -> void = 0;
+    virtual auto compensate_load_transport(const ContainerHandoffInstance& instance) -> void = 0;
+    virtual auto compensate_confirm_departure(const ContainerHandoffInstance& instance) -> void = 0;
+
 protected:
     ContainerHandoffCommandRepository& cmd_repo_;
     ContainerHandoffQueryRepository& query_repo_;

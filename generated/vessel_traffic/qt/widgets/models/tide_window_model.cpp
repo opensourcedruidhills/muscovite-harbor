@@ -49,6 +49,7 @@ auto TideWindowModel::headerData(int section, Qt::Orientation orientation, int r
     }
 }
 
+// Populate model from a gRPC List response.
 void TideWindowModel::setRows(std::vector<Row> rows) {
     beginResetModel();
     rows_ = std::move(rows);

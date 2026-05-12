@@ -98,10 +98,12 @@ SCENARIO("Parcel identity comparison") {
 SCENARIO("Add child DeliveryUnit to Parcel") {
     GIVEN("an existing Parcel aggregate root") {
         WHEN("a DeliveryUnit child is added") {
-            // auto result = cmd_service.add_child(parent_id, child);
+            auto child = DeliveryUnit{};
+            auto parent_id = Parcel::Id{};
+            domain_service.add_delivery_unit(parent_id, child);
 
             THEN("the child should be part of the aggregate") {
-                // CHECK(result.has_value());
+                CHECK_NOTHROW(domain_service.add_delivery_unit(parent_id, child));
             }
         }
     }

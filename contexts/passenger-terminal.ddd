@@ -252,8 +252,8 @@ CONTEXT PassengerTerminal @uuid "bb000030-0001-4000-8000-000000000001"
         gate_code     TEXT               @uuid "bb000030-00a0-4000-8000-000000000014",
         status        TEXT      NOT_NULL @uuid "bb000030-00a0-4000-8000-000000000015"
     )
-    REFRESH SCHEDULED "*/5 * * * *"
-    DOC "Departure display board — refreshes every 5 minutes";
+    REFRESH ON_EVENT GateStatusChanged
+    DOC "Departure display board — updated on gate status change";
 
     PROJECTION ArrivalBoard @uuid "bb000030-00a0-4000-8000-000000000002" (
         voyage_number TEXT      NOT_NULL @uuid "bb000030-00a0-4000-8000-000000000020",
@@ -262,8 +262,8 @@ CONTEXT PassengerTerminal @uuid "bb000030-0001-4000-8000-000000000001"
         arrival_time  TIMESTAMPTZ NOT_NULL @uuid "bb000030-00a0-4000-8000-000000000023",
         status        TEXT      NOT_NULL @uuid "bb000030-00a0-4000-8000-000000000024"
     )
-    REFRESH LIVE
-    DOC "Real-time arrival board";
+    REFRESH ON_EVENT PassengerCheckedIn, BoardingPassIssued
+    DOC "Real-time arrival board — updated on check-in and boarding events";
 
     -- ====================================================================
     -- Observe

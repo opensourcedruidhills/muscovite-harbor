@@ -16,22 +16,24 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QLineEdit>
-#include <QScopedPointer>
 #include <QSpinBox>
 #include <QVBoxLayout>
+#include <memory>
+#include <QVariantMap>
+#include "common/entity_edit_dialog_base.hpp"
 
 namespace muscovite_harbor::widgets {
 
-class SafetyZoneEditDialog : public QDialog {
+class SafetyZoneEditDialog : public EntityEditDialogBase {
     Q_OBJECT
 public:
     explicit SafetyZoneEditDialog(QWidget* parent = nullptr);
 
     /// Create and show dialog safely. Ownership transfers to Qt on success.
     static void showSafe(QWidget* parent) {
-        auto dlg = QScopedPointer<SafetyZoneEditDialog>{new SafetyZoneEditDialog{parent}};
+        auto dlg = std::unique_ptr<SafetyZoneEditDialog>{new SafetyZoneEditDialog{parent}};
         dlg->setAttribute(Qt::WA_DeleteOnClose);
-        dlg.take()->show();
+        dlg.release()->show();
     }
 
     [[nodiscard]] auto id() const -> QString;
@@ -49,13 +51,16 @@ public:
     void setIsRestricted(const bool& value);
 
 Q_SIGNALS:
+    void saveRequested(const QVariantMap& payload);
     void entitySaved();
+    void deleteRequested();
 
 private Q_SLOTS:
     void onAccepted();
 
 private:
     void setupUi();
+    [[nodiscard]] auto buildPayload() const -> QVariantMap;
 
     QLineEdit* id_ = nullptr;
     QLineEdit* zone_code_ = nullptr;
@@ -65,6 +70,7 @@ private:
     QCheckBox* is_restricted_ = nullptr;
     QDialogButtonBox* button_box_ = nullptr;
     QFormLayout* form_ = nullptr;
+    ValidationDisplayWidget* validation_display_ = nullptr;
 };
 
 } // namespace muscovite_harbor::widgets

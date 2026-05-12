@@ -4,7 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <cstdint>
-#include <muscovite/dba/decimal.hpp>
+#include <muscovite/dba/type_converters.hpp>
 
 namespace cargo_operations {
 

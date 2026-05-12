@@ -27,13 +27,12 @@ message Voyage {
   google.protobuf.Timestamp atd = 8;
   string cargo_category = 9;
   string status = 10;
-  string voyage_id = 11;
-  google.protobuf.Timestamp created_at = 12;
-  optional string created_by = 13;
-  google.protobuf.Timestamp updated_at = 14;
-  optional string updated_by = 15;
-  optional string created_by_name = 16;
-  optional string updated_by_name = 17;
+  google.protobuf.Timestamp created_at = 11;
+  optional string created_by = 12;
+  google.protobuf.Timestamp updated_at = 13;
+  optional string updated_by = 14;
+  optional string created_by_name = 15;
+  optional string updated_by_name = 16;
 }
 
 message CreateVoyageRequest {
@@ -46,9 +45,7 @@ message CreateVoyageRequest {
   google.protobuf.Timestamp atd = 7;
   string cargo_category = 8;
   string status = 9;
-  string voyage_id = 10;
-  optional string voyage_id = 11;
-  optional string idempotency_key = 12;
+  optional string idempotency_key = 10;
 }
 
 message CreateVoyageResponse {
@@ -74,9 +71,7 @@ message UpdateVoyageRequest {
   google.protobuf.Timestamp atd = 8;
   string cargo_category = 9;
   string status = 10;
-  string voyage_id = 11;
-  optional string voyage_id = 12;
-  optional string idempotency_key = 13;
+  optional string idempotency_key = 11;
 }
 
 message UpdateVoyageResponse {

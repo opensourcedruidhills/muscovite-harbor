@@ -15,7 +15,7 @@
 #include <QString>
 #include <QtQml/qqmlregistration.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::vessel_traffic::qml {
 
 class TideWindowViewModel : public QObject {
     Q_OBJECT
@@ -61,5 +61,5 @@ private:
     QString m_available_draft;
 };
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::vessel_traffic::qml
 

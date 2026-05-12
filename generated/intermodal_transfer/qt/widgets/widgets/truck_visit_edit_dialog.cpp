@@ -11,10 +11,12 @@
 
 #include "truck_visit_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 TruckVisitEditDialog::TruckVisitEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit TruckVisit"));
     setupUi();
 }
@@ -40,7 +42,10 @@ void TruckVisitEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &TruckVisitEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -93,8 +98,21 @@ void TruckVisitEditDialog::setDepartedAt(const QDateTime& value) {
 }
 
 void TruckVisitEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto TruckVisitEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("truckPlate"), QVariant::fromValue(truckPlate()));
+    payload.insert(QStringLiteral("carrierName"), QVariant::fromValue(carrierName()));
+    payload.insert(QStringLiteral("slotId"), QVariant::fromValue(slotId()));
+    payload.insert(QStringLiteral("arrivedAt"), QVariant::fromValue(arrivedAt()));
+    payload.insert(QStringLiteral("departedAt"), QVariant::fromValue(departedAt()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

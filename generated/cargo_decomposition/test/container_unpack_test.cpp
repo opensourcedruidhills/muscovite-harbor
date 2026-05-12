@@ -112,10 +112,12 @@ SCENARIO("Pallet identity comparison") {
 SCENARIO("Add child Parcel to Pallet") {
     GIVEN("an existing Pallet aggregate root") {
         WHEN("a Parcel child is added") {
-            // auto result = cmd_service.add_child(parent_id, child);
+            auto child = Parcel{};
+            auto parent_id = Pallet::Id{};
+            domain_service.add_parcel(parent_id, child);
 
             THEN("the child should be part of the aggregate") {
-                // CHECK(result.has_value());
+                CHECK_NOTHROW(domain_service.add_parcel(parent_id, child));
             }
         }
     }

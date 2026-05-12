@@ -4,9 +4,9 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
-#include <muscovite/dba/decimal.hpp>
+#include <muscovite/dba/type_converters.hpp>
 #include <string>
-#include <string>
+#include "types/berth_code.hpp"
 
 namespace vessel_traffic {
 

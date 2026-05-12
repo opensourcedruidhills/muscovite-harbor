@@ -53,6 +53,7 @@ auto GateModel::headerData(int section, Qt::Orientation orientation, int role) c
     }
 }
 
+// Populate model from a gRPC List response.
 void GateModel::setRows(std::vector<Row> rows) {
     beginResetModel();
     rows_ = std::move(rows);

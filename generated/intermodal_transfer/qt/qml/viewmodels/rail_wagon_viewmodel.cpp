@@ -13,7 +13,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace muscovite_harbor::qml {
+namespace muscovite_harbor::intermodal_transfer::qml {
 
 RailWagonViewModel::RailWagonViewModel(QObject* parent)
     : QObject{parent} {}
@@ -95,5 +95,5 @@ void RailWagonViewModel::remove() {
     Q_EMIT removed();
 }
 
-} // namespace muscovite_harbor::qml
+} // namespace muscovite_harbor::intermodal_transfer::qml
 

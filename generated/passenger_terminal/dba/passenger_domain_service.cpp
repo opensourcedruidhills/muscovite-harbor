@@ -3,6 +3,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include "passenger_domain_service.hpp"
+#include <stdexcept>
 
 namespace passenger_terminal {
 
@@ -30,12 +31,16 @@ auto PassengerDomainService::find_all() -> std::vector<Passenger> {
 }
 
 auto PassengerDomainService::add_boarding_pass(const Passenger::Id& parent_id, const BoardingPass& child) -> void {
-    // Validate parent exists, then delegate to command service
-    (void)parent_id; (void)child;
+    auto parent = query_service_.find_by_id(parent_id);
+    if (!parent) {
+        throw std::runtime_error("Parent Passenger not found");
+    }
+    command_service_.create(child);
 }
 
 auto PassengerDomainService::remove_boarding_pass(const Passenger::Id& parent_id, const BoardingPass::Id& child_id) -> void {
-    (void)parent_id; (void)child_id;
+    (void)parent_id;
+    command_service_.remove(child_id);
 }
 
 } // namespace passenger_terminal

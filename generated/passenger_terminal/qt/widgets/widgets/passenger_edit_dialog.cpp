@@ -11,10 +11,12 @@
 
 #include "passenger_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 PassengerEditDialog::PassengerEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit Passenger"));
     setupUi();
 }
@@ -38,7 +40,10 @@ void PassengerEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &PassengerEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -83,8 +88,20 @@ void PassengerEditDialog::setStatus(const QString& value) {
 }
 
 void PassengerEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto PassengerEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("bookingRef"), QVariant::fromValue(bookingRef()));
+    payload.insert(QStringLiteral("passengerType"), QVariant::fromValue(passengerType()));
+    payload.insert(QStringLiteral("voyageId"), QVariant::fromValue(voyageId()));
+    payload.insert(QStringLiteral("status"), QVariant::fromValue(status()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

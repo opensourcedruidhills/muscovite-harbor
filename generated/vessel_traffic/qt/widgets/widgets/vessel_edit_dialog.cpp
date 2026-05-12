@@ -11,10 +11,12 @@
 
 #include "vessel_edit_dialog.hpp"
 
+#include <QVariant>
+
 namespace muscovite_harbor::widgets {
 
 VesselEditDialog::VesselEditDialog(QWidget* parent)
-    : QDialog{parent} {
+    : EntityEditDialogBase{parent} {
     setWindowTitle(QStringLiteral("Edit Vessel"));
     setupUi();
 }
@@ -44,7 +46,10 @@ void VesselEditDialog::setupUi() {
     QObject::connect(button_box_, &QDialogButtonBox::accepted, this, &VesselEditDialog::onAccepted);
     QObject::connect(button_box_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    validation_display_ = new ValidationDisplayWidget{this};
+    validation_display_->clearErrors();
     layout->addLayout(form_);
+    layout->addWidget(validation_display_);
     layout->addWidget(button_box_);
 }
 
@@ -113,8 +118,23 @@ void VesselEditDialog::setIsActive(const bool& value) {
 }
 
 void VesselEditDialog::onAccepted() {
+    validation_display_->clearErrors();
+    Q_EMIT saveRequested(buildPayload());
     Q_EMIT entitySaved();
     accept();
+}
+
+auto VesselEditDialog::buildPayload() const -> QVariantMap {
+    auto payload = QVariantMap{};
+    payload.insert(QStringLiteral("id"), QVariant::fromValue(id()));
+    payload.insert(QStringLiteral("imoNumber"), QVariant::fromValue(imoNumber()));
+    payload.insert(QStringLiteral("mmsi"), QVariant::fromValue(mmsi()));
+    payload.insert(QStringLiteral("callSign"), QVariant::fromValue(callSign()));
+    payload.insert(QStringLiteral("name"), QVariant::fromValue(name()));
+    payload.insert(QStringLiteral("vesselType"), QVariant::fromValue(vesselType()));
+    payload.insert(QStringLiteral("flagState"), QVariant::fromValue(flagState()));
+    payload.insert(QStringLiteral("isActive"), QVariant::fromValue(isActive()));
+    return payload;
 }
 
 } // namespace muscovite_harbor::widgets

@@ -53,6 +53,7 @@ auto PilotAssignmentModel::headerData(int section, Qt::Orientation orientation, 
     }
 }
 
+// Populate model from a gRPC List response.
 void PilotAssignmentModel::setRows(std::vector<Row> rows) {
     beginResetModel();
     rows_ = std::move(rows);

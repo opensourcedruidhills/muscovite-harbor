@@ -4,8 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <boost/uuid/uuid.hpp>
-#include <muscovite/dba/decimal.hpp>
-#include <string>
+#include <muscovite/dba/type_converters.hpp>
 #include <string>
 
 namespace cargo_decomposition {
