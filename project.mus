@@ -298,6 +298,10 @@ PROJECT MuscoviteHarbor {
             service "DecompositionPricingService"
             status "active"
         }
+        MIGRATION_NOTE "sp_calculate_freight_rate" TO "DecompositionPricingService" {
+            COMPATIBILITY high
+            DOC "Freight rate calculation migrated from legacy stored procedure to DecompositionPricingService"
+        }
     }
 
     -- ====================================================================
