@@ -174,7 +174,7 @@ CONTEXT VesselTraffic @uuid "bb000010-0001-4000-8000-000000000001"
     }
     DISPLAY_FORMAT (
         SHORT: "{code} — {name}",
-        FULL: "{code} {name} (LOA≤{max_loa_metres}m, Draft≤{max_draft_metres}m)"
+        FULL: "{code} {name}"
     )
     DOC "A physical berth where vessels moor";
 
@@ -191,8 +191,8 @@ CONTEXT VesselTraffic @uuid "bb000010-0001-4000-8000-000000000001"
         status          TEXT        NOT_NULL DEFAULT 'ANNOUNCED' @uuid "bb000010-0040-4000-8000-000000000039"
     )
     DISPLAY_FORMAT (
-        SHORT: "{voyage_number} ETA:{eta}",
-        FULL: "Voyage {voyage_number} — ETA:{eta} ETD:{etd} Status:{status}"
+        SHORT: "{voyage_number}",
+        FULL: "Voyage {voyage_number} [{status}]"
     )
     RELATIONSHIPS {
         Voyage -> Vessel REQUIRED ONE VIA vessel_id;
@@ -432,6 +432,7 @@ CONTEXT VesselTraffic @uuid "bb000010-0001-4000-8000-000000000001"
         event_time    TIMESTAMPTZ NOT_NULL @uuid "bb000010-00a0-4000-8000-000000000023",
         details       TEXT               @uuid "bb000010-00a0-4000-8000-000000000024"
     )
+    FROM "SELECT vg.number AS voyage_number, ve.name AS vessel_name, 'movement' AS event_type, vg.created_at AS event_time, NULL AS details FROM vessel_traffic.voyages vg JOIN vessel_traffic.vessels ve ON vg.id = ve.id"
     REFRESH ON_EVENT VesselAnnounced, BerthAllocated, VesselMooredEvent, VesselDepartedEvent
     DOC "Audit log of all vessel movements (maritime law compliance)";
 

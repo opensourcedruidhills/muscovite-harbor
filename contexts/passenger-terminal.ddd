@@ -87,7 +87,7 @@ CONTEXT PassengerTerminal @uuid "bb000030-0001-4000-8000-000000000001"
     )
     DISPLAY_FORMAT (
         SHORT: "Gate {code} — {status}",
-        FULL: "Gate {code} ({name}) [{status}] Cap:{capacity}"
+        FULL: "Gate {code} ({name}) [{status}]"
     )
     DOC "A physical gate in the passenger terminal";
 
@@ -252,6 +252,7 @@ CONTEXT PassengerTerminal @uuid "bb000030-0001-4000-8000-000000000001"
         gate_code     TEXT               @uuid "bb000030-00a0-4000-8000-000000000014",
         status        TEXT      NOT_NULL @uuid "bb000030-00a0-4000-8000-000000000015"
     )
+    FROM "SELECT vg.number AS voyage_number, ve.name AS vessel_name, vg.destination AS destination, vg.departure_time AS departure_time, g.code AS gate_code, 'scheduled' AS status FROM vessel_traffic.voyages vg JOIN vessel_traffic.vessels ve ON vg.id = ve.id JOIN passenger_terminal.gates g ON g.id = vg.id"
     REFRESH ON_EVENT GateStatusChanged
     DOC "Departure display board — updated on gate status change";
 
@@ -262,6 +263,7 @@ CONTEXT PassengerTerminal @uuid "bb000030-0001-4000-8000-000000000001"
         arrival_time  TIMESTAMPTZ NOT_NULL @uuid "bb000030-00a0-4000-8000-000000000023",
         status        TEXT      NOT_NULL @uuid "bb000030-00a0-4000-8000-000000000024"
     )
+    FROM "SELECT vg.number AS voyage_number, ve.name AS vessel_name, vg.origin AS origin, vg.arrival_time AS arrival_time, 'arriving' AS status FROM vessel_traffic.voyages vg JOIN vessel_traffic.vessels ve ON vg.id = ve.id"
     REFRESH ON_EVENT PassengerCheckedIn, BoardingPassIssued
     DOC "Real-time arrival board — updated on check-in and boarding events";
 

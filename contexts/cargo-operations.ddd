@@ -91,7 +91,7 @@ CONTEXT CargoOperations @uuid "bb000020-0001-4000-8000-000000000001"
     USES ContainerDimensions
     DISPLAY_FORMAT (
         SHORT: "{container_number} ({size_category})",
-        FULL: "{container_number} {size_category} {weight_kg}kg [{status}]"
+        FULL: "{container_number} {size_category} [{status}]"
     )
     DOC "A shipping container in terminal operations";
 
