@@ -128,46 +128,46 @@ CONTEXT HarbourControl @uuid "bb000060-0001-4000-8000-000000000001"
         EFFECT "Vessel turnaround exceeds 48h SLO";
 
         CAUSE_CATEGORY Weather @ORDER 1 {
-            CAUSE StormDelay {
+            CAUSE "StormDelay" {
                 SEVERITY high
                 DOC "Storm or high wind causing berthing suspension";
             }
-            CAUSE TideWindow {
+            CAUSE "TideWindow" {
                 SEVERITY medium
                 DOC "Missed tide window requiring wait for next cycle";
             }
         }
 
         CAUSE_CATEGORY Tug @ORDER 2 {
-            CAUSE TugUnavailable {
+            CAUSE "TugUnavailable" {
                 SEVERITY high
                 DOC "No tug available for scheduled vessel move";
             }
         }
 
         CAUSE_CATEGORY Pilot @ORDER 3 {
-            CAUSE PilotShortage {
+            CAUSE "PilotShortage" {
                 SEVERITY medium
                 DOC "Insufficient pilots for concurrent vessel movements";
             }
         }
 
         CAUSE_CATEGORY Berth @ORDER 4 {
-            CAUSE BerthConflict {
+            CAUSE "BerthConflict" {
                 SEVERITY high
                 DOC "Berth occupied past scheduled departure";
             }
         }
 
         CAUSE_CATEGORY Customs @ORDER 5 {
-            CAUSE CustomsHold {
+            CAUSE "CustomsHold" {
                 SEVERITY medium
                 DOC "Cargo held for customs inspection delaying departure";
             }
         }
 
         CAUSE_CATEGORY Crane @ORDER 6 {
-            CAUSE CraneBreakdown {
+            CAUSE "CraneBreakdown" {
                 SEVERITY critical
                 DOC "Crane malfunction halting cargo operations";
             }
