@@ -9,7 +9,8 @@ file(READ ${CMAKE_CURRENT_SOURCE_DIR}/VERSION MUSCOVITE_HARBOR_VERSION)
 string(STRIP ${MUSCOVITE_HARBOR_VERSION} MUSCOVITE_HARBOR_VERSION)
 
 # FTR-1433: Only declare project() at top-level, not in add_subdirectory()
-if(NOT CMAKE_PROJECT_NAME OR CMAKE_PROJECT_NAME STREQUAL "Project")
+# #2750: Use CMake 4.x-safe guard (CMAKE_PROJECT_NAME is pre-set in CMake 4.x)
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     project(muscovite_harbor VERSION ${MUSCOVITE_HARBOR_VERSION} LANGUAGES C CXX)
 endif()
 
@@ -29,10 +30,28 @@ find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 # ── Qt6 (system package, not Conan) ──────────────────────────────
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Quick QuickControls2 Qml)
+set(MUSCOVITE_QT_REQUIRED_VERSION "6.7.0")
+find_package(Qt6 ${MUSCOVITE_QT_REQUIRED_VERSION} REQUIRED COMPONENTS Core Gui Concurrent Network TaskTree Widgets Quick QuickControls2 Qml)
+if(Qt6_VERSION VERSION_LESS "${MUSCOVITE_QT_REQUIRED_VERSION}")
+    message(FATAL_ERROR "Muscovite requires Qt6 >= ${MUSCOVITE_QT_REQUIRED_VERSION}; found ${Qt6_VERSION}.")
+endif()
+if(NOT Qt6_VERSION VERSION_LESS "7.0.0")
+    message(FATAL_ERROR "Muscovite currently supports Qt6 only; found ${Qt6_VERSION}.")
+endif()
+
+# ── Qt6 WebEngineWidgets (optional, system package — for observability panel) ──
+find_package(Qt6 OPTIONAL_COMPONENTS WebEngineWidgets)
+
+# ── Qt6 WebEngineQuick (optional, system package — for observability panel) ──
+find_package(Qt6 OPTIONAL_COMPONENTS WebEngineQuick)
 
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
+if(TARGET muscovite::grpc AND NOT TARGET muscovite::grpc_support)
+    add_library(muscovite_grpc_support INTERFACE)
+    add_library(muscovite::grpc_support ALIAS muscovite_grpc_support)
+    target_link_libraries(muscovite_grpc_support INTERFACE muscovite::grpc)
+endif()
 
 # ── Per-context targets (FTR-1392) ────────────────────────────────
 add_subdirectory(vessel_traffic)
@@ -84,9 +103,17 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/harbour_control/qt/qml/CMakeLists.txt)
 endif()
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/qt/widgets/CMakeLists.txt)
     add_subdirectory(qt/widgets)
+    if(Qt6WebEngineWidgets_FOUND)
+        target_compile_definitions(muscovite_harbor_widgets_app PRIVATE MUSCOVITE_OBSERVABILITY_PANEL)
+        target_link_libraries(muscovite_harbor_widgets_app PRIVATE Qt6::WebEngineWidgets)
+    endif()
 endif()
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/qt/qml/CMakeLists.txt)
     add_subdirectory(qt/qml)
+    if(Qt6WebEngineQuick_FOUND)
+        target_compile_definitions(muscovite_harbor_qml_app PRIVATE MUSCOVITE_OBSERVABILITY_PANEL)
+        target_link_libraries(muscovite_harbor_qml_app PRIVATE Qt6::WebEngineQuick)
+    endif()
 endif()
 
 # ── gRPC server binary (FTR-1488) ─────────────────────────────────
@@ -119,6 +146,7 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/server_main.cpp)
         security_dba
         security_grpc_proto
         muscovite::dba
+        muscovite::grpc_support
         gRPC::grpc++
         spdlog::spdlog
     )
