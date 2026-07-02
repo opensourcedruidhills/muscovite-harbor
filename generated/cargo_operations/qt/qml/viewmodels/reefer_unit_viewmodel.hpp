@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/reefer_unit_grpc_binding.hpp"
 
 namespace muscovite_harbor::cargo_operations::qml {
 
@@ -26,6 +27,15 @@ class ReeferUnitViewModel : public QObject {
     Q_PROPERTY(QString targetTempC READ targetTempC WRITE setTargetTempC NOTIFY targetTempCChanged REQUIRED)
     Q_PROPERTY(QString currentTempC READ currentTempC WRITE setCurrentTempC NOTIFY currentTempCChanged)
     Q_PROPERTY(bool isPowered READ isPowered WRITE setIsPowered NOTIFY isPoweredChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool containerIdIsValid READ containerIdIsValid NOTIFY containerIdIsValidChanged)
+    Q_PROPERTY(bool targetTempCIsValid READ targetTempCIsValid NOTIFY targetTempCIsValidChanged)
+    Q_PROPERTY(bool currentTempCIsValid READ currentTempCIsValid NOTIFY currentTempCIsValidChanged)
+    Q_PROPERTY(bool isPoweredIsValid READ isPoweredIsValid NOTIFY isPoweredIsValidChanged)
 
 public:
     explicit ReeferUnitViewModel(QObject* parent = nullptr);
@@ -35,12 +45,23 @@ public:
     [[nodiscard]] auto targetTempC() const -> QString { return m_target_temp_c; }
     [[nodiscard]] auto currentTempC() const -> QString { return m_current_temp_c; }
     [[nodiscard]] auto isPowered() const -> bool { return m_is_powered; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto containerIdIsValid() const -> bool { return m_container_id_is_valid; }
+    [[nodiscard]] auto targetTempCIsValid() const -> bool { return m_target_temp_c_is_valid; }
+    [[nodiscard]] auto currentTempCIsValid() const -> bool { return m_current_temp_c_is_valid; }
+    [[nodiscard]] auto isPoweredIsValid() const -> bool { return m_is_powered_is_valid; }
 
     void setId(const QString& value);
     void setContainerId(const QString& value);
     void setTargetTempC(const QString& value);
     void setCurrentTempC(const QString& value);
     void setIsPowered(const bool& value);
+
+    void setBinding(ReeferUnitGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -53,17 +74,37 @@ Q_SIGNALS:
     void targetTempCChanged();
     void currentTempCChanged();
     void isPoweredChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void containerIdIsValidChanged();
+    void targetTempCIsValidChanged();
+    void currentTempCIsValidChanged();
+    void isPoweredIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_container_id;
     QString m_target_temp_c;
     QString m_current_temp_c;
     bool m_is_powered = false;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    ReeferUnitGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_container_id_is_valid = false;
+    bool m_target_temp_c_is_valid = false;
+    bool m_current_temp_c_is_valid = true;
+    bool m_is_powered_is_valid = true;
 };
 
 } // namespace muscovite_harbor::cargo_operations::qml

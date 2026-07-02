@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/pilot_assignment_grpc_binding.hpp"
 
 namespace muscovite_harbor::vessel_traffic::qml {
 
@@ -28,6 +29,16 @@ class PilotAssignmentViewModel : public QObject {
     Q_PROPERTY(QString pilotZone READ pilotZone WRITE setPilotZone NOTIFY pilotZoneChanged REQUIRED)
     Q_PROPERTY(QDateTime boardingTime READ boardingTime WRITE setBoardingTime NOTIFY boardingTimeChanged)
     Q_PROPERTY(QDateTime disembarkTime READ disembarkTime WRITE setDisembarkTime NOTIFY disembarkTimeChanged)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool voyageIdIsValid READ voyageIdIsValid NOTIFY voyageIdIsValidChanged)
+    Q_PROPERTY(bool pilotNameIsValid READ pilotNameIsValid NOTIFY pilotNameIsValidChanged)
+    Q_PROPERTY(bool pilotZoneIsValid READ pilotZoneIsValid NOTIFY pilotZoneIsValidChanged)
+    Q_PROPERTY(bool boardingTimeIsValid READ boardingTimeIsValid NOTIFY boardingTimeIsValidChanged)
+    Q_PROPERTY(bool disembarkTimeIsValid READ disembarkTimeIsValid NOTIFY disembarkTimeIsValidChanged)
 
 public:
     explicit PilotAssignmentViewModel(QObject* parent = nullptr);
@@ -38,6 +49,16 @@ public:
     [[nodiscard]] auto pilotZone() const -> QString { return m_pilot_zone; }
     [[nodiscard]] auto boardingTime() const -> QDateTime { return m_boarding_time; }
     [[nodiscard]] auto disembarkTime() const -> QDateTime { return m_disembark_time; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto voyageIdIsValid() const -> bool { return m_voyage_id_is_valid; }
+    [[nodiscard]] auto pilotNameIsValid() const -> bool { return m_pilot_name_is_valid; }
+    [[nodiscard]] auto pilotZoneIsValid() const -> bool { return m_pilot_zone_is_valid; }
+    [[nodiscard]] auto boardingTimeIsValid() const -> bool { return m_boarding_time_is_valid; }
+    [[nodiscard]] auto disembarkTimeIsValid() const -> bool { return m_disembark_time_is_valid; }
 
     void setId(const QString& value);
     void setVoyageId(const QString& value);
@@ -45,6 +66,8 @@ public:
     void setPilotZone(const QString& value);
     void setBoardingTime(const QDateTime& value);
     void setDisembarkTime(const QDateTime& value);
+
+    void setBinding(PilotAssignmentGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -58,18 +81,40 @@ Q_SIGNALS:
     void pilotZoneChanged();
     void boardingTimeChanged();
     void disembarkTimeChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void voyageIdIsValidChanged();
+    void pilotNameIsValidChanged();
+    void pilotZoneIsValidChanged();
+    void boardingTimeIsValidChanged();
+    void disembarkTimeIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_voyage_id;
     QString m_pilot_name;
     QString m_pilot_zone;
     QDateTime m_boarding_time;
     QDateTime m_disembark_time;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    PilotAssignmentGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_voyage_id_is_valid = false;
+    bool m_pilot_name_is_valid = false;
+    bool m_pilot_zone_is_valid = false;
+    bool m_boarding_time_is_valid = true;
+    bool m_disembark_time_is_valid = true;
 };
 
 } // namespace muscovite_harbor::vessel_traffic::qml

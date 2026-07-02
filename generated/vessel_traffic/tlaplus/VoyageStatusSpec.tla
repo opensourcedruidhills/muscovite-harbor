@@ -32,6 +32,7 @@ VoyageStatusSpecTransition_PilotOrdered_To_APPROACHING ==
 
 VoyageStatusSpecTransition_APPROACHING_To_BERTHING ==
     /\ current_state = "APPROACHING"
+    /\ "tide_window_open"
     /\ current_state' = "BERTHING"
     /\ history' = Append(history, "BERTHING")
 
@@ -52,6 +53,7 @@ VoyageStatusSpecTransition_CargoOps_To_DeparturePrep ==
 
 VoyageStatusSpecTransition_DeparturePrep_To_UNMOORED ==
     /\ current_state = "DEPARTURE_PREP"
+    /\ "departure_clearance"
     /\ current_state' = "UNMOORED"
     /\ history' = Append(history, "UNMOORED")
 

@@ -14,6 +14,7 @@ qt_add_qml_module(muscovite_harbor_qml_app
     QML_FILES
         main.qml
         LoginPage.qml
+        ObservabilityPanel.qml
     SOURCES
         viewmodels/auth_viewmodel.hpp
         viewmodels/auth_viewmodel.cpp
@@ -40,6 +41,11 @@ target_include_directories(muscovite_harbor_qml_app PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../../cargo_decomposition/qt/qml
     ${CMAKE_CURRENT_SOURCE_DIR}/../../harbour_control/qt/qml
 )
+
+if(Qt6WebEngineQuick_FOUND)
+    target_link_libraries(muscovite_harbor_qml_app PRIVATE Qt6::WebEngineQuick)
+    target_compile_definitions(muscovite_harbor_qml_app PRIVATE MUSCOVITE_OBSERVABILITY_PANEL)
+endif()
 
 qt_import_qml_plugins(muscovite_harbor_qml_app)
 

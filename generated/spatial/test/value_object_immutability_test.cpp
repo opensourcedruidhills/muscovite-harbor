@@ -11,23 +11,6 @@
 
 // Value object immutability tests for spatial
 
-SCENARIO("Value object immutability: BoundingBox") {
-    GIVEN("a BoundingBox value object") {
-        auto rng = std::mt19937{std::random_device{}()};
-        auto dist = std::uniform_int_distribution<int>{0, 10000};
-        auto uuid_gen = boost::uuids::random_generator{};
-        auto vo = BoundingBox{};
-
-        WHEN("equality is checked after copy") {
-            auto copy = vo;
-            THEN("copy must equal original (value semantics)") {
-                // CHECK(copy == vo);
-            }
-        }
-
-    }
-}
-
 SCENARIO("Value object immutability: GeoPoint") {
     GIVEN("a GeoPoint value object") {
         auto rng = std::mt19937{std::random_device{}()};
@@ -38,7 +21,75 @@ SCENARIO("Value object immutability: GeoPoint") {
         WHEN("equality is checked after copy") {
             auto copy = vo;
             THEN("copy must equal original (value semantics)") {
-                // CHECK(copy == vo);
+                CHECK(copy == vo);
+            }
+        }
+
+    }
+}
+
+SCENARIO("Value object immutability: GeoPolygon") {
+    GIVEN("a GeoPolygon value object") {
+        auto rng = std::mt19937{std::random_device{}()};
+        auto dist = std::uniform_int_distribution<int>{0, 10000};
+        auto uuid_gen = boost::uuids::random_generator{};
+        auto vo = GeoPolygon{};
+
+        WHEN("equality is checked after copy") {
+            auto copy = vo;
+            THEN("copy must equal original (value semantics)") {
+                CHECK(copy == vo);
+            }
+        }
+
+    }
+}
+
+SCENARIO("Value object immutability: GeoLineString") {
+    GIVEN("a GeoLineString value object") {
+        auto rng = std::mt19937{std::random_device{}()};
+        auto dist = std::uniform_int_distribution<int>{0, 10000};
+        auto uuid_gen = boost::uuids::random_generator{};
+        auto vo = GeoLineString{};
+
+        WHEN("equality is checked after copy") {
+            auto copy = vo;
+            THEN("copy must equal original (value semantics)") {
+                CHECK(copy == vo);
+            }
+        }
+
+    }
+}
+
+SCENARIO("Value object immutability: GeoRegion") {
+    GIVEN("a GeoRegion value object") {
+        auto rng = std::mt19937{std::random_device{}()};
+        auto dist = std::uniform_int_distribution<int>{0, 10000};
+        auto uuid_gen = boost::uuids::random_generator{};
+        auto vo = GeoRegion{};
+
+        WHEN("equality is checked after copy") {
+            auto copy = vo;
+            THEN("copy must equal original (value semantics)") {
+                CHECK(copy == vo);
+            }
+        }
+
+    }
+}
+
+SCENARIO("Value object immutability: GeoCRS") {
+    GIVEN("a GeoCRS value object") {
+        auto rng = std::mt19937{std::random_device{}()};
+        auto dist = std::uniform_int_distribution<int>{0, 10000};
+        auto uuid_gen = boost::uuids::random_generator{};
+        auto vo = GeoCRS{};
+
+        WHEN("equality is checked after copy") {
+            auto copy = vo;
+            THEN("copy must equal original (value semantics)") {
+                CHECK(copy == vo);
             }
         }
 

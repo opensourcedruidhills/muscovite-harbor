@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/pallet_grpc_binding.hpp"
 
 namespace muscovite_harbor::cargo_decomposition::qml {
 
@@ -29,6 +30,18 @@ class PalletViewModel : public QObject {
     Q_PROPERTY(QString widthCm READ widthCm WRITE setWidthCm NOTIFY widthCmChanged REQUIRED)
     Q_PROPERTY(QString heightCm READ heightCm WRITE setHeightCm NOTIFY heightCmChanged REQUIRED)
     Q_PROPERTY(QString hsCode READ hsCode WRITE setHsCode NOTIFY hsCodeChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool palletIdIsValid READ palletIdIsValid NOTIFY palletIdIsValidChanged)
+    Q_PROPERTY(bool containerIdIsValid READ containerIdIsValid NOTIFY containerIdIsValidChanged)
+    Q_PROPERTY(bool weightKgIsValid READ weightKgIsValid NOTIFY weightKgIsValidChanged)
+    Q_PROPERTY(bool lengthCmIsValid READ lengthCmIsValid NOTIFY lengthCmIsValidChanged)
+    Q_PROPERTY(bool widthCmIsValid READ widthCmIsValid NOTIFY widthCmIsValidChanged)
+    Q_PROPERTY(bool heightCmIsValid READ heightCmIsValid NOTIFY heightCmIsValidChanged)
+    Q_PROPERTY(bool hsCodeIsValid READ hsCodeIsValid NOTIFY hsCodeIsValidChanged)
 
 public:
     explicit PalletViewModel(QObject* parent = nullptr);
@@ -41,6 +54,18 @@ public:
     [[nodiscard]] auto widthCm() const -> QString { return m_width_cm; }
     [[nodiscard]] auto heightCm() const -> QString { return m_height_cm; }
     [[nodiscard]] auto hsCode() const -> QString { return m_hs_code; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto palletIdIsValid() const -> bool { return m_pallet_id_is_valid; }
+    [[nodiscard]] auto containerIdIsValid() const -> bool { return m_container_id_is_valid; }
+    [[nodiscard]] auto weightKgIsValid() const -> bool { return m_weight_kg_is_valid; }
+    [[nodiscard]] auto lengthCmIsValid() const -> bool { return m_length_cm_is_valid; }
+    [[nodiscard]] auto widthCmIsValid() const -> bool { return m_width_cm_is_valid; }
+    [[nodiscard]] auto heightCmIsValid() const -> bool { return m_height_cm_is_valid; }
+    [[nodiscard]] auto hsCodeIsValid() const -> bool { return m_hs_code_is_valid; }
 
     void setId(const QString& value);
     void setPalletId(const QString& value);
@@ -50,6 +75,8 @@ public:
     void setWidthCm(const QString& value);
     void setHeightCm(const QString& value);
     void setHsCode(const QString& value);
+
+    void setBinding(PalletGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -65,12 +92,25 @@ Q_SIGNALS:
     void widthCmChanged();
     void heightCmChanged();
     void hsCodeChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void palletIdIsValidChanged();
+    void containerIdIsValidChanged();
+    void weightKgIsValidChanged();
+    void lengthCmIsValidChanged();
+    void widthCmIsValidChanged();
+    void heightCmIsValidChanged();
+    void hsCodeIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_pallet_id;
     QString m_container_id;
@@ -79,6 +119,19 @@ private:
     QString m_width_cm;
     QString m_height_cm;
     QString m_hs_code;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    PalletGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_pallet_id_is_valid = false;
+    bool m_container_id_is_valid = false;
+    bool m_weight_kg_is_valid = false;
+    bool m_length_cm_is_valid = false;
+    bool m_width_cm_is_valid = false;
+    bool m_height_cm_is_valid = false;
+    bool m_hs_code_is_valid = false;
 };
 
 } // namespace muscovite_harbor::cargo_decomposition::qml

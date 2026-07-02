@@ -17,6 +17,7 @@ public:
     virtual ~VoyageCommandRepository() = default;
 
     virtual auto save(const Voyage& entity) -> void = 0;
+    virtual auto update(const Voyage& entity) -> void = 0;
     virtual auto remove(const Voyage::Id& id) -> void = 0;
     [[nodiscard]] virtual auto find_by_id(const Voyage::Id& id) -> std::optional<Voyage> = 0;
 };

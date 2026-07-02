@@ -25,9 +25,13 @@ class TugBookingFkWidget : public QWidget {
 public:
     explicit TugBookingFkWidget(QWidget* parent = nullptr);
 
+    [[nodiscard]] auto serverAddress() const -> QString { return m_server_address; }
+    void setServerAddress(const QString& address);
+
     [[nodiscard]] auto selectedVoyage() const -> QString;
 
 Q_SIGNALS:
+    void serverAddressChanged();
     void voyageChanged(const QString& id);
 
 public Q_SLOTS:
@@ -35,7 +39,9 @@ public Q_SLOTS:
 
 private:
     void setupUi();
+    void loadVoyageOptions();
 
+    QString m_server_address = QStringLiteral("localhost:50051");
     QComboBox* voyage_combo_ = nullptr;
 };
 

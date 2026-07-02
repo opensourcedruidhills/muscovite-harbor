@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/crane_grpc_binding.hpp"
 
 namespace muscovite_harbor::cargo_operations::qml {
 
@@ -26,6 +27,15 @@ class CraneViewModel : public QObject {
     Q_PROPERTY(QString craneType READ craneType WRITE setCraneType NOTIFY craneTypeChanged REQUIRED)
     Q_PROPERTY(QString maxLiftKg READ maxLiftKg WRITE setMaxLiftKg NOTIFY maxLiftKgChanged REQUIRED)
     Q_PROPERTY(bool isActive READ isActive WRITE setIsActive NOTIFY isActiveChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool nameIsValid READ nameIsValid NOTIFY nameIsValidChanged)
+    Q_PROPERTY(bool craneTypeIsValid READ craneTypeIsValid NOTIFY craneTypeIsValidChanged)
+    Q_PROPERTY(bool maxLiftKgIsValid READ maxLiftKgIsValid NOTIFY maxLiftKgIsValidChanged)
+    Q_PROPERTY(bool isActiveIsValid READ isActiveIsValid NOTIFY isActiveIsValidChanged)
 
 public:
     explicit CraneViewModel(QObject* parent = nullptr);
@@ -35,12 +45,23 @@ public:
     [[nodiscard]] auto craneType() const -> QString { return m_crane_type; }
     [[nodiscard]] auto maxLiftKg() const -> QString { return m_max_lift_kg; }
     [[nodiscard]] auto isActive() const -> bool { return m_is_active; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto nameIsValid() const -> bool { return m_name_is_valid; }
+    [[nodiscard]] auto craneTypeIsValid() const -> bool { return m_crane_type_is_valid; }
+    [[nodiscard]] auto maxLiftKgIsValid() const -> bool { return m_max_lift_kg_is_valid; }
+    [[nodiscard]] auto isActiveIsValid() const -> bool { return m_is_active_is_valid; }
 
     void setId(const QString& value);
     void setName(const QString& value);
     void setCraneType(const QString& value);
     void setMaxLiftKg(const QString& value);
     void setIsActive(const bool& value);
+
+    void setBinding(CraneGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -53,17 +74,37 @@ Q_SIGNALS:
     void craneTypeChanged();
     void maxLiftKgChanged();
     void isActiveChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void nameIsValidChanged();
+    void craneTypeIsValidChanged();
+    void maxLiftKgIsValidChanged();
+    void isActiveIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_name;
     QString m_crane_type;
     QString m_max_lift_kg;
     bool m_is_active = false;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    CraneGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_name_is_valid = false;
+    bool m_crane_type_is_valid = false;
+    bool m_max_lift_kg_is_valid = false;
+    bool m_is_active_is_valid = true;
 };
 
 } // namespace muscovite_harbor::cargo_operations::qml

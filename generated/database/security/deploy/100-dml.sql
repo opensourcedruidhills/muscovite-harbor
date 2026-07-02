@@ -8,7 +8,7 @@ SET search_path TO security, public;
 -- DML: security.users
 
 CREATE OR REPLACE FUNCTION security.insert_users(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_username TEXT,
     p_email TEXT,
     p_password_hash TEXT,
@@ -59,9 +59,9 @@ $$ LANGUAGE SQL;
 -- DML: security.user_roles
 
 CREATE OR REPLACE FUNCTION security.insert_user_roles(
-    p_id UUID DEFAULT uuidv7(),
-    p_user_id TEXT,
-    p_role_id TEXT,
+    p_id UUID DEFAULT uuid_generate_v7(),
+    p_user_id UUID,
+    p_role_id UUID,
     p_created_at TIMESTAMPTZ DEFAULT NOW(),
     p_created_by UUID DEFAULT NULL,
     p_updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -80,8 +80,8 @@ $$ LANGUAGE SQL STABLE;
 
 CREATE OR REPLACE FUNCTION security.update_user_roles(
     p_id UUID,
-    p_user_id TEXT,
-    p_role_id TEXT,
+    p_user_id UUID,
+    p_role_id UUID,
     p_created_by UUID DEFAULT NULL,
     p_updated_by UUID DEFAULT NULL
 ) RETURNS security.user_roles AS $$
@@ -101,10 +101,148 @@ CREATE OR REPLACE FUNCTION security.delete_user_roles(
     DELETE FROM security.user_roles WHERE id = p_id;
 $$ LANGUAGE SQL;
 
+-- DML: security.groups
+
+CREATE OR REPLACE FUNCTION security.insert_groups(
+    p_id UUID DEFAULT uuid_generate_v7(),
+    p_name TEXT,
+    p_description TEXT DEFAULT NULL,
+    p_created_at TIMESTAMPTZ DEFAULT NOW(),
+    p_created_by UUID DEFAULT NULL,
+    p_updated_at TIMESTAMPTZ DEFAULT NOW(),
+    p_updated_by UUID DEFAULT NULL
+) RETURNS security.groups AS $$
+    INSERT INTO security.groups(id, name, description, created_at, created_by, updated_at, updated_by)
+    VALUES (p_id, p_name, p_description, p_created_at, p_created_by, p_updated_at, p_updated_by)
+    RETURNING *;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION security.select_groups_by_id(
+    p_id UUID
+) RETURNS SETOF security.groups AS $$
+    SELECT * FROM security.groups WHERE id = p_id;
+$$ LANGUAGE SQL STABLE;
+
+CREATE OR REPLACE FUNCTION security.update_groups(
+    p_id UUID,
+    p_name TEXT,
+    p_description TEXT DEFAULT NULL,
+    p_created_by UUID DEFAULT NULL,
+    p_updated_by UUID DEFAULT NULL
+) RETURNS security.groups AS $$
+    UPDATE security.groups
+    SET name = p_name,
+        description = p_description,
+        created_by = p_created_by,
+        updated_by = p_updated_by,
+        updated_at = NOW()
+    WHERE id = p_id
+    RETURNING *;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION security.delete_groups(
+    p_id UUID
+) RETURNS void AS $$
+    DELETE FROM security.groups WHERE id = p_id;
+$$ LANGUAGE SQL;
+
+-- DML: security.group_members
+
+CREATE OR REPLACE FUNCTION security.insert_group_members(
+    p_id UUID DEFAULT uuid_generate_v7(),
+    p_group_id UUID,
+    p_user_id UUID,
+    p_created_at TIMESTAMPTZ DEFAULT NOW(),
+    p_created_by UUID DEFAULT NULL,
+    p_updated_at TIMESTAMPTZ DEFAULT NOW(),
+    p_updated_by UUID DEFAULT NULL
+) RETURNS security.group_members AS $$
+    INSERT INTO security.group_members(id, group_id, user_id, created_at, created_by, updated_at, updated_by)
+    VALUES (p_id, p_group_id, p_user_id, p_created_at, p_created_by, p_updated_at, p_updated_by)
+    RETURNING *;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION security.select_group_members_by_id(
+    p_id UUID
+) RETURNS SETOF security.group_members AS $$
+    SELECT * FROM security.group_members WHERE id = p_id;
+$$ LANGUAGE SQL STABLE;
+
+CREATE OR REPLACE FUNCTION security.update_group_members(
+    p_id UUID,
+    p_group_id UUID,
+    p_user_id UUID,
+    p_created_by UUID DEFAULT NULL,
+    p_updated_by UUID DEFAULT NULL
+) RETURNS security.group_members AS $$
+    UPDATE security.group_members
+    SET group_id = p_group_id,
+        user_id = p_user_id,
+        created_by = p_created_by,
+        updated_by = p_updated_by,
+        updated_at = NOW()
+    WHERE id = p_id
+    RETURNING *;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION security.delete_group_members(
+    p_id UUID
+) RETURNS void AS $$
+    DELETE FROM security.group_members WHERE id = p_id;
+$$ LANGUAGE SQL;
+
+-- DML: security.context_privileges
+
+CREATE OR REPLACE FUNCTION security.insert_context_privileges(
+    p_id UUID DEFAULT uuid_generate_v7(),
+    p_context_name TEXT,
+    p_group_id UUID,
+    p_privilege TEXT,
+    p_created_at TIMESTAMPTZ DEFAULT NOW(),
+    p_created_by UUID DEFAULT NULL,
+    p_updated_at TIMESTAMPTZ DEFAULT NOW(),
+    p_updated_by UUID DEFAULT NULL
+) RETURNS security.context_privileges AS $$
+    INSERT INTO security.context_privileges(id, context_name, group_id, privilege, created_at, created_by, updated_at, updated_by)
+    VALUES (p_id, p_context_name, p_group_id, p_privilege, p_created_at, p_created_by, p_updated_at, p_updated_by)
+    RETURNING *;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION security.select_context_privileges_by_id(
+    p_id UUID
+) RETURNS SETOF security.context_privileges AS $$
+    SELECT * FROM security.context_privileges WHERE id = p_id;
+$$ LANGUAGE SQL STABLE;
+
+CREATE OR REPLACE FUNCTION security.update_context_privileges(
+    p_id UUID,
+    p_context_name TEXT,
+    p_group_id UUID,
+    p_privilege TEXT,
+    p_created_by UUID DEFAULT NULL,
+    p_updated_by UUID DEFAULT NULL
+) RETURNS security.context_privileges AS $$
+    UPDATE security.context_privileges
+    SET context_name = p_context_name,
+        group_id = p_group_id,
+        privilege = p_privilege,
+        created_by = p_created_by,
+        updated_by = p_updated_by,
+        updated_at = NOW()
+    WHERE id = p_id
+    RETURNING *;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION security.delete_context_privileges(
+    p_id UUID
+) RETURNS void AS $$
+    DELETE FROM security.context_privileges WHERE id = p_id;
+$$ LANGUAGE SQL;
+
 -- DML: security.roles
 
 CREATE OR REPLACE FUNCTION security.insert_roles(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_name TEXT,
     p_description TEXT DEFAULT NULL,
     p_permissions TEXT,
@@ -152,7 +290,7 @@ $$ LANGUAGE SQL;
 -- DML: security.permissions
 
 CREATE OR REPLACE FUNCTION security.insert_permissions(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_name TEXT,
     p_resource TEXT,
     p_action TEXT,
@@ -200,7 +338,7 @@ $$ LANGUAGE SQL;
 -- DML: security.access_control_entries
 
 CREATE OR REPLACE FUNCTION security.insert_access_control_entries(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_principal TEXT,
     p_resource TEXT,
     p_permission TEXT,
@@ -251,7 +389,7 @@ $$ LANGUAGE SQL;
 -- DML: security.audit_log_entries
 
 CREATE OR REPLACE FUNCTION security.insert_audit_log_entries(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_timestamp TIMESTAMPTZ,
     p_actor TEXT,
     p_action TEXT,

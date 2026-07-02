@@ -44,6 +44,10 @@ public:
         return false;
     }
 
+    [[nodiscard]] auto allow_request() -> bool {
+        return try_acquire();
+    }
+
     /// Check a gRPC call and return RESOURCE_EXHAUSTED if throttled.
     /// Adds grpc-retry-after-ms trailing metadata when ctx is non-null.
     [[nodiscard]] auto check(grpc::ServerContext* ctx) -> grpc::Status {
@@ -78,6 +82,56 @@ private:
     mutable std::mutex mu_;
     double tokens_;
     std::chrono::steady_clock::time_point last_refill_;
+};
+
+/// Per-client rate limiter — maintains separate token buckets per caller.
+/// Uses a sharded map with periodic eviction to prevent unbounded growth.
+class PerClientRateLimiter {
+public:
+    explicit PerClientRateLimiter(RateLimiterConfig config = {})
+        : config_(config) {}
+
+    [[nodiscard]] auto allow_request(const std::string& client_key) -> bool {
+        std::lock_guard lock(mu_);
+        auto it = limiters_.find(client_key);
+        if (it == limiters_.end()) {
+            auto now = std::chrono::steady_clock::now();
+            // Evict stale entries periodically (keep map bounded)
+            if (limiters_.size() >= kMaxEntries && now - last_eviction_ > kEvictInterval) {
+                evict_stale(now);
+            }
+            it = limiters_.emplace(client_key, RateLimiter{config_}).first;
+        }
+        it->second.last_used = std::chrono::steady_clock::now();
+        return it->second.limiter.allow_request();
+    }
+
+private:
+    struct Entry {
+        RateLimiter limiter;
+        std::chrono::steady_clock::time_point last_used{};
+        explicit Entry(RateLimiterConfig cfg) : limiter(cfg),
+            last_used(std::chrono::steady_clock::now()) {}
+    };
+    static constexpr size_t kMaxEntries = 10000;
+    static constexpr auto kEvictInterval = std::chrono::minutes{5};
+    static constexpr auto kEntryMaxIdle = std::chrono::minutes{10};
+
+    void evict_stale(std::chrono::steady_clock::time_point now) {
+        for (auto it = limiters_.begin(); it != limiters_.end();) {
+            if (now - it->second.last_used > kEntryMaxIdle) {
+                it = limiters_.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        last_eviction_ = now;
+    }
+
+    RateLimiterConfig config_;
+    std::mutex mu_;
+    std::unordered_map<std::string, Entry> limiters_;
+    std::chrono::steady_clock::time_point last_eviction_{};
 };
 
 } // namespace muscovite_harbor

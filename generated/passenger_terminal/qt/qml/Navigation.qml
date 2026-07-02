@@ -39,6 +39,9 @@ Drawer {
                 ListElement { name: "Passengers"; page: "PassengerListView" }
                 ListElement { name: "Gates"; page: "GateListView" }
                 ListElement { name: "BoardingPasses"; page: "BoardingPassListView" }
+                // BEGIN MUSCOVITE_OBSERVABILITY_PANEL
+                ListElement { name: "Observability"; page: "ObservabilityPanel" }
+                // END MUSCOVITE_OBSERVABILITY_PANEL
             }
 
             delegate: ItemDelegate {

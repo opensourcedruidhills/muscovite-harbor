@@ -46,10 +46,20 @@ message ChangePasswordRequest {
   string new_password = 3;
 }
 
+message UserProfile {
+  string username = 1;
+  string email = 2;
+  repeated string roles = 3;
+}
+
+message GetMeRequest {
+}
+
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Logout(LogoutRequest) returns (google.protobuf.Empty);
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc GetMe(GetMeRequest) returns (UserProfile);
   rpc ChangePassword(ChangePasswordRequest) returns (google.protobuf.Empty);
 }
 

@@ -15,8 +15,8 @@ syntax = "proto3";
 package cargodecomposition;
 
 message Dimensions {
-  string length_cm = 1;
-  string width_cm = 2;
-  string height_cm = 3;
+  string length_cm = 1; // unit: CENTIMETER
+  string width_cm = 2; // unit: CENTIMETER
+  string height_cm = 3; // unit: CENTIMETER
 }
 

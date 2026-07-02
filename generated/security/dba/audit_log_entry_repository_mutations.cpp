@@ -2,6 +2,9 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "audit_log_entry_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace security {
 
@@ -12,12 +15,10 @@ auto AuditLogEntryRepositoryImpl::insert(pqxx::work& tx, const AuditLogEntry& en
         entity.actor,
         entity.action,
         entity.resource,
-        entity.details,
-    );
+        entity.details);
 }
 
 auto AuditLogEntryRepositoryImpl::update(pqxx::work& tx, const AuditLogEntry& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
     params.append(entity.id);
     params.append(entity.timestamp);

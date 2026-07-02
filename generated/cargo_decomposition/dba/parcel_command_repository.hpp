@@ -17,6 +17,7 @@ public:
     virtual ~ParcelCommandRepository() = default;
 
     virtual auto save(const Parcel& entity) -> void = 0;
+    virtual auto update(const Parcel& entity) -> void = 0;
     virtual auto remove(const Parcel::Id& id) -> void = 0;
     [[nodiscard]] virtual auto find_by_id(const Parcel::Id& id) -> std::optional<Parcel> = 0;
 };

@@ -8,7 +8,7 @@ SET search_path TO cargo_decomposition, public;
 -- DML: cargo_decomposition.pallets
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.insert_pallets(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_pallet_id pallet_id,
     p_container_id UUID,
     p_weight_kg NUMERIC,
@@ -68,7 +68,7 @@ $$ LANGUAGE SQL;
 -- DML: cargo_decomposition.parcels
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.insert_parcels(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_tracking_number tracking_number,
     p_pallet_id UUID,
     p_weight_kg NUMERIC,
@@ -122,7 +122,7 @@ $$ LANGUAGE SQL;
 -- DML: cargo_decomposition.delivery_units
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.insert_delivery_units(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_tracking_number tracking_number,
     p_destination TEXT,
     p_carrier TEXT,
@@ -173,7 +173,7 @@ $$ LANGUAGE SQL;
 -- DML: cargo_decomposition.break_bulk_items
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.insert_break_bulk_items(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_container_id UUID,
     p_item_type TEXT,
     p_weight_kg NUMERIC,
@@ -224,17 +224,19 @@ $$ LANGUAGE SQL;
 -- DML: cargo_decomposition.outbox
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.insert_outbox(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_aggregate_type TEXT,
     p_aggregate_id UUID,
     p_event_type TEXT,
-    p_payload JSONB,
+    p_payload TEXT,
+    p_occurred_at TIMESTAMPTZ DEFAULT NOW(),
     p_created_at TIMESTAMPTZ DEFAULT NOW(),
     p_retry_count INTEGER DEFAULT 0,
+    p_last_retry_at TIMESTAMPTZ DEFAULT NULL,
     p_processed_at TIMESTAMPTZ DEFAULT NULL
 ) RETURNS cargo_decomposition.outbox AS $$
-    INSERT INTO cargo_decomposition.outbox(id, aggregate_type, aggregate_id, event_type, payload, created_at, retry_count, processed_at)
-    VALUES (p_id, p_aggregate_type, p_aggregate_id, p_event_type, p_payload, p_created_at, p_retry_count, p_processed_at)
+    INSERT INTO cargo_decomposition.outbox(id, aggregate_type, aggregate_id, event_type, payload, occurred_at, created_at, retry_count, last_retry_at, processed_at)
+    VALUES (p_id, p_aggregate_type, p_aggregate_id, p_event_type, p_payload, p_occurred_at, p_created_at, p_retry_count, p_last_retry_at, p_processed_at)
     RETURNING *;
 $$ LANGUAGE SQL;
 
@@ -253,16 +255,20 @@ $$ LANGUAGE SQL;
 -- DML: cargo_decomposition.dead_letter_queue
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.insert_dead_letter_queue(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_original_event_id UUID,
+    p_aggregate_id UUID DEFAULT NULL,
     p_event_type TEXT,
-    p_payload JSONB,
+    p_payload TEXT,
     p_error_message TEXT,
     p_retry_count INTEGER DEFAULT 0,
-    p_created_at TIMESTAMPTZ DEFAULT NOW()
+    p_created_at TIMESTAMPTZ DEFAULT NOW(),
+    p_occurred_at TIMESTAMPTZ DEFAULT NOW(),
+    p_failed_at TIMESTAMPTZ DEFAULT NOW(),
+    p_failure_reason TEXT DEFAULT ''
 ) RETURNS cargo_decomposition.dead_letter_queue AS $$
-    INSERT INTO cargo_decomposition.dead_letter_queue(id, original_event_id, event_type, payload, error_message, retry_count, created_at)
-    VALUES (p_id, p_original_event_id, p_event_type, p_payload, p_error_message, p_retry_count, p_created_at)
+    INSERT INTO cargo_decomposition.dead_letter_queue(id, original_event_id, aggregate_id, event_type, payload, error_message, retry_count, created_at, occurred_at, failed_at, failure_reason)
+    VALUES (p_id, p_original_event_id, p_aggregate_id, p_event_type, p_payload, p_error_message, p_retry_count, p_created_at, p_occurred_at, p_failed_at, p_failure_reason)
     RETURNING *;
 $$ LANGUAGE SQL;
 
@@ -281,35 +287,41 @@ $$ LANGUAGE SQL;
 -- DML: cargo_decomposition.idempotency_keys
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.insert_idempotency_keys(
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_key TEXT,
+    p_response JSONB DEFAULT NULL,
     p_created_at TIMESTAMPTZ DEFAULT NOW(),
     p_expires_at TIMESTAMPTZ
 ) RETURNS cargo_decomposition.idempotency_keys AS $$
-    INSERT INTO cargo_decomposition.idempotency_keys(key, created_at, expires_at)
-    VALUES (p_key, p_created_at, p_expires_at)
+    INSERT INTO cargo_decomposition.idempotency_keys(id, key, response, created_at, expires_at)
+    VALUES (p_id, p_key, p_response, p_created_at, p_expires_at)
     RETURNING *;
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.select_idempotency_keys_by_id(
-    p_key TEXT
+    p_id UUID
 ) RETURNS SETOF cargo_decomposition.idempotency_keys AS $$
-    SELECT * FROM cargo_decomposition.idempotency_keys WHERE key = p_key;
+    SELECT * FROM cargo_decomposition.idempotency_keys WHERE id = p_id;
 $$ LANGUAGE SQL STABLE;
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.update_idempotency_keys(
+    p_id UUID,
     p_key TEXT,
+    p_response JSONB DEFAULT NULL,
     p_expires_at TIMESTAMPTZ
 ) RETURNS cargo_decomposition.idempotency_keys AS $$
     UPDATE cargo_decomposition.idempotency_keys
-    SET expires_at = p_expires_at
-    WHERE key = p_key
+    SET key = p_key,
+        response = p_response,
+        expires_at = p_expires_at
+    WHERE id = p_id
     RETURNING *;
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.delete_idempotency_keys(
-    p_key TEXT
+    p_id UUID
 ) RETURNS void AS $$
-    DELETE FROM cargo_decomposition.idempotency_keys WHERE key = p_key;
+    DELETE FROM cargo_decomposition.idempotency_keys WHERE id = p_id;
 $$ LANGUAGE SQL;
 
 COMMIT;

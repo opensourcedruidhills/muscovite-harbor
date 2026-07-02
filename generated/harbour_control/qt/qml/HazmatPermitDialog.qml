@@ -8,9 +8,9 @@ Dialog {
     id: hazmatPermitDialog
     title: qsTr("Edit HazmatPermit")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("PermitNumber") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("PermitNumber")
             text: viewModel.permitNumber
             onTextChanged: viewModel.setPermitNumber(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.permitNumberIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("VesselId") }
@@ -39,7 +51,14 @@ Dialog {
             text: viewModel.vesselId
             onTextChanged: viewModel.setVesselId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.vesselIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("ImoClass") }
         SpinBox {
             id: imoClassField
             from: 0
@@ -47,7 +66,14 @@ Dialog {
             value: viewModel.imoClass
             onValueChanged: viewModel.setImoClass(value)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.imoClassIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("QuantityKg") }
         DoubleSpinBox {
             id: quantityKgField
             from: 0.0
@@ -56,12 +82,24 @@ Dialog {
             value: parseFloat(viewModel.quantityKg) || 0.0
             onValueChanged: viewModel.setQuantityKg(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.quantityKgIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         CheckBox {
             id: approvedField
             text: qsTr("Approved")
             checked: viewModel.approved
             onCheckedChanged: viewModel.setApproved(checked)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.approvedIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ValidFrom") }
@@ -71,6 +109,12 @@ Dialog {
             text: viewModel.validFrom
             onTextChanged: viewModel.setValidFrom(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.validFromIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("ValidUntil") }
         TextField {
@@ -79,9 +123,27 @@ Dialog {
             text: viewModel.validUntil
             onTextChanged: viewModel.setValidUntil(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.validUntilIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); hazmatPermitDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); hazmatPermitDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

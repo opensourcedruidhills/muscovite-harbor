@@ -8,9 +8,9 @@ Dialog {
     id: chassisUnitDialog
     title: qsTr("Edit ChassisUnit")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("ChassisNumber") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("ChassisNumber")
             text: viewModel.chassisNumber
             onTextChanged: viewModel.setChassisNumber(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.chassisNumberIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ChassisType") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.chassisType
             onTextChanged: viewModel.setChassisType(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.chassisTypeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         CheckBox {
             id: isAvailableField
@@ -46,9 +64,27 @@ Dialog {
             checked: viewModel.isAvailable
             onCheckedChanged: viewModel.setIsAvailable(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.isAvailableIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); chassisUnitDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); chassisUnitDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

@@ -25,8 +25,24 @@ public:
     }
 
     [[nodiscard]] auto load_snapshot(const std::string& aggregate_id) -> std::optional<Container> override {
-        (void)aggregate_id;
-        return std::nullopt; // Snapshot support depends on aggregate structure
+        pqxx::read_transaction tx{conn_};
+        auto result = tx.exec_params(
+            "SELECT id, id, container_number, size_category, hazmat_class, voyage_id, yard_slot_id, status FROM cargo_operations.containers "
+            "WHERE id = $1 LIMIT 1",
+            aggregate_id);
+        tx.commit();
+        if (result.empty()) { return std::nullopt; }
+        const auto& row = result[0];
+        return Container{
+            .id = row[0].as<std::string>(),
+            .id = row[1].as<std::string>(),
+            .container_number = row[2].as<std::string>(),
+            .size_category = row[3].as<std::string>(),
+            .hazmat_class = row[4].as<std::string>(),
+            .voyage_id = row[5].as<std::string>(),
+            .yard_slot_id = row[6].as<std::string>(),
+            .status = row[7].as<std::string>(),
+        };
     }
 
     [[nodiscard]] auto load_events(const std::string& aggregate_id, std::int64_t from_version) -> std::vector<std::string> override {

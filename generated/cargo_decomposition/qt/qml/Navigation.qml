@@ -40,6 +40,9 @@ Drawer {
                 ListElement { name: "Parcels"; page: "ParcelListView" }
                 ListElement { name: "DeliveryUnits"; page: "DeliveryUnitListView" }
                 ListElement { name: "BreakBulkItems"; page: "BreakBulkItemListView" }
+                // BEGIN MUSCOVITE_OBSERVABILITY_PANEL
+                ListElement { name: "Observability"; page: "ObservabilityPanel" }
+                // END MUSCOVITE_OBSERVABILITY_PANEL
             }
 
             delegate: ItemDelegate {

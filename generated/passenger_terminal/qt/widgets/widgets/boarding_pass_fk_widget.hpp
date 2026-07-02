@@ -25,10 +25,14 @@ class BoardingPassFkWidget : public QWidget {
 public:
     explicit BoardingPassFkWidget(QWidget* parent = nullptr);
 
+    [[nodiscard]] auto serverAddress() const -> QString { return m_server_address; }
+    void setServerAddress(const QString& address);
+
     [[nodiscard]] auto selectedPassenger() const -> QString;
     [[nodiscard]] auto selectedGate() const -> QString;
 
 Q_SIGNALS:
+    void serverAddressChanged();
     void passengerChanged(const QString& id);
     void gateChanged(const QString& id);
 
@@ -38,7 +42,10 @@ public Q_SLOTS:
 
 private:
     void setupUi();
+    void loadPassengerOptions();
+    void loadGateOptions();
 
+    QString m_server_address = QStringLiteral("localhost:50051");
     QComboBox* passenger_combo_ = nullptr;
     QComboBox* gate_combo_ = nullptr;
 };

@@ -77,6 +77,31 @@ public:
         return ::grpc::Status::OK;
     }
 
+    ::grpc::Status GetMe(
+            ::grpc::ServerContext* context,
+            const muscoviteharbor::auth::GetMeRequest* request,
+            muscoviteharbor::auth::UserProfile* response) override {
+        static_cast<void>(request);
+        if (!auth_provider_) {
+            return {::grpc::StatusCode::INTERNAL, "auth provider not configured"};
+        }
+        const auto& metadata = context->client_metadata();
+        const auto auth_it = metadata.find("authorization");
+        if (auth_it == metadata.end()) {
+            return {::grpc::StatusCode::UNAUTHENTICATED, "missing authorization metadata"};
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return {::grpc::StatusCode::UNAUTHENTICATED, "invalid token"};
+        }
+        response->set_username(identity->subject);
+        response->set_email(identity->subject);
+        for (const auto& role : identity->roles) {
+            response->add_roles(role);
+        }
+        return ::grpc::Status::OK;
+    }
+
     ::grpc::Status ChangePassword(
             ::grpc::ServerContext* context,
             const muscoviteharbor::auth::ChangePasswordRequest* request,

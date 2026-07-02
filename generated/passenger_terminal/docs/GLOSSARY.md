@@ -45,8 +45,8 @@ Issued boarding pass for a passenger
 
 **Relationships:**
 
-- **BoardingPass**: to-one → **Passenger** [required]
-- **BoardingPass**: to-one → **Gate**
+- **BPPassenger**: to-one → **Passenger** [required]
+- **BPGate**: to-one → **Gate**
 
 ## Value Objects
 
@@ -94,13 +94,13 @@ Gate status transition
 
 ### BookingReference
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Passenger booking reference (e.g. AB123456)
 
 ### GateCode
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Terminal gate identifier (e.g. G1, G12)
 

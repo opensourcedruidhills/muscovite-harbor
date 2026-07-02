@@ -29,6 +29,7 @@ MainWindow::MainWindow(bool use_mdi, QString startup_context, QWidget* parent)
     // Default gRPC endpoint: devel -> localhost:50051
     resize(1280, 720);
     setup_central_widget();
+    setup_context_menu();
     populate_context_views();
     apply_startup_context();
     session_manager_ = new SessionManager{this};
@@ -47,6 +48,40 @@ void MainWindow::setup_central_widget() {
     tab_widget_ = new QTabWidget{this};
     QObject::connect(tab_widget_, &QTabWidget::currentChanged, this, &MainWindow::on_context_changed);
     setCentralWidget(tab_widget_);
+}
+
+void MainWindow::setup_context_menu() {
+    auto* contexts_menu = menuBar()->addMenu(QStringLiteral("&Contexts"));
+    auto* vessel_traffic_action = contexts_menu->addAction(QStringLiteral("VesselTraffic"));
+    QObject::connect(vessel_traffic_action, &QAction::triggered, this, [this] {
+        startup_context_ = QStringLiteral("VesselTraffic");
+        apply_startup_context();
+    });
+    auto* cargo_operations_action = contexts_menu->addAction(QStringLiteral("CargoOperations"));
+    QObject::connect(cargo_operations_action, &QAction::triggered, this, [this] {
+        startup_context_ = QStringLiteral("CargoOperations");
+        apply_startup_context();
+    });
+    auto* passenger_terminal_action = contexts_menu->addAction(QStringLiteral("PassengerTerminal"));
+    QObject::connect(passenger_terminal_action, &QAction::triggered, this, [this] {
+        startup_context_ = QStringLiteral("PassengerTerminal");
+        apply_startup_context();
+    });
+    auto* intermodal_transfer_action = contexts_menu->addAction(QStringLiteral("IntermodalTransfer"));
+    QObject::connect(intermodal_transfer_action, &QAction::triggered, this, [this] {
+        startup_context_ = QStringLiteral("IntermodalTransfer");
+        apply_startup_context();
+    });
+    auto* cargo_decomposition_action = contexts_menu->addAction(QStringLiteral("CargoDecomposition"));
+    QObject::connect(cargo_decomposition_action, &QAction::triggered, this, [this] {
+        startup_context_ = QStringLiteral("CargoDecomposition");
+        apply_startup_context();
+    });
+    auto* harbour_control_action = contexts_menu->addAction(QStringLiteral("HarbourControl"));
+    QObject::connect(harbour_control_action, &QAction::triggered, this, [this] {
+        startup_context_ = QStringLiteral("HarbourControl");
+        apply_startup_context();
+    });
 }
 
 void MainWindow::populate_context_views() {
@@ -154,9 +189,8 @@ void MainWindow::ensure_authenticated() {
     while (!session_manager_->isAuthenticated()) {
         auto dialog = LoginDialog{this};
         QObject::connect(&dialog, &LoginDialog::loginRequested, this, [this](const QString& username, const QString& password) {
-            const auto normalized_username = username.trimmed();
-            if (!normalized_username.isEmpty() && !password.isEmpty()) {
-                session_manager_->setToken(normalized_username);
+            if (!username.trimmed().isEmpty() && !password.isEmpty()) {
+                session_manager_->authenticate(username, password);
             }
         });
         if (dialog.exec() != QDialog::Accepted) {

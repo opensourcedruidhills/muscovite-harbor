@@ -11,16 +11,27 @@ namespace intermodal_transfer {
 /// Unified DBA struct for RailWagon.
 struct RailWagon {
     boost::uuids::uuid id{};
-    boost::uuids::uuid id{};
     std::string wagon_number{};
     muscovite::dba::Decimal max_weight_kg{};
     boost::uuids::uuid slot_id{};
 
-    /// Construct from a database row (stub — implementation in .cpp).
-    // static auto from_row(const pqxx::row& row) -> RailWagon;
+    /// Construct from a database row.
+    static auto from_row(const pqxx::row& row) -> RailWagon {
+        return RailWagon{
+            .id = row[0].as<std::string>(),
+            .wagon_number = row[1].as<std::string>(),
+            .max_weight_kg = row[2].as<std::string>(),
+            .slot_id = row[3].as<std::string>(),
+        };
+    }
 
     /// Try to construct; returns nullopt on missing required field.
-    // static auto try_from(const pqxx::row& row) -> std::optional<RailWagon>;
+    static auto try_from(const pqxx::row& row) -> std::optional<RailWagon> {
+        if (row[0].is_null()) return std::nullopt;
+        if (row[1].is_null()) return std::nullopt;
+        if (row[2].is_null()) return std::nullopt;
+        return from_row(row);
+    }
 };
 
 } // namespace intermodal_transfer

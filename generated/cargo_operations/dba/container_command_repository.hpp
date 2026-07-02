@@ -17,6 +17,7 @@ public:
     virtual ~ContainerCommandRepository() = default;
 
     virtual auto save(const Container& entity) -> void = 0;
+    virtual auto update(const Container& entity) -> void = 0;
     virtual auto remove(const Container::Id& id) -> void = 0;
     [[nodiscard]] virtual auto find_by_id(const Container::Id& id) -> std::optional<Container> = 0;
 };

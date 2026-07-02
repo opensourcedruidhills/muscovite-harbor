@@ -1,0 +1,7 @@
+{
+  "context": "IntermodalTransfer",
+  "project": "MuscoviteHarbor",
+  "queries": [
+    {"name": "IntermodalHandoffQueryRepository", "aggregate": "IntermodalHandoff", "spec_count": 0}
+  ]
+}

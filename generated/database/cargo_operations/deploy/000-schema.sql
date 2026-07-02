@@ -3,7 +3,7 @@ BEGIN;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cargo_operations_owner') THEN
-    CREATE ROLE cargo_operations_owner;
+    CREATE ROLE cargo_operations_owner NOLOGIN;
   END IF;
 END $$;
 
@@ -11,8 +11,11 @@ CREATE SCHEMA IF NOT EXISTS cargo_operations;
 ALTER SCHEMA cargo_operations OWNER TO cargo_operations_owner;
 SET search_path TO cargo_operations, public;
 
-CREATE DOMAIN cargo_operations.container_number AS text;
-CREATE DOMAIN cargo_operations.yard_slot_code AS text;
+CREATE TYPE cargo_operations.container_size AS ENUM ();
+CREATE TYPE cargo_operations.hazmat_class AS ENUM ('description');
+
+CREATE DOMAIN cargo_operations.container_number AS TEXT;
+CREATE DOMAIN cargo_operations.yard_slot_code AS TEXT;
 
 CREATE TYPE cargo_operations.container_dimensions AS (
     length_ft INTEGER,
@@ -21,7 +24,7 @@ CREATE TYPE cargo_operations.container_dimensions AS (
 );
 
 CREATE TABLE cargo_operations.containers (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     container_number container_number NOT NULL,
     size_category TEXT NOT NULL,
     hazmat_class TEXT,
@@ -37,7 +40,7 @@ CREATE TABLE cargo_operations.containers (
 WITH (fillfactor = 100);
 
 CREATE TABLE cargo_operations.yard_slots (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     code yard_slot_code NOT NULL,
     max_weight_kg NUMERIC NOT NULL,
     max_tier INTEGER NOT NULL,
@@ -51,7 +54,7 @@ CREATE TABLE cargo_operations.yard_slots (
 );
 
 CREATE TABLE cargo_operations.cranes (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     name TEXT NOT NULL,
     crane_type TEXT NOT NULL,
     max_lift_kg NUMERIC NOT NULL,
@@ -64,7 +67,7 @@ CREATE TABLE cargo_operations.cranes (
 );
 
 CREATE TABLE cargo_operations.reefer_units (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     container_id UUID NOT NULL,
     target_temp_c NUMERIC NOT NULL,
     current_temp_c NUMERIC,
@@ -77,7 +80,7 @@ CREATE TABLE cargo_operations.reefer_units (
 );
 
 CREATE TABLE cargo_operations.load_plans (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     voyage_id UUID NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     status TEXT NOT NULL,
@@ -88,7 +91,7 @@ CREATE TABLE cargo_operations.load_plans (
 );
 
 CREATE TABLE cargo_operations.discharge_sequences (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     load_plan_id UUID NOT NULL,
     container_id UUID NOT NULL,
     sequence_order INTEGER NOT NULL,
@@ -100,32 +103,118 @@ CREATE TABLE cargo_operations.discharge_sequences (
     CONSTRAINT pk_discharge_sequences PRIMARY KEY (id)
 );
 
-CREATE TABLE cargo_operations.container_stack_events (
-    id UUID NOT NULL DEFAULT uuidv7(),
+CREATE TABLE cargo_operations.outbox (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
+    aggregate_type TEXT NOT NULL,
+    aggregate_id UUID NOT NULL,
+    event_type TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    last_retry_at TIMESTAMPTZ,
+    processed_at TIMESTAMPTZ,
+    CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
+
+CREATE TABLE cargo_operations.dead_letter_queue (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
+    original_event_id UUID NOT NULL,
+    aggregate_id UUID,
+    event_type TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    error_message TEXT NOT NULL,
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failure_reason TEXT NOT NULL DEFAULT '',
+    CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
+) PARTITION BY RANGE (created_at);
+
+CREATE TABLE cargo_operations.idempotency_keys (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
+    key TEXT NOT NULL,
+    response JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    CONSTRAINT pk_idempotency_keys PRIMARY KEY (id)
+);
+
+CREATE TABLE cargo_operations.container_events (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
     payload TEXT NOT NULL,
     sequence_number BIGINT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     created_by TEXT NOT NULL DEFAULT 'system',
-    CONSTRAINT pk_container_stack_events PRIMARY KEY (id)
+    CONSTRAINT pk_container_events PRIMARY KEY (id)
 )
 WITH (fillfactor = 100);
 
+CREATE TABLE IF NOT EXISTS cargo_operations.outbox_y2026_q1 PARTITION OF cargo_operations.outbox
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS cargo_operations.outbox_y2026_q2 PARTITION OF cargo_operations.outbox
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS cargo_operations.outbox_y2026_q3 PARTITION OF cargo_operations.outbox
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS cargo_operations.outbox_y2026_q4 PARTITION OF cargo_operations.outbox
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS cargo_operations.outbox_default PARTITION OF cargo_operations.outbox DEFAULT;
+CREATE TABLE IF NOT EXISTS cargo_operations.dead_letter_queue_y2026_q1 PARTITION OF cargo_operations.dead_letter_queue
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS cargo_operations.dead_letter_queue_y2026_q2 PARTITION OF cargo_operations.dead_letter_queue
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS cargo_operations.dead_letter_queue_y2026_q3 PARTITION OF cargo_operations.dead_letter_queue
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS cargo_operations.dead_letter_queue_y2026_q4 PARTITION OF cargo_operations.dead_letter_queue
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS cargo_operations.dead_letter_queue_default PARTITION OF cargo_operations.dead_letter_queue DEFAULT;
+
 ALTER TABLE cargo_operations.containers ADD CONSTRAINT uq_containers_container_number UNIQUE (container_number);
 ALTER TABLE cargo_operations.yard_slots ADD CONSTRAINT uq_yard_slots_code UNIQUE (code);
+ALTER TABLE cargo_operations.idempotency_keys ADD CONSTRAINT uq_idempotency_keys_key UNIQUE (key);
 CREATE INDEX idx_reefer_units_container_id ON cargo_operations.reefer_units USING btree (container_id);
 CREATE INDEX idx_discharge_sequences_load_plan_id ON cargo_operations.discharge_sequences USING btree (load_plan_id);
 CREATE INDEX idx_discharge_sequences_container_id ON cargo_operations.discharge_sequences USING btree (container_id);
 CREATE INDEX idx_discharge_sequences_crane_id ON cargo_operations.discharge_sequences USING btree (crane_id);
-CREATE UNIQUE INDEX ux_container_stack_events_agg_seq ON cargo_operations.container_stack_events USING btree (aggregate_id, sequence_number);
-CREATE INDEX idx_container_stack_events_aggregate_id ON cargo_operations.container_stack_events USING btree (aggregate_id);
+CREATE INDEX idx_outbox_created_at ON cargo_operations.outbox USING btree (created_at);
+CREATE INDEX idx_dead_letter_queue_created_at ON cargo_operations.dead_letter_queue USING btree (created_at);
+CREATE INDEX idx_idempotency_keys_expires_at ON cargo_operations.idempotency_keys USING btree (expires_at);
+CREATE INDEX idx_outbox_unprocessed ON cargo_operations.outbox USING btree (occurred_at) WHERE processed_at IS NULL;
+CREATE UNIQUE INDEX ux_container_events_agg_seq ON cargo_operations.container_events USING btree (aggregate_id, sequence_number);
+CREATE INDEX idx_container_events_aggregate_id ON cargo_operations.container_events USING btree (aggregate_id);
 
 CREATE OR REPLACE FUNCTION cargo_operations.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
 AS $$
 BEGIN
   NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION cargo_operations.cleanup_expired_idempotency_keys()
+RETURNS void LANGUAGE plpgsql VOLATILE 
+AS $$
+BEGIN
+  DELETE FROM cargo_operations.idempotency_keys WHERE expires_at < NOW();
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION cargo_operations.notify_outbox_inserted()
+RETURNS trigger LANGUAGE plpgsql VOLATILE 
+AS $$
+BEGIN
+  PERFORM pg_notify(
+    'muscovite_outbox_inserted',
+    json_build_object(
+      'schema', TG_TABLE_SCHEMA,
+      'table', TG_TABLE_NAME,
+      'aggregate_type', NEW.aggregate_type
+    )::text
+  );
   RETURN NEW;
 END;
 $$;
@@ -160,11 +249,60 @@ CREATE TRIGGER trg_discharge_sequences_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION cargo_operations.set_updated_at();
 
+CREATE TRIGGER trg_cargo_operations_outbox_notify
+    AFTER INSERT ON cargo_operations.outbox
+    FOR EACH ROW
+    EXECUTE FUNCTION cargo_operations.notify_outbox_inserted();
+
+CREATE OR REPLACE VIEW cargo_operations.domain_events AS
+SELECT id,
+       aggregate_type,
+       aggregate_id,
+       event_type,
+       payload,
+       occurred_at,
+       processed_at,
+       retry_count,
+       last_retry_at,
+       NULL::UUID AS actor_id,
+       NULL::TEXT AS actor_name,
+       created_at
+FROM cargo_operations.outbox
+;
+
+CREATE OR REPLACE VIEW cargo_operations.domain_events_dlq AS
+SELECT original_event_id AS id,
+       event_type,
+       aggregate_id,
+       payload,
+       occurred_at,
+       retry_count,
+       failed_at,
+       failure_reason
+FROM cargo_operations.dead_letter_queue
+;
+
+COMMENT ON ROLE cargo_operations_owner IS 'Owns schema cargo_operations and manages DDL for generated objects.';
+COMMENT ON ROLE cargo_operations_app IS 'Application runtime role for cargo_operations with generated CRUD and EXECUTE grants.';
+COMMENT ON ROLE cargo_operations_readonly IS 'Read-only access role for cargo_operations with generated SELECT and EXECUTE grants.';
+COMMENT ON FUNCTION cargo_operations.set_updated_at() IS 'Audit trigger function: stamps updated_at on every row modification.';
+COMMENT ON TRIGGER trg_containers_updated_at ON cargo_operations.containers IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE cargo_operations.containers IS 'A shipping container in terminal operations';
+COMMENT ON TRIGGER trg_yard_slots_updated_at ON cargo_operations.yard_slots IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE cargo_operations.yard_slots IS 'A position in the container yard (bay-row-tier)';
+COMMENT ON COLUMN cargo_operations.yard_slots.max_tier IS 'Maximum stacking height';
+COMMENT ON COLUMN cargo_operations.yard_slots.has_power IS 'Has reefer power connection';
+COMMENT ON TRIGGER trg_cranes_updated_at ON cargo_operations.cranes IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE cargo_operations.cranes IS 'A crane for container handling';
+COMMENT ON TRIGGER trg_reefer_units_updated_at ON cargo_operations.reefer_units IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE cargo_operations.reefer_units IS 'Refrigeration monitoring unit for a reefer container';
+COMMENT ON COLUMN cargo_operations.reefer_units.target_temp_c IS 'Target temperature in Celsius';
+COMMENT ON TRIGGER trg_load_plans_updated_at ON cargo_operations.load_plans IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE cargo_operations.load_plans IS 'Plan for loading/discharging containers for a voyage';
+COMMENT ON TRIGGER trg_discharge_sequences_updated_at ON cargo_operations.discharge_sequences IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE cargo_operations.discharge_sequences IS 'Ordered sequence for container discharge';
+COMMENT ON DOMAIN cargo_operations.container_number IS 'ISO 6346 container number (4 letters + 7 digits)';
+COMMENT ON DOMAIN cargo_operations.yard_slot_code IS 'Yard slot address: bay-row-tier (e.g. A01-03-02)';
+COMMENT ON TABLE cargo_operations.idempotency_keys IS 'Idempotency key store. Expired rows are removed nightly by pg_cron via cleanup_expired_idempotency_keys().';
 
 COMMIT;

@@ -1,0 +1,8 @@
+{
+  "context": "CargoDecomposition",
+  "project": "MuscoviteHarbor",
+  "queries": [
+    {"name": "ContainerUnpackQueryRepository", "aggregate": "ContainerUnpack", "spec_count": 0},
+    {"name": "PalletDispatchQueryRepository", "aggregate": "PalletDispatch", "spec_count": 0}
+  ]
+}

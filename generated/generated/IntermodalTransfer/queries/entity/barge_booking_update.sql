@@ -1,5 +1,5 @@
 -- MUSCOVITE:SIDECAR:UNMODIFIED
--- MUSCOVITE:QUERY-HASH:e5437025713d0662
+-- MUSCOVITE:QUERY-HASH:5ad3fe65ee0a666e
 --  context: IntermodalTransfer, entity: BargeBooking, operation: update
 
-UPDATE intermodal_transfer.barge_booking SET id = $2, barge_name = $3, capacity_teu = $4, departure_at = $5, status = $6 WHERE id = $1
+UPDATE intermodal_transfer.barge_booking SET barge_name = $2, capacity_teu = $3, departure_at = $4, status = $5 WHERE id = $1

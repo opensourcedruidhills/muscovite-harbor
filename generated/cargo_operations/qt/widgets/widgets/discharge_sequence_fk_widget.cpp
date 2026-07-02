@@ -12,12 +12,28 @@
 #include "discharge_sequence_fk_widget.hpp"
 
 #include <QHBoxLayout>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+#include <spdlog/spdlog.h>
+#include "load_plan.grpc.pb.h"
+#include "container.grpc.pb.h"
+#include "crane.grpc.pb.h"
 
 namespace muscovite_harbor::widgets {
 
 DischargeSequenceFkWidget::DischargeSequenceFkWidget(QWidget* parent)
     : QWidget{parent} {
     setupUi();
+    loadLoadPlanOptions();
+    loadContainerOptions();
+    loadCraneOptions();
+}
+
+void DischargeSequenceFkWidget::setServerAddress(const QString& address) {
+    if (m_server_address != address) {
+        m_server_address = address;
+        Q_EMIT serverAddressChanged();
+    }
 }
 
 void DischargeSequenceFkWidget::setupUi() {
@@ -56,6 +72,66 @@ auto DischargeSequenceFkWidget::selectedContainer() const -> QString {
 
 auto DischargeSequenceFkWidget::selectedCrane() const -> QString {
     return crane_combo_->currentText();
+}
+
+void DischargeSequenceFkWidget::loadLoadPlanOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = LoadPlanService::NewStub(channel_);
+    ListLoadPlansRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListLoadPlansResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListLoadPlans(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("DischargeSequenceFkWidget::loadLoadPlanOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populateLoadPlanOptions(options);
+}
+
+void DischargeSequenceFkWidget::loadContainerOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = ContainerService::NewStub(channel_);
+    ListContainersRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListContainersResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListContainers(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("DischargeSequenceFkWidget::loadContainerOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populateContainerOptions(options);
+}
+
+void DischargeSequenceFkWidget::loadCraneOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = CraneService::NewStub(channel_);
+    ListCranesRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListCranesResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListCranes(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("DischargeSequenceFkWidget::loadCraneOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populateCraneOptions(options);
 }
 
 void DischargeSequenceFkWidget::populateLoadPlanOptions(const QStringList& options) {

@@ -24,11 +24,11 @@ SCENARIO("Serialization round-trip: TransferSlot") {
         original.status = "test_" + std::to_string(dist(rng));
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<TransferSlot>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<TransferSlot>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -48,11 +48,11 @@ SCENARIO("Serialization round-trip: TruckVisit") {
         original.departed_at = {};
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<TruckVisit>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<TruckVisit>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -70,11 +70,11 @@ SCENARIO("Serialization round-trip: RailWagon") {
         original.slot_id = boost::uuids::to_string(uuid_gen());
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<RailWagon>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<RailWagon>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -93,11 +93,11 @@ SCENARIO("Serialization round-trip: BargeBooking") {
         original.status = "test_" + std::to_string(dist(rng));
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<BargeBooking>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<BargeBooking>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -115,11 +115,11 @@ SCENARIO("Serialization round-trip: ChassisUnit") {
         original.is_available = (dist(rng) % 2 == 0);
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<ChassisUnit>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<ChassisUnit>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }

@@ -6,6 +6,8 @@
 #include "transfer_slot.hpp"
 #include "transfer_slot_command_service.hpp"
 #include "transfer_slot_query_service.hpp"
+#include "muscovite/dba/unit_of_work.hpp"
+#include "policy/policies.hpp"
 #include "truck_visit.hpp"
 #include <memory>
 #include <optional>
@@ -19,9 +21,17 @@ namespace intermodal_transfer {
 /// CommandService (writes) and QueryService (reads).
 class TransferSlotDomainService {
 public:
-    explicit TransferSlotDomainService(TransferSlotCommandService& command_service, TransferSlotQueryService& query_service)
+    explicit TransferSlotDomainService(TransferSlotCommandService& command_service, TransferSlotQueryService& query_service, UnitOfWork& unit_of_work
+    , EventPublisher* publisher = nullptr
+    , CommandDispatcher* cmd_disp = nullptr
+    , NotificationSender* notifier = nullptr
+    , ServiceCaller* caller = nullptr
+    )
         : command_service_{command_service}
-        , query_service_{query_service} {}
+        , query_service_{query_service}
+        , unit_of_work_{unit_of_work}
+    , policy_registry_{publisher, cmd_disp, notifier, caller}
+        {}
 
     // Command operations (write side)
     auto create(const TransferSlot& entity) -> void;
@@ -39,6 +49,8 @@ public:
 private:
     TransferSlotCommandService& command_service_;
     TransferSlotQueryService& query_service_;
+    UnitOfWork& unit_of_work_;
+    PolicyRegistry policy_registry_;
 };
 
 } // namespace intermodal_transfer

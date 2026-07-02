@@ -9,9 +9,19 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace cargo_operations {
+
+class DbaOperationSpan {
+public:
+    explicit DbaOperationSpan(std::string_view operation) : operation_{operation} {}
+    auto set_status_ok() noexcept -> void {}
+    auto set_error(std::string_view /*message*/) noexcept -> void {}
+private:
+    std::string_view operation_;
+};
 
 /// pqxx-based query repository implementation for LoadPlan aggregate.
 /// Uses embedded SQL constants from cargo_operations_queries.hpp (FTR-1507).
@@ -22,28 +32,39 @@ public:
     explicit LoadPlanQueryRepositoryImpl(Connection& conn) : conn_{conn} {}
 
     [[nodiscard]] auto find_by_id(const LoadPlan::Id& id) -> std::optional<LoadPlan> override {
+        DbaOperationSpan span("LoadPlanQueryRepositoryImpl::find_by_id");
         auto tx = conn_.begin();
         auto result = tx.exec_params(queries::LoadPlanSelectById, id);
         tx.commit();
-        if (result.empty()) { return std::nullopt; }
-        return map_row(result[0]);
+        if (result.empty()) {
+            span.set_status_ok();
+            return std::nullopt;
+        }
+        auto mapped = map_row(result[0]);
+        span.set_status_ok();
+        return mapped;
     }
 
     [[nodiscard]] auto find_all() -> std::vector<LoadPlan> override {
+        DbaOperationSpan span("LoadPlanQueryRepositoryImpl::find_all");
         auto tx = conn_.begin();
         auto result = tx.exec(queries::LoadPlanSelectAll);
         tx.commit();
         auto out = std::vector<LoadPlan>{};
         out.reserve(result.size());
         for (const auto& row : result) { out.push_back(map_row(row)); }
+        span.set_status_ok();
         return out;
     }
 
     [[nodiscard]] auto count() -> std::int64_t override {
+        DbaOperationSpan span("LoadPlanQueryRepositoryImpl::count");
         auto tx = conn_.begin();
         auto result = tx.exec(queries::LoadPlanCount);
         tx.commit();
-        return result[0][0].as<std::int64_t>();
+        auto total = result[0][0].as<std::int64_t>();
+        span.set_status_ok();
+        return total;
     }
 
 private:
@@ -52,9 +73,9 @@ private:
     [[nodiscard]] auto map_row(const pqxx::row& row) const -> LoadPlan {
         return LoadPlan{
             .id = row[0].as<std::string>(),
-            .id = row[1].as<std::string>(),
-            .voyage_id = row[2].as<std::string>(),
-            .created_at = row[3].as<std::string>(),
+            .id = row[1].as<boost::uuids::uuid>(),
+            .voyage_id = row[2].as<boost::uuids::uuid>(),
+            .created_at = row[3].as<muscovite::dba::Timestamp>(),
             .status = row[4].as<std::string>(),
         };
     }

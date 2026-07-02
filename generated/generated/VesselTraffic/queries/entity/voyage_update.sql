@@ -1,5 +1,5 @@
 -- MUSCOVITE:SIDECAR:UNMODIFIED
--- MUSCOVITE:QUERY-HASH:4312c8766d48ec32
+-- MUSCOVITE:QUERY-HASH:6538f132d0db3dac
 --  context: VesselTraffic, entity: Voyage, operation: update
 
-UPDATE vessel_traffic.voyage SET id = $2, vessel_id = $3, berth_id = $4, voyage_number = $5, eta = $6, ata = $7, etd = $8, atd = $9, cargo_category = $10, status = $11 WHERE id = $1
+UPDATE vessel_traffic.voyage SET vessel_id = $2, berth_id = $3, voyage_number = $4, eta = $5, ata = $6, etd = $7, atd = $8, cargo_category = $9, status = $10 WHERE id = $1

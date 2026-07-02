@@ -91,8 +91,8 @@ A single vessel call at the harbour
 
 **Relationships:**
 
-- Voyage → `Vessel` (to-one)
-- Voyage → `Berth` (to-one)
+- VoyageToVessel → `Vessel` (to-one)
+- VoyageToBerth → `Berth` (to-one)
 
 **State Machine: VoyageStatus**
 
@@ -321,9 +321,9 @@ Ordered sequence for container discharge
 
 **Relationships:**
 
-- DischargeSequence → `LoadPlan` (to-one)
-- DischargeSequence → `Container` (to-one)
-- DischargeSequence → `Crane` (to-one)
+- DSLoadPlan → `LoadPlan` (to-one)
+- DSContainer → `Container` (to-one)
+- DSCrane → `Crane` (to-one)
 
 ### Value Objects
 
@@ -421,8 +421,8 @@ Issued boarding pass for a passenger
 
 **Relationships:**
 
-- BoardingPass → `Passenger` (to-one)
-- BoardingPass → `Gate` (to-one)
+- BPPassenger → `Passenger` (to-one)
+- BPGate → `Gate` (to-one)
 
 **State Machine: GateStatus**
 

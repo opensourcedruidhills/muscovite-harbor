@@ -5,14 +5,14 @@ BEGIN;
 
 SET search_path TO vessel_traffic, public;
 
-INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuidv7(), 'ANNOUNCED') ON CONFLICT DO NOTHING;
-INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuidv7(), 'PILOT_ORDERED') ON CONFLICT DO NOTHING;
-INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuidv7(), 'APPROACHING') ON CONFLICT DO NOTHING;
-INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuidv7(), 'BERTHING') ON CONFLICT DO NOTHING;
-INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuidv7(), 'MOORED') ON CONFLICT DO NOTHING;
-INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuidv7(), 'CARGO_OPS') ON CONFLICT DO NOTHING;
-INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuidv7(), 'DEPARTURE_PREP') ON CONFLICT DO NOTHING;
-INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuidv7(), 'UNMOORED') ON CONFLICT DO NOTHING;
-INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuidv7(), 'DEPARTED') ON CONFLICT DO NOTHING;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.ANNOUNCED'), 'ANNOUNCED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.PILOT_ORDERED'), 'PILOT_ORDERED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.APPROACHING'), 'APPROACHING') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.BERTHING'), 'BERTHING') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.MOORED'), 'MOORED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.CARGO_OPS'), 'CARGO_OPS') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.DEPARTURE_PREP'), 'DEPARTURE_PREP') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.UNMOORED'), 'UNMOORED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.DEPARTED'), 'DEPARTED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
 
 COMMIT;

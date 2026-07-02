@@ -21,7 +21,7 @@ SCENARIO("Value object immutability: Dimensions") {
         WHEN("equality is checked after copy") {
             auto copy = vo;
             THEN("copy must equal original (value semantics)") {
-                // CHECK(copy == vo);
+                CHECK(copy == vo);
             }
         }
 
@@ -38,7 +38,7 @@ SCENARIO("Value object immutability: Weight") {
         WHEN("equality is checked after copy") {
             auto copy = vo;
             THEN("copy must equal original (value semantics)") {
-                // CHECK(copy == vo);
+                CHECK(copy == vo);
             }
         }
 

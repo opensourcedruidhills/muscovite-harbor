@@ -29,25 +29,32 @@ void PalletDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     pallet_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("PalletId"), pallet_id_value_);
+    section_form_1->addRow(QStringLiteral("PalletId"), pallet_id_value_);
     container_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ContainerId"), container_id_value_);
+    section_form_1->addRow(QStringLiteral("ContainerId"), container_id_value_);
     weight_kg_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("WeightKg"), weight_kg_value_);
+    section_form_1->addRow(QStringLiteral("WeightKg"), weight_kg_value_);
     length_cm_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("LengthCm"), length_cm_value_);
-    width_cm_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("WidthCm"), width_cm_value_);
-    height_cm_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("HeightCm"), height_cm_value_);
-    hs_code_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("HsCode"), hs_code_value_);
+    section_form_1->addRow(QStringLiteral("LengthCm"), length_cm_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    width_cm_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("WidthCm"), width_cm_value_);
+    height_cm_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("HeightCm"), height_cm_value_);
+    hs_code_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("HsCode"), hs_code_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -84,7 +91,7 @@ void PalletDetailWidget::setHsCode(const QString& value) {
 }
 
 void PalletDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

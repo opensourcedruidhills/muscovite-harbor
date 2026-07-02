@@ -8,9 +8,9 @@ Dialog {
     id: vesselDialog
     title: qsTr("Edit Vessel")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("ImoNumber") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("ImoNumber")
             text: viewModel.imoNumber
             onTextChanged: viewModel.setImoNumber(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.imoNumberIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("Mmsi") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.mmsi
             onTextChanged: viewModel.setMmsi(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.mmsiIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("CallSign") }
         TextField {
@@ -46,6 +64,12 @@ Dialog {
             placeholderText: qsTr("CallSign")
             text: viewModel.callSign
             onTextChanged: viewModel.setCallSign(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.callSignIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("Name") }
@@ -55,6 +79,12 @@ Dialog {
             text: viewModel.name
             onTextChanged: viewModel.setName(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.nameIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("VesselType") }
         TextField {
@@ -62,6 +92,12 @@ Dialog {
             placeholderText: qsTr("VesselType")
             text: viewModel.vesselType
             onTextChanged: viewModel.setVesselType(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.vesselTypeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("FlagState") }
@@ -71,6 +107,12 @@ Dialog {
             text: viewModel.flagState
             onTextChanged: viewModel.setFlagState(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.flagStateIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         CheckBox {
             id: isActiveField
@@ -78,9 +120,27 @@ Dialog {
             checked: viewModel.isActive
             onCheckedChanged: viewModel.setIsActive(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.isActiveIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); vesselDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); vesselDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

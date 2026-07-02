@@ -9,16 +9,16 @@ namespace passenger_terminal {
 
 // SQL constants for table: boarding_passs
 inline constexpr std::string_view kSelectAll =
-    "SELECT id, id, passenger_id, gate_id, boarding_group, seat_number, issued_at, scanned_at FROM boarding_passs";
+    "SELECT id, passenger_id, gate_id, boarding_group, seat_number, issued_at, scanned_at FROM boarding_passs";
 
 inline constexpr std::string_view kSelectById =
-    "SELECT id, id, passenger_id, gate_id, boarding_group, seat_number, issued_at, scanned_at FROM boarding_passs WHERE id = $1";
+    "SELECT id, passenger_id, gate_id, boarding_group, seat_number, issued_at, scanned_at FROM boarding_passs WHERE id = $1";
 
 inline constexpr std::string_view kInsert =
-    "INSERT INTO boarding_passs (id, id, passenger_id, gate_id, boarding_group, seat_number, issued_at, scanned_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)";
+    "INSERT INTO boarding_passs (id, passenger_id, gate_id, boarding_group, seat_number, issued_at, scanned_at) VALUES ($1, $2, $3, $4, $5, $6, $7)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE boarding_passs SET id = $2, passenger_id = $3, gate_id = $4, boarding_group = $5, seat_number = $6, issued_at = $7, scanned_at = $8 WHERE id = $9";
+    "UPDATE boarding_passs SET passenger_id = $2, gate_id = $3, boarding_group = $4, seat_number = $5, issued_at = $6, scanned_at = $7 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM boarding_passs WHERE id = $1";

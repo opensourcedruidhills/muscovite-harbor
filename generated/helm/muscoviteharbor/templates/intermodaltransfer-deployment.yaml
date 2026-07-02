@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intermodaltransfer
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.intermodaltransfer.replicaCount }}
+  selector:
+    matchLabels:
+      app: intermodaltransfer
+  template:
+    metadata:
+      labels:
+        app: intermodaltransfer
+    spec:
+      containers:
+        - name: intermodaltransfer
+          image: "{{ .Values.intermodaltransfer.image.repository }}:{{ .Values.intermodaltransfer.image.tag }}"
+          imagePullPolicy: {{ .Values.intermodaltransfer.image.pullPolicy }}
+          ports:
+            - containerPort: 50051

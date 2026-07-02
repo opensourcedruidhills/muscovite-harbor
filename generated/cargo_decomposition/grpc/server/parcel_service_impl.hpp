@@ -11,167 +11,542 @@
 
 #pragma once
 
+#include <exception>
 #include <grpcpp/grpcpp.h>
 #include <google/protobuf/empty.pb.h>
+#include <string>
+
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+#include <memory>
+#include "grpc/server/auth_interceptor.hpp"
+#include "grpc/server/auth_permission_matrix.hpp"
 
 #include "cargo_decomposition/pallet_dispatch_service.grpc.pb.h"
 #include "cargo_decomposition/pallet_dispatch_service.pb.h"
-
+#include "cargo_decomposition/dba/parcel_repository.hpp"
 #include "cargo_decomposition/dba/parcel_command_service.hpp"
 #include "cargo_decomposition/dba/parcel_query_service.hpp"
+#include "grpc/client/circuit_breaker.hpp"
+#include "grpc/server/error_mapping.hpp"
+#include "grpc/server/rate_limiter.hpp"
+#include "otel_tracing.hpp"
 
 namespace cargo_decomposition {
+
+namespace muscovite_svc_helpers {
+
+[[nodiscard]] inline auto parse_uuid_or_nil(const std::string& s) -> boost::uuids::uuid {
+    if (s.empty()) { return boost::uuids::nil_generator{}(); }
+    try { return boost::uuids::string_generator{}(s); }
+    catch (...) { return boost::uuids::nil_generator{}(); }
+}
+
+[[nodiscard]] inline auto safe_decimal(const std::string& s) -> muscovite::dba::Decimal {
+    return s.empty() ? muscovite::dba::Decimal{0} : muscovite::dba::Decimal{s};
+}
+
+} // namespace muscovite_svc_helpers
 
 class ParcelServiceImpl final : public cargodecomposition::ParcelService::Service {
 public:
     explicit ParcelServiceImpl(
+            ParcelRepository* repository = nullptr,
             ParcelCommandService* cmd = nullptr,
-            ParcelQueryService* qry = nullptr)
-        : cmd_{cmd}, qry_{qry} {}
+            ParcelQueryService* qry = nullptr,
+            std::shared_ptr<::muscovite_harbor::AuthProvider> auth_provider = nullptr)
+        : repository_{repository}, cmd_{cmd}, qry_{qry}, auth_provider_{auth_provider} {}
 
     ::grpc::Status CreateParcel(
             ::grpc::ServerContext* context,
             const cargodecomposition::CreateParcelRequest* request,
             cargodecomposition::CreateParcelResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("CreateParcel", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Parcel", ::muscovite_harbor::PermissionAction::Create)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->pallet_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "pallet_id is required");
+        }
+        if (request->description().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "description is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto entity = Parcel{};
+            entity.id = boost::uuids::string_generator{}(generate_uuid());
+            entity.tracking_number = TrackingNumber{request->tracking_number()};
+            entity.pallet_id = muscovite_svc_helpers::parse_uuid_or_nil(request->pallet_id());
+            entity.weight_kg = muscovite_svc_helpers::safe_decimal(request->weight_kg());
+            entity.hs_code = HSCode{request->hs_code()};
+            entity.description = request->description();
+            repository_->save(entity);
+            auto* grpc_entity = response->mutable_parcel();
+            grpc_entity->set_id(boost::uuids::to_string(entity.id));
+            grpc_entity->set_tracking_number(entity.tracking_number.get());
+            grpc_entity->set_pallet_id(boost::uuids::to_string(entity.pallet_id));
+            grpc_entity->set_weight_kg(muscovite::dba::decimal_to_string(entity.weight_kg));
+            grpc_entity->set_hs_code(entity.hs_code.get());
+            grpc_entity->set_description(entity.description);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status GetParcel(
             ::grpc::ServerContext* context,
             const cargodecomposition::GetParcelRequest* request,
             cargodecomposition::GetParcelResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("GetParcel", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Parcel", ::muscovite_harbor::PermissionAction::Read)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "id is required");
+        }
+        if (request->pallet_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "pallet_id is required");
+        }
+        if (request->description().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "description is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto result = repository_->find_by_id(boost::uuids::string_generator{}(request->id()));
+            if (!result) {
+                circuit_breaker_.record_success();
+                return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "not found");
+            }
+            const auto& entity = *result;
+            auto* grpc_entity = response->mutable_parcel();
+            grpc_entity->set_id(boost::uuids::to_string(entity.id));
+            grpc_entity->set_tracking_number(entity.tracking_number.get());
+            grpc_entity->set_pallet_id(boost::uuids::to_string(entity.pallet_id));
+            grpc_entity->set_weight_kg(muscovite::dba::decimal_to_string(entity.weight_kg));
+            grpc_entity->set_hs_code(entity.hs_code.get());
+            grpc_entity->set_description(entity.description);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status UpdateParcel(
             ::grpc::ServerContext* context,
             const cargodecomposition::UpdateParcelRequest* request,
             cargodecomposition::UpdateParcelResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("UpdateParcel", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Parcel", ::muscovite_harbor::PermissionAction::Update)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "id is required");
+        }
+        if (request->pallet_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "pallet_id is required");
+        }
+        if (request->description().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "description is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto existing = repository_->find_by_id(boost::uuids::string_generator{}(request->id()));
+            if (!existing) {
+                circuit_breaker_.record_success();
+                return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "not found");
+            }
+            auto entity = *existing;
+            entity.tracking_number = TrackingNumber{request->tracking_number()};
+            entity.pallet_id = muscovite_svc_helpers::parse_uuid_or_nil(request->pallet_id());
+            entity.weight_kg = muscovite_svc_helpers::safe_decimal(request->weight_kg());
+            entity.hs_code = HSCode{request->hs_code()};
+            entity.description = request->description();
+            repository_->update(entity);
+            auto* grpc_entity = response->mutable_parcel();
+            grpc_entity->set_id(boost::uuids::to_string(entity.id));
+            grpc_entity->set_tracking_number(entity.tracking_number.get());
+            grpc_entity->set_pallet_id(boost::uuids::to_string(entity.pallet_id));
+            grpc_entity->set_weight_kg(muscovite::dba::decimal_to_string(entity.weight_kg));
+            grpc_entity->set_hs_code(entity.hs_code.get());
+            grpc_entity->set_description(entity.description);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status DeleteParcel(
             ::grpc::ServerContext* context,
             const cargodecomposition::DeleteParcelRequest* request,
             cargodecomposition::DeleteParcelResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("DeleteParcel", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Parcel", ::muscovite_harbor::PermissionAction::Delete)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "id is required");
+        }
+        if (request->pallet_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "pallet_id is required");
+        }
+        if (request->description().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "description is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto existing = repository_->find_by_id(boost::uuids::string_generator{}(request->id()));
+            if (!existing) {
+                circuit_breaker_.record_success();
+                return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "not found");
+            }
+            repository_->remove(boost::uuids::string_generator{}(request->id()));
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status ListParcels(
             ::grpc::ServerContext* context,
             const cargodecomposition::ListParcelsRequest* request,
             cargodecomposition::ListParcelsResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("ListParcels", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Parcel", ::muscovite_harbor::PermissionAction::Read)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            const auto page_size = request->page_size() > 0
+                ? static_cast<std::size_t>(request->page_size()) : std::size_t{50};
+            std::size_t offset = 0;
+            if (!request->page_token().empty()) {
+                try { offset = std::stoull(request->page_token()); } catch (...) {}
+            }
+            const auto all_results = repository_->find_all();
+            const auto total = all_results.size();
+            response->set_total_count(static_cast<int>(total));
+            if (offset > total) offset = 0;
+            const auto end = std::min(offset + page_size, total);
+            for (std::size_t i = offset; i < end; ++i) {
+                const auto& entity = all_results[i];
+                auto* grpc_entity = response->add_items();
+                grpc_entity->set_id(boost::uuids::to_string(entity.id));
+                grpc_entity->set_tracking_number(entity.tracking_number.get());
+                grpc_entity->set_pallet_id(boost::uuids::to_string(entity.pallet_id));
+                grpc_entity->set_weight_kg(muscovite::dba::decimal_to_string(entity.weight_kg));
+                grpc_entity->set_hs_code(entity.hs_code.get());
+                grpc_entity->set_description(entity.description);
+            }
+            if (end < total) {
+                response->set_next_page_token(std::to_string(end));
+            }
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status AddDeliveryUnit(
             ::grpc::ServerContext* context,
             const cargodecomposition::AddDeliveryUnitRequest* request,
             cargodecomposition::AddDeliveryUnitResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("AddDeliveryUnit", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            auto child_obj = DeliveryUnit{};
+            child_obj.id = boost::uuids::string_generator{}(request->id());
+            child_obj.tracking_number = TrackingNumber{request->tracking_number()};
+            child_obj.destination = request->destination();
+            child_obj.carrier = request->carrier();
+            child_obj.dispatched_at = muscovite_svc_helpers::proto_ts_to_dba(request->dispatched_at());
+            cmd_->add_delivery_unit(parent_id, child_obj);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status GetDeliveryUnit(
             ::grpc::ServerContext* context,
             const cargodecomposition::GetDeliveryUnitRequest* request,
             cargodecomposition::GetDeliveryUnitResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("GetDeliveryUnit", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (qry_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            const auto child_id = boost::uuids::string_generator{}(request->id());
+            qry_->find_delivery_unit_by_id(parent_id, child_id);
+            auto* grpc_entity = response->mutable_delivery_unit();
+            grpc_entity->set_id(boost::uuids::to_string(result.id));
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status UpdateDeliveryUnit(
             ::grpc::ServerContext* context,
             const cargodecomposition::UpdateDeliveryUnitRequest* request,
             cargodecomposition::UpdateDeliveryUnitResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("UpdateDeliveryUnit", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            auto child_obj = DeliveryUnit{};
+            child_obj.id = boost::uuids::string_generator{}(request->id());
+            child_obj.tracking_number = TrackingNumber{request->tracking_number()};
+            child_obj.destination = request->destination();
+            child_obj.carrier = request->carrier();
+            child_obj.dispatched_at = muscovite_svc_helpers::proto_ts_to_dba(request->dispatched_at());
+            cmd_->update_delivery_unit(parent_id, child_obj);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status RemoveDeliveryUnit(
             ::grpc::ServerContext* context,
             const cargodecomposition::RemoveDeliveryUnitRequest* request,
             cargodecomposition::RemoveDeliveryUnitResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("RemoveDeliveryUnit", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            const auto child_id = boost::uuids::string_generator{}(request->id());
+            cmd_->remove_delivery_unit(parent_id, child_id);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status ListDeliveryUnits(
             ::grpc::ServerContext* context,
             const cargodecomposition::ListDeliveryUnitsRequest* request,
             cargodecomposition::ListDeliveryUnitsResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("ListDeliveryUnits", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (qry_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            qry_->list_delivery_units(parent_id);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
 private:
+    [[nodiscard]] static auto generate_uuid() -> std::string {
+        boost::uuids::random_generator gen;
+        return boost::uuids::to_string(gen());
+    }
+
+    ParcelRepository* repository_ = nullptr;
     ParcelCommandService* cmd_ = nullptr;
     ParcelQueryService* qry_ = nullptr;
+    std::shared_ptr<::muscovite_harbor::AuthProvider> auth_provider_;
+    ::muscovite_harbor::CircuitBreaker circuit_breaker_;
+    ::muscovite_harbor::PerClientRateLimiter rate_limiter_;
 
 };
 

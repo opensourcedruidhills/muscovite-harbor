@@ -2,6 +2,9 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "role_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace security {
 
@@ -10,12 +13,10 @@ auto RoleRepositoryImpl::insert(pqxx::work& tx, const Role& entity) -> void {
         entity.id,
         entity.name,
         entity.description,
-        entity.permissions,
-    );
+        entity.permissions);
 }
 
 auto RoleRepositoryImpl::update(pqxx::work& tx, const Role& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
     params.append(entity.id);
     params.append(entity.name);

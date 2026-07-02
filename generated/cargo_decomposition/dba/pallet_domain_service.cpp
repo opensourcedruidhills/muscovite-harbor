@@ -3,14 +3,21 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include "pallet_domain_service.hpp"
+#include "nlohmann/json.hpp"
 #include <stdexcept>
+#include <string_view>
 
 namespace cargo_decomposition {
 
 auto PalletDomainService::create(const Pallet& entity) -> void {
-    // Tier 1: field-level constraints (handled by entity struct)
-    // Tier 2: cross-field invariants (EntityValidator)
+    // Tier 1+2: field constraints and cross-field invariants (EntityValidator)
+    auto tier12_errors = PalletValidator::validate(entity);
+    if (!tier12_errors.empty()) { throw std::runtime_error("Tier 1/2 validation failed"); }
+
     // Tier 3: plugin validation (PluginValidator)
+    auto tier3_errors = PalletPluginValidator::validate(entity);
+    if (!tier3_errors.empty()) { throw std::runtime_error("Tier 3 validation failed"); }
+
     command_service_.create(entity);
 }
 
@@ -28,19 +35,6 @@ auto PalletDomainService::find_by_id(const Pallet::Id& id) -> std::optional<Pall
 
 auto PalletDomainService::find_all() -> std::vector<Pallet> {
     return query_service_.find_all();
-}
-
-auto PalletDomainService::add_parcel(const Pallet::Id& parent_id, const Parcel& child) -> void {
-    auto parent = query_service_.find_by_id(parent_id);
-    if (!parent) {
-        throw std::runtime_error("Parent Pallet not found");
-    }
-    command_service_.create(child);
-}
-
-auto PalletDomainService::remove_parcel(const Pallet::Id& parent_id, const Parcel::Id& child_id) -> void {
-    (void)parent_id;
-    command_service_.remove(child_id);
 }
 
 } // namespace cargo_decomposition

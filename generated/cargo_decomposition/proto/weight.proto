@@ -15,6 +15,6 @@ syntax = "proto3";
 package cargodecomposition;
 
 message Weight {
-  string value_kg = 1;
+  string value_kg = 1; // unit: KILOGRAM
 }
 

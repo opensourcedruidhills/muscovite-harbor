@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vesseltraffic
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.vesseltraffic.replicaCount }}
+  selector:
+    matchLabels:
+      app: vesseltraffic
+  template:
+    metadata:
+      labels:
+        app: vesseltraffic
+    spec:
+      containers:
+        - name: vesseltraffic
+          image: "{{ .Values.vesseltraffic.image.repository }}:{{ .Values.vesseltraffic.image.tag }}"
+          imagePullPolicy: {{ .Values.vesseltraffic.image.pullPolicy }}
+          ports:
+            - containerPort: 50051

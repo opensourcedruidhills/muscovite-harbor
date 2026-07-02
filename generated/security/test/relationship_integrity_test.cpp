@@ -10,4 +10,50 @@
 
 // Relationship integrity tests for security
 
-// No relationships defined in context security
+SCENARIO("Relationship integrity: GroupMember -> Group via group") {
+    GIVEN("a GroupMember referencing a Group") {
+        auto rng = std::mt19937{std::random_device{}()};
+        auto dist = std::uniform_int_distribution<int>{0, 10000};
+        auto uuid_gen = boost::uuids::random_generator{};
+        auto source_id = boost::uuids::to_string(uuid_gen());
+        auto target_id = boost::uuids::to_string(uuid_gen());
+
+        WHEN("the target is deleted") {
+            THEN("the FK reference must remain valid or reject deletion") {
+                // CHECK(repository.find(target_id) != std::nullopt);
+            }
+        }
+    }
+}
+
+SCENARIO("Relationship integrity: GroupMember -> User via user") {
+    GIVEN("a GroupMember referencing a User") {
+        auto rng = std::mt19937{std::random_device{}()};
+        auto dist = std::uniform_int_distribution<int>{0, 10000};
+        auto uuid_gen = boost::uuids::random_generator{};
+        auto source_id = boost::uuids::to_string(uuid_gen());
+        auto target_id = boost::uuids::to_string(uuid_gen());
+
+        WHEN("the target is deleted") {
+            THEN("the FK reference must remain valid or reject deletion") {
+                // CHECK(repository.find(target_id) != std::nullopt);
+            }
+        }
+    }
+}
+
+SCENARIO("Relationship integrity: ContextPrivilege -> Group via group") {
+    GIVEN("a ContextPrivilege referencing a Group") {
+        auto rng = std::mt19937{std::random_device{}()};
+        auto dist = std::uniform_int_distribution<int>{0, 10000};
+        auto uuid_gen = boost::uuids::random_generator{};
+        auto source_id = boost::uuids::to_string(uuid_gen());
+        auto target_id = boost::uuids::to_string(uuid_gen());
+
+        WHEN("the target is deleted") {
+            THEN("the FK reference must remain valid or reject deletion") {
+                // CHECK(repository.find(target_id) != std::nullopt);
+            }
+        }
+    }
+}

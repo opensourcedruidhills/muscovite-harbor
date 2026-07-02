@@ -8,9 +8,9 @@ Dialog {
     id: deliveryUnitDialog
     title: qsTr("Edit DeliveryUnit")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("TrackingNumber") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("TrackingNumber")
             text: viewModel.trackingNumber
             onTextChanged: viewModel.setTrackingNumber(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.trackingNumberIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("Destination") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.destination
             onTextChanged: viewModel.setDestination(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.destinationIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Carrier") }
         TextField {
@@ -46,6 +64,12 @@ Dialog {
             placeholderText: qsTr("Carrier")
             text: viewModel.carrier
             onTextChanged: viewModel.setCarrier(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.carrierIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("DispatchedAt") }
@@ -55,9 +79,27 @@ Dialog {
             text: viewModel.dispatchedAt
             onTextChanged: viewModel.setDispatchedAt(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.dispatchedAtIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); deliveryUnitDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); deliveryUnitDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

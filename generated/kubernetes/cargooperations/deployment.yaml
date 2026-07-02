@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cargooperations
+  namespace: muscoviteharbor
+  labels:
+    app: cargooperations
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cargooperations
+  template:
+    metadata:
+      labels:
+        app: cargooperations
+    spec:
+      serviceAccountName: cargooperations
+      containers:
+        - name: cargooperations
+          image: cargooperations:latest
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          envFrom:
+            - configMapRef:
+                name: cargooperations-config

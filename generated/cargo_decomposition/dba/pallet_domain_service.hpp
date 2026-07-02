@@ -6,7 +6,8 @@
 #include "pallet.hpp"
 #include "pallet_command_service.hpp"
 #include "pallet_query_service.hpp"
-#include "parcel.hpp"
+#include "muscovite/dba/unit_of_work.hpp"
+#include "policy/policies.hpp"
 #include <memory>
 #include <optional>
 #include <string>
@@ -19,9 +20,17 @@ namespace cargo_decomposition {
 /// CommandService (writes) and QueryService (reads).
 class PalletDomainService {
 public:
-    explicit PalletDomainService(PalletCommandService& command_service, PalletQueryService& query_service)
+    explicit PalletDomainService(PalletCommandService& command_service, PalletQueryService& query_service, UnitOfWork& unit_of_work
+    , EventPublisher* publisher = nullptr
+    , CommandDispatcher* cmd_disp = nullptr
+    , NotificationSender* notifier = nullptr
+    , ServiceCaller* caller = nullptr
+    )
         : command_service_{command_service}
-        , query_service_{query_service} {}
+        , query_service_{query_service}
+        , unit_of_work_{unit_of_work}
+    , policy_registry_{publisher, cmd_disp, notifier, caller}
+        {}
 
     // Command operations (write side)
     auto create(const Pallet& entity) -> void;
@@ -32,13 +41,11 @@ public:
     [[nodiscard]] auto find_by_id(const Pallet::Id& id) -> std::optional<Pallet>;
     [[nodiscard]] auto find_all() -> std::vector<Pallet>;
 
-    // Parcel child entity operations
-    auto add_parcel(const Pallet::Id& parent_id, const Parcel& child) -> void;
-    auto remove_parcel(const Pallet::Id& parent_id, const Parcel::Id& child_id) -> void;
-
 private:
     PalletCommandService& command_service_;
     PalletQueryService& query_service_;
+    UnitOfWork& unit_of_work_;
+    PolicyRegistry policy_registry_;
 };
 
 } // namespace cargo_decomposition

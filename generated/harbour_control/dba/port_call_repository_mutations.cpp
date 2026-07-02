@@ -2,12 +2,14 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "port_call_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace harbour_control {
 
 auto PortCallRepositoryImpl::insert(pqxx::work& tx, const PortCall& entity) -> void {
     tx.exec_params(kInsert,
-        entity.id,
         entity.id,
         entity.vessel_name,
         entity.imo_number,
@@ -16,14 +18,11 @@ auto PortCallRepositoryImpl::insert(pqxx::work& tx, const PortCall& entity) -> v
         entity.departure_time,
         entity.container_count,
         entity.hazmat_permits,
-        entity.total_billed,
-    );
+        entity.total_billed);
 }
 
 auto PortCallRepositoryImpl::update(pqxx::work& tx, const PortCall& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
-    params.append(entity.id);
     params.append(entity.id);
     params.append(entity.vessel_name);
     params.append(entity.imo_number);

@@ -42,6 +42,9 @@ Drawer {
                 ListElement { name: "PilotAssignments"; page: "PilotAssignmentListView" }
                 ListElement { name: "TugBookings"; page: "TugBookingListView" }
                 ListElement { name: "TideWindows"; page: "TideWindowListView" }
+                // BEGIN MUSCOVITE_OBSERVABILITY_PANEL
+                ListElement { name: "Observability"; page: "ObservabilityPanel" }
+                // END MUSCOVITE_OBSERVABILITY_PANEL
             }
 
             delegate: ItemDelegate {

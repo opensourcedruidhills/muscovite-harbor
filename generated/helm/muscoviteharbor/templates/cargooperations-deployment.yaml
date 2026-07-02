@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cargooperations
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.cargooperations.replicaCount }}
+  selector:
+    matchLabels:
+      app: cargooperations
+  template:
+    metadata:
+      labels:
+        app: cargooperations
+    spec:
+      containers:
+        - name: cargooperations
+          image: "{{ .Values.cargooperations.image.repository }}:{{ .Values.cargooperations.image.tag }}"
+          imagePullPolicy: {{ .Values.cargooperations.image.pullPolicy }}
+          ports:
+            - containerPort: 50051

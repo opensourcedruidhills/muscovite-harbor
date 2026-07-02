@@ -21,7 +21,7 @@ message HazmatPermit {
   string permit_number = 2;
   string vessel_id = 3;
   int32 imo_class = 4;
-  string quantity_kg = 5;
+  string quantity_kg = 5; // unit: KILOGRAM
   bool approved = 6;
   google.protobuf.Timestamp valid_from = 7;
   google.protobuf.Timestamp valid_until = 8;
@@ -37,7 +37,7 @@ message CreateHazmatPermitRequest {
   string permit_number = 1;
   string vessel_id = 2;
   int32 imo_class = 3;
-  string quantity_kg = 4;
+  string quantity_kg = 4; // unit: KILOGRAM
   bool approved = 5;
   google.protobuf.Timestamp valid_from = 6;
   google.protobuf.Timestamp valid_until = 7;
@@ -61,7 +61,7 @@ message UpdateHazmatPermitRequest {
   string permit_number = 2;
   string vessel_id = 3;
   int32 imo_class = 4;
-  string quantity_kg = 5;
+  string quantity_kg = 5; // unit: KILOGRAM
   bool approved = 6;
   google.protobuf.Timestamp valid_from = 7;
   google.protobuf.Timestamp valid_until = 8;

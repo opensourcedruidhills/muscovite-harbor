@@ -110,6 +110,15 @@ CONTEXT HarbourControl @uuid "bb000060-0001-4000-8000-000000000001"
         )
         DOC "Raw radar track from VTS system";
 
+        FOREIGN_TYPE VesselPosition @uuid "bb000060-0060-4000-8000-000000000030" (
+            mmsi            TEXT NOT_NULL @uuid "bb000060-0060-4000-8000-000000000031",
+            latitude        DECIMAL NOT_NULL @uuid "bb000060-0060-4000-8000-000000000032",
+            longitude       DECIMAL NOT_NULL @uuid "bb000060-0060-4000-8000-000000000033",
+            heading_degrees DECIMAL NOT_NULL @uuid "bb000060-0060-4000-8000-000000000034",
+            speed_knots     DECIMAL NOT_NULL @uuid "bb000060-0060-4000-8000-000000000035"
+        )
+        DOC "Translated vessel position from radar data";
+
         TRANSLATE VesselPosition FROM RadarTrack @uuid "bb000060-0060-4000-8000-000000000020" {
             mmsi <- RadarTrack.mmsi,
             latitude <- RadarTrack.lat,
@@ -175,30 +184,6 @@ CONTEXT HarbourControl @uuid "bb000060-0001-4000-8000-000000000001"
     }
 
     -- ====================================================================
-    -- Context Deployment
-    -- ====================================================================
-
-    DEPLOYMENT STATE current "Production deployment topology" {
-        vessel_tracking PROVIDED_BY "ExternalVTSSystem" {
-            protocol "gRPC"
-            endpoint "vts.portauthority.gov:443"
-        }
-        DOC "VTS radar feed from government system";
-
-        billing PROVIDED_BY "InternalBilling" {
-            protocol "REST"
-            endpoint "billing.harbour.internal:8080"
-        }
-        DOC "Internal billing and invoicing service";
-
-        hazmat_clearance PROVIDED_BY "PortAuthorityGateway" {
-            protocol "SOAP"
-            endpoint "permits.portauthority.gov/hazmat"
-        }
-        DOC "Port authority hazmat permit system";
-    }
-
-    -- ====================================================================
     -- Domain Events
     -- ====================================================================
 
@@ -245,6 +230,7 @@ CONTEXT HarbourControl @uuid "bb000060-0001-4000-8000-000000000001"
         ALERT hazmat_zone_breach {
             WHEN "hazmat_class > zone.max_hazmat_class";
             SEVERITY critical;
+            TEAM HarbourAuthorityTeam;
             DOC "Hazmat cargo in restricted zone";
         }
     }

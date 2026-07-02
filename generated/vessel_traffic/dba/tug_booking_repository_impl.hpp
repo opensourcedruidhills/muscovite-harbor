@@ -5,11 +5,23 @@
 
 #include "tug_booking.hpp"
 #include "vessel_traffic_queries.hpp"
+#include <algorithm>
+#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace vessel_traffic {
+
+class DbaOperationSpan {
+public:
+    explicit DbaOperationSpan(std::string_view operation) : operation_{operation} {}
+    auto set_status_ok() noexcept -> void {}
+    auto set_error(std::string_view /*message*/) noexcept -> void {}
+private:
+    std::string_view operation_;
+};
 
 /// Concrete CRTP repository implementation for TugBooking.
 /// Satisfies RepositoryBase<TugBookingRepositoryImpl<C>, TugBooking> contract.
@@ -21,52 +33,76 @@ public:
     explicit TugBookingRepositoryImpl(Connection& conn) : conn_{conn} {}
 
     auto save(const TugBooking& entity) -> void {
+        DbaOperationSpan span("TugBookingRepositoryImpl::save");
         auto tx = conn_.begin();
-        tx.exec_params(queries::TugBookingInsert, entity.id, entity.id, entity.voyage_id, entity.tug_name, entity.bollard_pull_t, entity.is_confirmed);
+        tx.exec_params(queries::TugBookingInsert, entity.id, entity.voyage_id, entity.tug_name, entity.bollard_pull_t, entity.is_confirmed);
         tx.commit();
+        span.set_status_ok();
     }
 
     auto update(const TugBooking& entity) -> void {
+        DbaOperationSpan span("TugBookingRepositoryImpl::update");
         auto tx = conn_.begin();
-        auto result = tx.exec_params(queries::TugBookingUpdate, entity.id, entity.id, entity.voyage_id, entity.tug_name, entity.bollard_pull_t, entity.is_confirmed);
+        auto result = tx.exec_params(queries::TugBookingUpdate, entity.id, entity.voyage_id, entity.tug_name, entity.bollard_pull_t, entity.is_confirmed);
         if (result.affected_rows() == 0) {
-            throw std::runtime_error(TugBooking not found:  + entity.id);
+            span.set_error("not found");
+            throw std::runtime_error("TugBooking not found: " + entity.id);
         }
         tx.commit();
+        span.set_status_ok();
     }
 
     auto remove(const std::string& id) -> void {
+        DbaOperationSpan span("TugBookingRepositoryImpl::remove");
         auto tx = conn_.begin();
         tx.exec_params(queries::TugBookingDelete, id);
         tx.commit();
+        span.set_status_ok();
     }
 
     [[nodiscard]] auto find_by_id(const std::string& id) -> std::optional<TugBooking> {
+        DbaOperationSpan span("TugBookingRepositoryImpl::find_by_id");
         auto tx = conn_.begin();
         auto result = tx.exec_params(queries::TugBookingSelectById, id);
         tx.commit();
-        if (result.empty()) { return std::nullopt; }
-        return map_row(result[0]);
+        if (result.empty()) {
+            span.set_status_ok();
+            return std::nullopt;
+        }
+        auto mapped = map_row(result[0]);
+        span.set_status_ok();
+        return mapped;
     }
 
     [[nodiscard]] auto find_all() -> std::vector<TugBooking> {
+        DbaOperationSpan span("TugBookingRepositoryImpl::find_all");
         auto tx = conn_.begin();
         auto result = tx.exec(queries::TugBookingSelectAll);
         tx.commit();
-        auto out = std::vector<TugBooking>{};
+        auto out = std::vector<TugBooking>{ };
         out.reserve(result.size());
         for (const auto& row : result) { out.push_back(map_row(row)); }
+        span.set_status_ok();
         return out;
+    }
+
+    /// Filter all entities by a domain specification (in-memory).
+    template<typename Spec>
+    [[nodiscard]] auto filter_by_spec(const Spec& spec) const -> std::vector<TugBooking> {
+        auto all = find_all();
+        auto result = std::vector<TugBooking>{};
+        std::copy_if(all.begin(), all.end(), std::back_inserter(result),
+                     [&spec](const TugBooking& e) { return spec.is_satisfied_by(e); });
+        return result;
     }
 
     [[nodiscard]] auto map_row(const pqxx::row& row) const -> TugBooking {
         return TugBooking{
             .id = row[0].as<std::string>(),
-            .id = row[1].as<std::string>(),
-            .voyage_id = row[2].as<std::string>(),
-            .tug_name = row[3].as<std::string>(),
-            .bollard_pull_t = row[4].as<std::string>(),
-            .is_confirmed = row[5].as<std::string>(),
+            .voyage_id = row[1].as<boost::uuids::uuid>(),
+            .tug_name = row[2].as<std::string>(),
+            .bollard_pull_t = row[3].as<muscovite::dba::Decimal>(),
+            .is_confirmed = row[4].as<bool>(),
         };
     }
 

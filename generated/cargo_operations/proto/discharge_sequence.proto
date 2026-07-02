@@ -83,27 +83,3 @@ message ListDischargeSequencesResponse {
   int32 total_count = 3;
 }
 
-message PlaceContainerRequest {
-  string slot_id = 1;
-  int32 tier = 2;
-  bool requires_slot_empty = 3;
-  bool requires_weight_ok = 4;
-  optional string idempotency_key = 5;
-}
-
-message PlaceContainerResponse {
-  bool success = 1;
-  repeated string emitted_events = 2;
-}
-
-message PickContainerRequest {
-  string picked_by = 1;
-  bool requires_is_top = 2;
-  optional string idempotency_key = 3;
-}
-
-message PickContainerResponse {
-  bool success = 1;
-  repeated string emitted_events = 2;
-}
-

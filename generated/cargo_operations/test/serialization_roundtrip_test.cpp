@@ -25,11 +25,11 @@ SCENARIO("Serialization round-trip: Container") {
         original.status = "test_" + std::to_string(dist(rng));
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<Container>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<Container>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -49,11 +49,11 @@ SCENARIO("Serialization round-trip: YardSlot") {
         original.is_occupied = (dist(rng) % 2 == 0);
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<YardSlot>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<YardSlot>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -72,11 +72,11 @@ SCENARIO("Serialization round-trip: Crane") {
         original.is_active = (dist(rng) % 2 == 0);
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<Crane>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<Crane>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -95,11 +95,11 @@ SCENARIO("Serialization round-trip: ReeferUnit") {
         original.is_powered = (dist(rng) % 2 == 0);
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<ReeferUnit>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<ReeferUnit>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -117,11 +117,11 @@ SCENARIO("Serialization round-trip: LoadPlan") {
         original.status = "test_" + std::to_string(dist(rng));
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<LoadPlan>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<LoadPlan>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -140,11 +140,11 @@ SCENARIO("Serialization round-trip: DischargeSequence") {
         original.crane_id = boost::uuids::to_string(uuid_gen());
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<DischargeSequence>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<DischargeSequence>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }

@@ -1,0 +1,37 @@
+{
+  "routes": [
+    {
+      "handlers": [
+        {
+          "class_name": "",
+          "name": "ArrivalBoard",
+          "start_on_event": false,
+          "type": "projection"
+        }
+      ],
+      "subject": "muscovite.passenger_terminal.events.boarding_pass_issued"
+    },
+    {
+      "handlers": [
+        {
+          "class_name": "",
+          "name": "DepartureBoard",
+          "start_on_event": false,
+          "type": "projection"
+        }
+      ],
+      "subject": "muscovite.passenger_terminal.events.gate_status_changed"
+    },
+    {
+      "handlers": [
+        {
+          "class_name": "",
+          "name": "ArrivalBoard",
+          "start_on_event": false,
+          "type": "projection"
+        }
+      ],
+      "subject": "muscovite.passenger_terminal.events.passenger_checked_in"
+    }
+  ]
+}

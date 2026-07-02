@@ -71,8 +71,8 @@ A single vessel call at the harbour
 
 **Foreign Keys:**
 
-- `vessel_id` → `vessel.id`
-- `berth_id` → `berth.id`
+- `vessel_id` → `vessel_traffic.vessel.id`
+- `berth_id` → `vessel_traffic.berth.id`
 
 ### `vessel_traffic.pilot_assignment`
 
@@ -94,7 +94,7 @@ Assignment of a pilot to a voyage
 
 **Foreign Keys:**
 
-- `voyage_id` → `voyage.id`
+- `voyage_id` → `vessel_traffic.voyage.id`
 
 ### `vessel_traffic.tug_booking`
 
@@ -115,7 +115,7 @@ Booking of a tug for vessel manoeuvring
 
 **Foreign Keys:**
 
-- `voyage_id` → `voyage.id`
+- `voyage_id` → `vessel_traffic.voyage.id`
 
 ### `vessel_traffic.tide_window`
 
@@ -135,7 +135,7 @@ A tidal window with navigable draft at a specific berth
 
 **Foreign Keys:**
 
-- `berth_id` → `berth.id`
+- `berth_id` → `vessel_traffic.berth.id`
 
 ## Schema: `cargo_operations`
 
@@ -212,7 +212,7 @@ Refrigeration monitoring unit for a reefer container
 
 **Foreign Keys:**
 
-- `container_id` → `container.id`
+- `container_id` → `cargo_operations.container.id`
 
 ### `cargo_operations.load_plan`
 
@@ -249,9 +249,9 @@ Ordered sequence for container discharge
 
 **Foreign Keys:**
 
-- `load_plan_id` → `load_plan.id`
-- `container_id` → `container.id`
-- `crane_id` → `crane.id`
+- `load_plan_id` → `cargo_operations.load_plan.id`
+- `container_id` → `cargo_operations.container.id`
+- `crane_id` → `cargo_operations.crane.id`
 
 ## Schema: `passenger_terminal`
 
@@ -311,8 +311,8 @@ Issued boarding pass for a passenger
 
 **Foreign Keys:**
 
-- `passenger_id` → `passenger.id`
-- `gate_id` → `gate.id`
+- `passenger_id` → `passenger_terminal.passenger.id`
+- `gate_id` → `passenger_terminal.gate.id`
 
 ## Schema: `intermodal_transfer`
 
@@ -354,7 +354,7 @@ A truck arriving for container pickup
 
 **Foreign Keys:**
 
-- `transfer_slot_id` → `transfer_slot.id`
+- `transfer_slot_id` → `intermodal_transfer.transfer_slot.id`
 
 ### `intermodal_transfer.rail_wagon`
 
@@ -447,7 +447,7 @@ An individual parcel within a pallet
 
 **Foreign Keys:**
 
-- `pallet_id` → `pallet.id`
+- `pallet_id` → `cargo_decomposition.pallet.id`
 
 ### `cargo_decomposition.delivery_unit`
 
@@ -468,7 +468,7 @@ Last-mile delivery unit dispatched from terminal
 
 **Foreign Keys:**
 
-- `parcel_id` → `parcel.id`
+- `parcel_id` → `cargo_decomposition.parcel.id`
 
 ### `cargo_decomposition.break_bulk_item`
 

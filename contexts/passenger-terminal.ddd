@@ -101,8 +101,8 @@ CONTEXT PassengerTerminal @uuid "bb000030-0001-4000-8000-000000000001"
         scanned_at      TIMESTAMPTZ          @uuid "bb000030-0040-4000-8000-000000000036"
     )
     RELATIONSHIPS {
-        BoardingPass -> Passenger REQUIRED ONE VIA passenger_id;
-        BoardingPass -> Gate OPTIONAL ONE VIA gate_id;
+        BPPassenger -> Passenger REQUIRED ONE VIA passenger_id;
+        BPGate -> Gate OPTIONAL ONE VIA gate_id;
     }
     DOC "Issued boarding pass for a passenger";
 
@@ -219,12 +219,12 @@ CONTEXT PassengerTerminal @uuid "bb000030-0001-4000-8000-000000000001"
         PERSONA "Passenger";
 
         ACTIVITY Arrival @ORDER 1 {
-            STORY DepartureInfo @slice "Walking Skeleton";
+            STORY DepartureInfo @slice "WalkingSkeleton";
             DOC "Passenger arrives at terminal and checks displays";
         }
 
         ACTIVITY CheckIn @ORDER 2 {
-            STORY FastCheckIn @slice "Walking Skeleton";
+            STORY FastCheckIn @slice "WalkingSkeleton";
             DOC "Passenger presents booking at check-in desk";
         }
 

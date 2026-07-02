@@ -29,25 +29,32 @@ void VesselDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     imo_number_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ImoNumber"), imo_number_value_);
+    section_form_1->addRow(QStringLiteral("ImoNumber"), imo_number_value_);
     mmsi_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Mmsi"), mmsi_value_);
+    section_form_1->addRow(QStringLiteral("Mmsi"), mmsi_value_);
     call_sign_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("CallSign"), call_sign_value_);
+    section_form_1->addRow(QStringLiteral("CallSign"), call_sign_value_);
     name_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Name"), name_value_);
-    vessel_type_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("VesselType"), vessel_type_value_);
-    flag_state_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("FlagState"), flag_state_value_);
-    is_active_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("IsActive"), is_active_value_);
+    section_form_1->addRow(QStringLiteral("Name"), name_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    vessel_type_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("VesselType"), vessel_type_value_);
+    flag_state_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("FlagState"), flag_state_value_);
+    is_active_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("IsActive"), is_active_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -84,7 +91,7 @@ void VesselDetailWidget::setIsActive(const bool& value) {
 }
 
 void VesselDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

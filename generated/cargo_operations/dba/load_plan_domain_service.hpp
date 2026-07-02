@@ -6,6 +6,8 @@
 #include "load_plan.hpp"
 #include "load_plan_command_service.hpp"
 #include "load_plan_query_service.hpp"
+#include "muscovite/dba/unit_of_work.hpp"
+#include "policy/policies.hpp"
 #include "discharge_sequence.hpp"
 #include <memory>
 #include <optional>
@@ -19,9 +21,17 @@ namespace cargo_operations {
 /// CommandService (writes) and QueryService (reads).
 class LoadPlanDomainService {
 public:
-    explicit LoadPlanDomainService(LoadPlanCommandService& command_service, LoadPlanQueryService& query_service)
+    explicit LoadPlanDomainService(LoadPlanCommandService& command_service, LoadPlanQueryService& query_service, UnitOfWork& unit_of_work
+    , EventPublisher* publisher = nullptr
+    , CommandDispatcher* cmd_disp = nullptr
+    , NotificationSender* notifier = nullptr
+    , ServiceCaller* caller = nullptr
+    )
         : command_service_{command_service}
-        , query_service_{query_service} {}
+        , query_service_{query_service}
+        , unit_of_work_{unit_of_work}
+    , policy_registry_{publisher, cmd_disp, notifier, caller}
+        {}
 
     // Command operations (write side)
     auto create(const LoadPlan& entity) -> void;
@@ -39,6 +49,8 @@ public:
 private:
     LoadPlanCommandService& command_service_;
     LoadPlanQueryService& query_service_;
+    UnitOfWork& unit_of_work_;
+    PolicyRegistry policy_registry_;
 };
 
 } // namespace cargo_operations

@@ -8,9 +8,9 @@ Dialog {
     id: truckVisitDialog
     title: qsTr("Edit TruckVisit")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("TruckPlate") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("TruckPlate")
             text: viewModel.truckPlate
             onTextChanged: viewModel.setTruckPlate(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.truckPlateIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("CarrierName") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.carrierName
             onTextChanged: viewModel.setCarrierName(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.carrierNameIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("SlotId") }
         TextField {
@@ -46,6 +64,12 @@ Dialog {
             placeholderText: qsTr("SlotId")
             text: viewModel.slotId
             onTextChanged: viewModel.setSlotId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.slotIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ArrivedAt") }
@@ -55,6 +79,12 @@ Dialog {
             text: viewModel.arrivedAt
             onTextChanged: viewModel.setArrivedAt(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.arrivedAtIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("DepartedAt") }
         TextField {
@@ -63,9 +93,27 @@ Dialog {
             text: viewModel.departedAt
             onTextChanged: viewModel.setDepartedAt(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.departedAtIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); truckVisitDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); truckVisitDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

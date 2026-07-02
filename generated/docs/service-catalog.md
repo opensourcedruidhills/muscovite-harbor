@@ -248,13 +248,6 @@
 | DeleteChassisUnit | DeleteChassisUnitRequest | Empty | Delete by ID |
 | ListChassisUnit | ListChassisUnitRequest | ListChassisUnitResponse | Paginated list |
 
-#### ContainerHandoffSagaService
-
-| Method | Description |
-|--------|-------------|
-| StartContainerHandoff | Initiate saga orchestration |
-| GetContainerHandoffStatus | Query saga execution state |
-
 #### EventStreamingService
 
 | Method | Description |

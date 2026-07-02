@@ -8,9 +8,9 @@ Dialog {
     id: boardingPassDialog
     title: qsTr("Edit BoardingPass")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("PassengerId") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("PassengerId")
             text: viewModel.passengerId
             onTextChanged: viewModel.setPassengerId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.passengerIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("GateId") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.gateId
             onTextChanged: viewModel.setGateId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.gateIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("BoardingGroup") }
         TextField {
@@ -46,6 +64,12 @@ Dialog {
             placeholderText: qsTr("BoardingGroup")
             text: viewModel.boardingGroup
             onTextChanged: viewModel.setBoardingGroup(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.boardingGroupIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("SeatNumber") }
@@ -55,6 +79,12 @@ Dialog {
             text: viewModel.seatNumber
             onTextChanged: viewModel.setSeatNumber(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.seatNumberIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("IssuedAt") }
         TextField {
@@ -62,6 +92,12 @@ Dialog {
             placeholderText: qsTr("IssuedAt")
             text: viewModel.issuedAt
             onTextChanged: viewModel.setIssuedAt(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.issuedAtIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ScannedAt") }
@@ -71,9 +107,27 @@ Dialog {
             text: viewModel.scannedAt
             onTextChanged: viewModel.setScannedAt(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.scannedAtIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); boardingPassDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); boardingPassDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

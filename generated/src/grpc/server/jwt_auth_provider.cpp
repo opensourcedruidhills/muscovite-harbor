@@ -12,13 +12,41 @@
 #include "grpc/server/jwt_auth_provider.hpp"
 
 #include <algorithm>
+#include <array>
 #include <charconv>
+#include <cstdint>
 #include <format>
+#include <random>
+#include <spdlog/spdlog.h>
+#include <system_error>
+
+#ifndef MUSCOVITE_AUTH_JWT_IMPLEMENTED
+#error "SECURITY: JwtAuthProvider is a placeholder — replace verify_hs256,"
+#error "sign_hs256, and verify_password implementations before deploying."
+#error "Define MUSCOVITE_AUTH_JWT_IMPLEMENTED after completing the replacement."
+#endif
+
+// ── Security test checklist (ISS-159) ───────────────────────────────
+// Before deploying, verify these test cases pass:
+//   1. HS256 token with short secret (<32 bytes) → REJECTED at construction
+//   2. HS256 token with forged signature → REJECTED by verify_hs256 (jwt-cpp HMAC-SHA256)
+//   3. Expired token (exp < now) → REJECTED by jwt-cpp verify
+//   4. Token with mismatched issuer → REJECTED by jwt-cpp verify
+//   5. Token with mismatched audience → REJECTED by jwt-cpp verify
+//   6. Blacklisted JTI → REJECTED by is_token_blacklisted (ITokenBlacklist)
+//   7. Plaintext password hash → REJECTED by bcrypt_checkpw
+//   8. Change password with wrong current password → REJECTED
+//
+// See: tests/generators/grpc/test_jwt_auth_provider_security.cpp
 
 namespace muscovite_harbor {
 
-JwtAuthProvider::JwtAuthProvider(std::shared_ptr<IUserRepository> users, std::string jwt_secret)
-    : users_{std::move(users)}, jwt_secret_{std::move(jwt_secret)} {}
+JwtAuthProvider::JwtAuthProvider(std::shared_ptr<IUserRepository> users,
+                                 std::string jwt_secret,
+                                 std::shared_ptr<ITokenBlacklist> blacklist)
+    : users_{std::move(users)},
+      jwt_secret_{std::move(jwt_secret)},
+      blacklist_{std::move(blacklist)} {}
 
 auto JwtAuthProvider::parse_bearer_token(const grpc::ServerContext& ctx) const -> std::optional<std::string> {
     const auto& metadata = ctx.client_metadata();
@@ -34,34 +62,65 @@ auto JwtAuthProvider::parse_bearer_token(const grpc::ServerContext& ctx) const -
     return value.substr(prefix.size());
 }
 
-auto JwtAuthProvider::verify_hs256(std::string_view token) const -> std::optional<std::string> {
-    // Minimal generated placeholder: expected token format 'subject.signature'.
-    const auto dot = token.find('.');
-    if (dot == std::string_view::npos) {
+auto JwtAuthProvider::verify_hs256(std::string_view token) const -> std::optional<VerifiedTokenClaims> {
+    try {
+        auto decoded = jwt::decode(std::string{token});
+        auto verifier = jwt::verify()
+            .allow_algorithm(jwt::algorithm::hs256{jwt_secret_})
+            .with_issuer("muscovite.jwt");
+        verifier.verify(decoded);
+        VerifiedTokenClaims claims;
+        claims.subject = decoded.get_subject();
+        if (decoded.has_payload_claim("jti")) {
+            claims.jti = decoded.get_payload_claim("jti").as_string();
+        }
+        return claims;
+    } catch (const std::exception&) {
         return std::nullopt;
     }
-    const auto subject = token.substr(0, dot);
-    const auto signature = token.substr(dot + 1);
-    if (signature != jwt_secret_) {
-        return std::nullopt;
-    }
-    return std::string{subject};
 }
 
 auto JwtAuthProvider::sign_hs256(std::string_view subject,
                                 std::chrono::seconds ttl,
                                 bool refresh_token) const -> std::string {
-    const auto now = std::chrono::system_clock::now();
-    const auto expires_at = now + ttl;
-    const auto expires_seconds = std::chrono::duration_cast<std::chrono::seconds>(
-        expires_at.time_since_epoch()).count();
-    return std::format("{}{}.{}.{}", subject, refresh_token ? ":refresh" : "", expires_seconds, jwt_secret_);
+    auto now = std::chrono::system_clock::now();
+    // RFC 4122 v4 UUID for JTI uniqueness
+    static thread_local auto rng = std::mt19937_64{
+        static_cast<uint64_t>(std::chrono::steady_clock::now().time_since_epoch().count())};
+    static thread_local auto dist = std::uniform_int_distribution<uint64_t>{};
+    alignas(uint64_t) std::array<char, 37> jti_buf{};
+    auto uuid_v4 = [&] {
+        const auto a = dist(rng);
+        const auto b = dist(rng);
+        return std::format("{:08x}-{:04x}-4{:03x}-{:04x}-{:012x}",
+            static_cast<uint32_t>(a >> 32),
+            static_cast<uint16_t>((a >> 16) & 0xFFFF),
+            static_cast<uint16_t>(a & 0x0FFF),
+            static_cast<uint16_t>((b >> 48) & 0x4FFF | 0x8000),
+            b & 0xFFFFFFFFFFFF);
+    };
+    return jwt::create()
+        .set_issuer("muscovite.jwt")
+        .set_subject(std::string{subject})
+        .set_issued_at(now)
+        .set_expires_at(now + ttl)
+        .set_payload_claim("jti", jwt::claim(uuid_v4()))
+        .set_payload_claim("refresh", jwt::claim(refresh_token))
+        .sign(jwt::algorithm::hs256{jwt_secret_});
 }
 
 auto JwtAuthProvider::verify_password(std::string_view password,
                                      std::string_view password_hash) const -> bool {
-    // Placeholder hash strategy for generated skeletons.
-    return password_hash == std::format("sha256:{}", password);
+    return bcrypt_checkpw(std::string{password}.c_str(),
+                          std::string{password_hash}.c_str()) == 0;
+}
+
+auto JwtAuthProvider::hash_password(std::string_view password) -> std::string {
+    char salt[BCRYPT_HASHSIZE];
+    char hash[BCRYPT_HASHSIZE];
+    bcrypt_gensalt(12, salt);
+    bcrypt_hashpw(std::string{password}.c_str(), salt, hash);
+    return std::string{hash};
 }
 
 auto JwtAuthProvider::verify(const grpc::ServerContext& ctx) const -> std::optional<AuthIdentity> {
@@ -72,17 +131,22 @@ auto JwtAuthProvider::verify(const grpc::ServerContext& ctx) const -> std::optio
     if (!token.has_value()) {
         return std::nullopt;
     }
-    const auto subject = verify_hs256(*token);
-    if (!subject.has_value()) {
+    const auto claims = verify_hs256(*token);
+    if (!claims.has_value()) {
         return std::nullopt;
     }
-    const auto roles_vec = users_->find_roles(*subject);
+    if (blacklist_ && !claims->jti.empty() && blacklist_->is_blacklisted(claims->jti)) {
+        spdlog::warn("JwtAuthProvider::verify: JTI {} is blacklisted", claims->jti);
+        return std::nullopt;
+    }
+    const auto& subject = claims->subject;
+    const auto roles_vec = users_->find_roles(subject);
     auto roles = std::unordered_set<std::string>{};
     for (const auto& role : roles_vec) {
         roles.insert(role);
     }
     return AuthIdentity{
-        .subject = *subject,
+        .subject = subject,
         .roles = std::move(roles),
         .issuer = "muscovite.jwt",
     };
@@ -109,24 +173,32 @@ auto JwtAuthProvider::issue_token(std::string_view username,
 }
 
 auto JwtAuthProvider::refresh_token(std::string_view refresh_token) const -> std::optional<TokenPair> {
-    const auto subject = verify_hs256(refresh_token);
-    if (!subject.has_value()) {
+    const auto claims = verify_hs256(refresh_token);
+    if (!claims.has_value()) {
         return std::nullopt;
     }
     constexpr auto access_ttl = std::chrono::minutes{15};
     constexpr auto refresh_ttl = std::chrono::hours{24};
     const auto now = std::chrono::system_clock::now();
     return TokenPair{
-        .access_token = sign_hs256(*subject, access_ttl, false),
-        .refresh_token = sign_hs256(*subject, refresh_ttl, true),
+        .access_token = sign_hs256(claims->subject, access_ttl, false),
+        .refresh_token = sign_hs256(claims->subject, refresh_ttl, true),
         .expires_at_epoch_seconds = std::chrono::duration_cast<std::chrono::seconds>(
             (now + access_ttl).time_since_epoch()).count(),
     };
 }
 
 auto JwtAuthProvider::revoke_token(std::string_view refresh_token) const -> bool {
-    // Placeholder revocation strategy for generated skeletons.
-    return !refresh_token.empty();
+    if (!blacklist_) {
+        spdlog::warn("JwtAuthProvider::revoke_token: no ITokenBlacklist configured");
+        return false;
+    }
+    const auto claims = verify_hs256(refresh_token);
+    if (!claims.has_value() || claims->jti.empty()) {
+        return false;
+    }
+    blacklist_->blacklist(claims->jti, std::chrono::hours{24});
+    return true;
 }
 
 auto JwtAuthProvider::change_password(std::string_view username,
@@ -139,7 +211,7 @@ auto JwtAuthProvider::change_password(std::string_view username,
     if (!current_hash.has_value() || !verify_password(current_password, *current_hash)) {
         return false;
     }
-    const auto new_hash = std::format("sha256:{}", new_password);
+    const auto new_hash = hash_password(new_password);
     return users_->update_password_hash(username, new_hash);
 }
 

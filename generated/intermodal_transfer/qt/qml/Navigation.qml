@@ -41,6 +41,9 @@ Drawer {
                 ListElement { name: "RailWagons"; page: "RailWagonListView" }
                 ListElement { name: "BargeBookings"; page: "BargeBookingListView" }
                 ListElement { name: "ChassisUnits"; page: "ChassisUnitListView" }
+                // BEGIN MUSCOVITE_OBSERVABILITY_PANEL
+                ListElement { name: "Observability"; page: "ObservabilityPanel" }
+                // END MUSCOVITE_OBSERVABILITY_PANEL
             }
 
             delegate: ItemDelegate {

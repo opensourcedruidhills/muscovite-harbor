@@ -1,5 +1,5 @@
 -- MUSCOVITE:SIDECAR:UNMODIFIED
--- MUSCOVITE:QUERY-HASH:99a9defe1dd75dc7
+-- MUSCOVITE:QUERY-HASH:eda8d694e448d84c
 --  context: PassengerTerminal, entity: Gate, operation: update
 
-UPDATE passenger_terminal.gate SET id = $2, code = $3, name = $4, capacity = $5, status = $6, voyage_id = $7 WHERE id = $1
+UPDATE passenger_terminal.gate SET code = $2, name = $3, capacity = $4, status = $5, voyage_id = $6 WHERE id = $1

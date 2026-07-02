@@ -2,25 +2,24 @@
 # Copyright (c) 2025-2026 Johannes Lochmann
 # GENERATED FILE -- DO NOT EDIT
 
-add_library(muscovite_harbor_spatial_dba INTERFACE)
-target_include_directories(muscovite_harbor_spatial_dba INTERFACE
+add_library(muscovite_harbor_spatial_dba STATIC)
+target_include_directories(muscovite_harbor_spatial_dba PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-# Header-only library: list headers for IDE integration
-set(muscovite_harbor_spatial_dba_HEADERS
-    dba/coordinate.hpp
-    dba/coordinate_repository.hpp
-    dba/region.hpp
-    dba/region_repository.hpp
-    dba/spatial_projection.hpp
-    dba/spatial_projection_repository.hpp
-    dba/vo/bounding_box.hpp
-    dba/vo/geo_point.hpp
-    dba/lookup/coordinate_system.hpp
+target_link_libraries(muscovite_harbor_spatial_dba PUBLIC
+    muscovite::dba
 )
 
-target_sources(muscovite_harbor_spatial_dba INTERFACE
+set(muscovite_harbor_spatial_dba_HEADERS
+    dba/vo/geo_point.hpp
+    dba/vo/geo_polygon.hpp
+    dba/vo/geo_line_string.hpp
+    dba/vo/geo_region.hpp
+    dba/vo/geo_crs.hpp
+)
+
+target_sources(muscovite_harbor_spatial_dba PUBLIC
     FILE_SET HEADERS
     BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/..
     FILES ${muscovite_harbor_spatial_dba_HEADERS}

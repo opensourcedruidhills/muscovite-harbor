@@ -1,5 +1,5 @@
 -- MUSCOVITE:SIDECAR:UNMODIFIED
--- MUSCOVITE:QUERY-HASH:4a51e8a0cb79dbee
+-- MUSCOVITE:QUERY-HASH:b46da29553ef6ff1
 --  context: IntermodalTransfer, entity: ChassisUnit, operation: update
 
-UPDATE intermodal_transfer.chassis_unit SET id = $2, chassis_number = $3, chassis_type = $4, is_available = $5 WHERE id = $1
+UPDATE intermodal_transfer.chassis_unit SET chassis_number = $2, chassis_type = $3, is_available = $4 WHERE id = $1

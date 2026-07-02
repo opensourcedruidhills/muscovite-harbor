@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vesseltraffic
+  namespace: muscoviteharbor
+  labels:
+    app: vesseltraffic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vesseltraffic
+  template:
+    metadata:
+      labels:
+        app: vesseltraffic
+    spec:
+      serviceAccountName: vesseltraffic
+      containers:
+        - name: vesseltraffic
+          image: vesseltraffic:latest
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          envFrom:
+            - configMapRef:
+                name: vesseltraffic-config

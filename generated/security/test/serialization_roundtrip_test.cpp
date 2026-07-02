@@ -22,11 +22,11 @@ SCENARIO("Serialization round-trip: User") {
         original.is_active = (dist(rng) % 2 == 0);
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<User>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<User>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -38,15 +38,76 @@ SCENARIO("Serialization round-trip: UserRole") {
         auto dist = std::uniform_int_distribution<int>{0, 10000};
         auto uuid_gen = boost::uuids::random_generator{};
         auto original = UserRole{};
-        original.user_id = "test_" + std::to_string(dist(rng));
-        original.role_id = "test_" + std::to_string(dist(rng));
+        original.user_id = boost::uuids::to_string(uuid_gen());
+        original.role_id = boost::uuids::to_string(uuid_gen());
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<UserRole>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<UserRole>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
+            }
+        }
+    }
+}
+
+SCENARIO("Serialization round-trip: Group") {
+    GIVEN("a Group with random values") {
+        auto rng = std::mt19937{std::random_device{}()};
+        auto dist = std::uniform_int_distribution<int>{0, 10000};
+        auto uuid_gen = boost::uuids::random_generator{};
+        auto original = Group{};
+        original.name = "test_" + std::to_string(dist(rng));
+        original.description = "test_" + std::to_string(dist(rng));
+
+        WHEN("serialized and deserialized") {
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<Group>(serialized);
+
+            THEN("the deserialized object equals the original") {
+                CHECK(deserialized == original);
+            }
+        }
+    }
+}
+
+SCENARIO("Serialization round-trip: GroupMember") {
+    GIVEN("a GroupMember with random values") {
+        auto rng = std::mt19937{std::random_device{}()};
+        auto dist = std::uniform_int_distribution<int>{0, 10000};
+        auto uuid_gen = boost::uuids::random_generator{};
+        auto original = GroupMember{};
+        original.group_id = boost::uuids::to_string(uuid_gen());
+        original.user_id = boost::uuids::to_string(uuid_gen());
+
+        WHEN("serialized and deserialized") {
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<GroupMember>(serialized);
+
+            THEN("the deserialized object equals the original") {
+                CHECK(deserialized == original);
+            }
+        }
+    }
+}
+
+SCENARIO("Serialization round-trip: ContextPrivilege") {
+    GIVEN("a ContextPrivilege with random values") {
+        auto rng = std::mt19937{std::random_device{}()};
+        auto dist = std::uniform_int_distribution<int>{0, 10000};
+        auto uuid_gen = boost::uuids::random_generator{};
+        auto original = ContextPrivilege{};
+        original.context_name = "test_" + std::to_string(dist(rng));
+        original.group_id = boost::uuids::to_string(uuid_gen());
+        original.privilege = "test_" + std::to_string(dist(rng));
+
+        WHEN("serialized and deserialized") {
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<ContextPrivilege>(serialized);
+
+            THEN("the deserialized object equals the original") {
+                CHECK(deserialized == original);
             }
         }
     }
@@ -63,11 +124,11 @@ SCENARIO("Serialization round-trip: Role") {
         original.permissions = "test_" + std::to_string(dist(rng));
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<Role>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<Role>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -84,11 +145,11 @@ SCENARIO("Serialization round-trip: Permission") {
         original.action = "test_" + std::to_string(dist(rng));
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<Permission>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<Permission>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -106,11 +167,11 @@ SCENARIO("Serialization round-trip: AccessControlEntry") {
         original.effect = "test_" + std::to_string(dist(rng));
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<AccessControlEntry>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<AccessControlEntry>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -129,11 +190,11 @@ SCENARIO("Serialization round-trip: AuditLogEntry") {
         original.details = "test_" + std::to_string(dist(rng));
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<AuditLogEntry>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<AuditLogEntry>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }

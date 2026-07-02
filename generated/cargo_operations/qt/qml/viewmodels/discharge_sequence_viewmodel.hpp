@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/discharge_sequence_grpc_binding.hpp"
 
 namespace muscovite_harbor::cargo_operations::qml {
 
@@ -26,6 +27,15 @@ class DischargeSequenceViewModel : public QObject {
     Q_PROPERTY(QString containerId READ containerId WRITE setContainerId NOTIFY containerIdChanged REQUIRED)
     Q_PROPERTY(int sequenceOrder READ sequenceOrder WRITE setSequenceOrder NOTIFY sequenceOrderChanged REQUIRED)
     Q_PROPERTY(QString craneId READ craneId WRITE setCraneId NOTIFY craneIdChanged)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool loadPlanIdIsValid READ loadPlanIdIsValid NOTIFY loadPlanIdIsValidChanged)
+    Q_PROPERTY(bool containerIdIsValid READ containerIdIsValid NOTIFY containerIdIsValidChanged)
+    Q_PROPERTY(bool sequenceOrderIsValid READ sequenceOrderIsValid NOTIFY sequenceOrderIsValidChanged)
+    Q_PROPERTY(bool craneIdIsValid READ craneIdIsValid NOTIFY craneIdIsValidChanged)
 
 public:
     explicit DischargeSequenceViewModel(QObject* parent = nullptr);
@@ -35,12 +45,23 @@ public:
     [[nodiscard]] auto containerId() const -> QString { return m_container_id; }
     [[nodiscard]] auto sequenceOrder() const -> int { return m_sequence_order; }
     [[nodiscard]] auto craneId() const -> QString { return m_crane_id; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto loadPlanIdIsValid() const -> bool { return m_load_plan_id_is_valid; }
+    [[nodiscard]] auto containerIdIsValid() const -> bool { return m_container_id_is_valid; }
+    [[nodiscard]] auto sequenceOrderIsValid() const -> bool { return m_sequence_order_is_valid; }
+    [[nodiscard]] auto craneIdIsValid() const -> bool { return m_crane_id_is_valid; }
 
     void setId(const QString& value);
     void setLoadPlanId(const QString& value);
     void setContainerId(const QString& value);
     void setSequenceOrder(const int& value);
     void setCraneId(const QString& value);
+
+    void setBinding(DischargeSequenceGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -53,17 +74,37 @@ Q_SIGNALS:
     void containerIdChanged();
     void sequenceOrderChanged();
     void craneIdChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void loadPlanIdIsValidChanged();
+    void containerIdIsValidChanged();
+    void sequenceOrderIsValidChanged();
+    void craneIdIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_load_plan_id;
     QString m_container_id;
     int m_sequence_order = 0;
     QString m_crane_id;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    DischargeSequenceGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_load_plan_id_is_valid = false;
+    bool m_container_id_is_valid = false;
+    bool m_sequence_order_is_valid = true;
+    bool m_crane_id_is_valid = true;
 };
 
 } // namespace muscovite_harbor::cargo_operations::qml

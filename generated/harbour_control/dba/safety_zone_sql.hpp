@@ -9,16 +9,16 @@ namespace harbour_control {
 
 // SQL constants for table: safety_zones
 inline constexpr std::string_view kSelectAll =
-    "SELECT id, id, zone_code, zone_name, security_level, max_hazmat_class, is_restricted FROM safety_zones";
+    "SELECT id, zone_code, zone_name, security_level, max_hazmat_class, is_restricted FROM safety_zones";
 
 inline constexpr std::string_view kSelectById =
-    "SELECT id, id, zone_code, zone_name, security_level, max_hazmat_class, is_restricted FROM safety_zones WHERE id = $1";
+    "SELECT id, zone_code, zone_name, security_level, max_hazmat_class, is_restricted FROM safety_zones WHERE id = $1";
 
 inline constexpr std::string_view kInsert =
-    "INSERT INTO safety_zones (id, id, zone_code, zone_name, security_level, max_hazmat_class, is_restricted) VALUES ($1, $2, $3, $4, $5, $6, $7)";
+    "INSERT INTO safety_zones (id, zone_code, zone_name, security_level, max_hazmat_class, is_restricted) VALUES ($1, $2, $3, $4, $5, $6)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE safety_zones SET id = $2, zone_code = $3, zone_name = $4, security_level = $5, max_hazmat_class = $6, is_restricted = $7 WHERE id = $8";
+    "UPDATE safety_zones SET zone_code = $2, zone_name = $3, security_level = $4, max_hazmat_class = $5, is_restricted = $6 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM safety_zones WHERE id = $1";

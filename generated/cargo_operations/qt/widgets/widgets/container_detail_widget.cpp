@@ -29,23 +29,30 @@ void ContainerDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     container_number_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ContainerNumber"), container_number_value_);
+    section_form_1->addRow(QStringLiteral("ContainerNumber"), container_number_value_);
     size_category_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("SizeCategory"), size_category_value_);
+    section_form_1->addRow(QStringLiteral("SizeCategory"), size_category_value_);
     hazmat_class_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("HazmatClass"), hazmat_class_value_);
+    section_form_1->addRow(QStringLiteral("HazmatClass"), hazmat_class_value_);
     voyage_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("VoyageId"), voyage_id_value_);
-    yard_slot_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("YardSlotId"), yard_slot_id_value_);
-    status_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Status"), status_value_);
+    section_form_1->addRow(QStringLiteral("VoyageId"), voyage_id_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    yard_slot_id_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("YardSlotId"), yard_slot_id_value_);
+    status_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("Status"), status_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -78,7 +85,7 @@ void ContainerDetailWidget::setStatus(const QString& value) {
 }
 
 void ContainerDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

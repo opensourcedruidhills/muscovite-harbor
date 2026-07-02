@@ -9,16 +9,16 @@ namespace passenger_terminal {
 
 // SQL constants for table: passengers
 inline constexpr std::string_view kSelectAll =
-    "SELECT id, id, booking_ref, passenger_type, voyage_id, status FROM passengers";
+    "SELECT id, booking_ref, passenger_type, voyage_id, status FROM passengers";
 
 inline constexpr std::string_view kSelectById =
-    "SELECT id, id, booking_ref, passenger_type, voyage_id, status FROM passengers WHERE id = $1";
+    "SELECT id, booking_ref, passenger_type, voyage_id, status FROM passengers WHERE id = $1";
 
 inline constexpr std::string_view kInsert =
-    "INSERT INTO passengers (id, id, booking_ref, passenger_type, voyage_id, status) VALUES ($1, $2, $3, $4, $5, $6)";
+    "INSERT INTO passengers (id, booking_ref, passenger_type, voyage_id, status) VALUES ($1, $2, $3, $4, $5)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE passengers SET id = $2, booking_ref = $3, passenger_type = $4, voyage_id = $5, status = $6 WHERE id = $7";
+    "UPDATE passengers SET booking_ref = $2, passenger_type = $3, voyage_id = $4, status = $5 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM passengers WHERE id = $1";

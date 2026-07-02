@@ -12,12 +12,24 @@
 #include "reefer_unit_fk_widget.hpp"
 
 #include <QHBoxLayout>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+#include <spdlog/spdlog.h>
+#include "container.grpc.pb.h"
 
 namespace muscovite_harbor::widgets {
 
 ReeferUnitFkWidget::ReeferUnitFkWidget(QWidget* parent)
     : QWidget{parent} {
     setupUi();
+    loadContainerOptions();
+}
+
+void ReeferUnitFkWidget::setServerAddress(const QString& address) {
+    if (m_server_address != address) {
+        m_server_address = address;
+        Q_EMIT serverAddressChanged();
+    }
 }
 
 void ReeferUnitFkWidget::setupUi() {
@@ -34,6 +46,26 @@ void ReeferUnitFkWidget::setupUi() {
 
 auto ReeferUnitFkWidget::selectedContainer() const -> QString {
     return container_combo_->currentText();
+}
+
+void ReeferUnitFkWidget::loadContainerOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = ContainerService::NewStub(channel_);
+    ListContainersRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListContainersResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListContainers(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("ReeferUnitFkWidget::loadContainerOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populateContainerOptions(options);
 }
 
 void ReeferUnitFkWidget::populateContainerOptions(const QStringList& options) {

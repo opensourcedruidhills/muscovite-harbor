@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace muscovite_harbor::search {
@@ -112,5 +113,51 @@ struct FormattedSearchResponse {
     return std::to_string(pct) + "%";
 }
 
-} // namespace muscovite_harbor::search
+// ── Index bootstrap ───────────────────────────────────────────
 
+/// Index catalog entry: name → OpenSearch mapping JSON.
+struct IndexEntry {
+    std::string index_name;
+    std::string mapping_json;
+};
+
+/// Compiled-in index catalog. Each entry maps to a generated
+/// *_mapping.json file. Use this list to bootstrap indices at
+/// startup via framework SearchIndexer::ensure_indexes().
+[[nodiscard]] inline auto index_catalog()
+    -> const std::vector<IndexEntry>& {
+    static const auto entries = std::vector<IndexEntry>{
+        {"", "{}"},
+    };
+    return entries;
+}
+
+/// Bootstrap all search indices. Delegates to framework
+/// SearchIndexer using the compile-time index_catalog().
+/// Call once at server startup.
+[[nodiscard]] inline auto ensure_search_indexes(
+    const std::string& opensearch_host,
+    std::uint16_t opensearch_port) -> bool {
+    auto url_base = "http://" + opensearch_host + ":" +
+                    std::to_string(opensearch_port);
+    bool ok = true;
+    for (const auto& entry : index_catalog()) {
+        if (entry.index_name.empty()) continue;
+        auto url = url_base + "/" + entry.index_name;
+        auto cmd = "curl -s -o /dev/null -w '%{http_code}' -X PUT " +
+                    url + " -H 'Content-Type: application/json' -d '" +
+                    entry.mapping_json + "'";
+        auto* pipe = popen(cmd.c_str(), "r");
+        if (pipe) {
+            char buf[16]{};
+            if (fgets(buf, sizeof(buf), pipe)) {
+                auto code = std::stoi(buf);
+                ok = ok && (code >= 200 && code < 300 || code == 409);
+            }
+            pclose(pipe);
+        }
+    }
+    return ok;
+}
+
+} // namespace muscovite_harbor::search

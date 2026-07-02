@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vesseltraffic
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: vesseltraffic
+  type: {{ .Values.vesseltraffic.service.type }}
+  ports:
+    - port: {{ .Values.vesseltraffic.service.port }}
+      targetPort: 50051

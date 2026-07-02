@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/berth_grpc_binding.hpp"
 
 namespace muscovite_harbor::vessel_traffic::qml {
 
@@ -30,6 +31,19 @@ class BerthViewModel : public QObject {
     Q_PROPERTY(bool hasCraneAccess READ hasCraneAccess WRITE setHasCraneAccess NOTIFY hasCraneAccessChanged REQUIRED)
     Q_PROPERTY(bool hasReeferPlugs READ hasReeferPlugs WRITE setHasReeferPlugs NOTIFY hasReeferPlugsChanged REQUIRED)
     Q_PROPERTY(bool isActive READ isActive WRITE setIsActive NOTIFY isActiveChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool codeIsValid READ codeIsValid NOTIFY codeIsValidChanged)
+    Q_PROPERTY(bool nameIsValid READ nameIsValid NOTIFY nameIsValidChanged)
+    Q_PROPERTY(bool maxLoaMetresIsValid READ maxLoaMetresIsValid NOTIFY maxLoaMetresIsValidChanged)
+    Q_PROPERTY(bool maxDraftMetresIsValid READ maxDraftMetresIsValid NOTIFY maxDraftMetresIsValidChanged)
+    Q_PROPERTY(bool maxBeamMetresIsValid READ maxBeamMetresIsValid NOTIFY maxBeamMetresIsValidChanged)
+    Q_PROPERTY(bool hasCraneAccessIsValid READ hasCraneAccessIsValid NOTIFY hasCraneAccessIsValidChanged)
+    Q_PROPERTY(bool hasReeferPlugsIsValid READ hasReeferPlugsIsValid NOTIFY hasReeferPlugsIsValidChanged)
+    Q_PROPERTY(bool isActiveIsValid READ isActiveIsValid NOTIFY isActiveIsValidChanged)
 
 public:
     explicit BerthViewModel(QObject* parent = nullptr);
@@ -43,6 +57,19 @@ public:
     [[nodiscard]] auto hasCraneAccess() const -> bool { return m_has_crane_access; }
     [[nodiscard]] auto hasReeferPlugs() const -> bool { return m_has_reefer_plugs; }
     [[nodiscard]] auto isActive() const -> bool { return m_is_active; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto codeIsValid() const -> bool { return m_code_is_valid; }
+    [[nodiscard]] auto nameIsValid() const -> bool { return m_name_is_valid; }
+    [[nodiscard]] auto maxLoaMetresIsValid() const -> bool { return m_max_loa_metres_is_valid; }
+    [[nodiscard]] auto maxDraftMetresIsValid() const -> bool { return m_max_draft_metres_is_valid; }
+    [[nodiscard]] auto maxBeamMetresIsValid() const -> bool { return m_max_beam_metres_is_valid; }
+    [[nodiscard]] auto hasCraneAccessIsValid() const -> bool { return m_has_crane_access_is_valid; }
+    [[nodiscard]] auto hasReeferPlugsIsValid() const -> bool { return m_has_reefer_plugs_is_valid; }
+    [[nodiscard]] auto isActiveIsValid() const -> bool { return m_is_active_is_valid; }
 
     void setId(const QString& value);
     void setCode(const QString& value);
@@ -53,6 +80,8 @@ public:
     void setHasCraneAccess(const bool& value);
     void setHasReeferPlugs(const bool& value);
     void setIsActive(const bool& value);
+
+    void setBinding(BerthGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -69,12 +98,26 @@ Q_SIGNALS:
     void hasCraneAccessChanged();
     void hasReeferPlugsChanged();
     void isActiveChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void codeIsValidChanged();
+    void nameIsValidChanged();
+    void maxLoaMetresIsValidChanged();
+    void maxDraftMetresIsValidChanged();
+    void maxBeamMetresIsValidChanged();
+    void hasCraneAccessIsValidChanged();
+    void hasReeferPlugsIsValidChanged();
+    void isActiveIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_code;
     QString m_name;
@@ -84,6 +127,20 @@ private:
     bool m_has_crane_access = false;
     bool m_has_reefer_plugs = false;
     bool m_is_active = false;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    BerthGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_code_is_valid = false;
+    bool m_name_is_valid = false;
+    bool m_max_loa_metres_is_valid = false;
+    bool m_max_draft_metres_is_valid = false;
+    bool m_max_beam_metres_is_valid = false;
+    bool m_has_crane_access_is_valid = true;
+    bool m_has_reefer_plugs_is_valid = true;
+    bool m_is_active_is_valid = true;
 };
 
 } // namespace muscovite_harbor::vessel_traffic::qml

@@ -1,0 +1,7 @@
+{
+  "context": "VesselTraffic",
+  "project": "MuscoviteHarbor",
+  "queries": [
+    {"name": "VesselCallQueryRepository", "aggregate": "VesselCall", "spec_count": 1}
+  ]
+}

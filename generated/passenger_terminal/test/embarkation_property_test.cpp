@@ -15,9 +15,10 @@
 SCENARIO("Boundary: passenger_type min value") {
     GIVEN("a Passenger with min passenger_type") {
         auto val = "boundary";
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.passenger_type == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PassengerValidator::validate(entity)
+                // CHECK(!PassengerValidator::validate(entity).has_error_for("passenger_type"));
             }
         }
     }
@@ -26,9 +27,10 @@ SCENARIO("Boundary: passenger_type min value") {
 SCENARIO("Boundary: passenger_type max value") {
     GIVEN("a Passenger with max passenger_type") {
         auto val = std::string(10000, 'x');
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.passenger_type == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PassengerValidator::validate(entity)
+                // CHECK(!PassengerValidator::validate(entity).has_error_for("passenger_type"));
             }
         }
     }
@@ -37,9 +39,10 @@ SCENARIO("Boundary: passenger_type max value") {
 SCENARIO("Boundary: status min value") {
     GIVEN("a Passenger with min status") {
         auto val = "boundary";
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.status == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PassengerValidator::validate(entity)
+                // CHECK(!PassengerValidator::validate(entity).has_error_for("status"));
             }
         }
     }
@@ -48,9 +51,10 @@ SCENARIO("Boundary: status min value") {
 SCENARIO("Boundary: status max value") {
     GIVEN("a Passenger with max status") {
         auto val = std::string(10000, 'x');
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.status == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PassengerValidator::validate(entity)
+                // CHECK(!PassengerValidator::validate(entity).has_error_for("status"));
             }
         }
     }

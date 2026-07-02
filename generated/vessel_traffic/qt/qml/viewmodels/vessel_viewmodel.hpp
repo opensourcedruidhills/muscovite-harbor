@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/vessel_grpc_binding.hpp"
 
 namespace muscovite_harbor::vessel_traffic::qml {
 
@@ -29,6 +30,18 @@ class VesselViewModel : public QObject {
     Q_PROPERTY(QString vesselType READ vesselType WRITE setVesselType NOTIFY vesselTypeChanged REQUIRED)
     Q_PROPERTY(QString flagState READ flagState WRITE setFlagState NOTIFY flagStateChanged REQUIRED)
     Q_PROPERTY(bool isActive READ isActive WRITE setIsActive NOTIFY isActiveChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool imoNumberIsValid READ imoNumberIsValid NOTIFY imoNumberIsValidChanged)
+    Q_PROPERTY(bool mmsiIsValid READ mmsiIsValid NOTIFY mmsiIsValidChanged)
+    Q_PROPERTY(bool callSignIsValid READ callSignIsValid NOTIFY callSignIsValidChanged)
+    Q_PROPERTY(bool nameIsValid READ nameIsValid NOTIFY nameIsValidChanged)
+    Q_PROPERTY(bool vesselTypeIsValid READ vesselTypeIsValid NOTIFY vesselTypeIsValidChanged)
+    Q_PROPERTY(bool flagStateIsValid READ flagStateIsValid NOTIFY flagStateIsValidChanged)
+    Q_PROPERTY(bool isActiveIsValid READ isActiveIsValid NOTIFY isActiveIsValidChanged)
 
 public:
     explicit VesselViewModel(QObject* parent = nullptr);
@@ -41,6 +54,18 @@ public:
     [[nodiscard]] auto vesselType() const -> QString { return m_vessel_type; }
     [[nodiscard]] auto flagState() const -> QString { return m_flag_state; }
     [[nodiscard]] auto isActive() const -> bool { return m_is_active; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto imoNumberIsValid() const -> bool { return m_imo_number_is_valid; }
+    [[nodiscard]] auto mmsiIsValid() const -> bool { return m_mmsi_is_valid; }
+    [[nodiscard]] auto callSignIsValid() const -> bool { return m_call_sign_is_valid; }
+    [[nodiscard]] auto nameIsValid() const -> bool { return m_name_is_valid; }
+    [[nodiscard]] auto vesselTypeIsValid() const -> bool { return m_vessel_type_is_valid; }
+    [[nodiscard]] auto flagStateIsValid() const -> bool { return m_flag_state_is_valid; }
+    [[nodiscard]] auto isActiveIsValid() const -> bool { return m_is_active_is_valid; }
 
     void setId(const QString& value);
     void setImoNumber(const QString& value);
@@ -50,6 +75,8 @@ public:
     void setVesselType(const QString& value);
     void setFlagState(const QString& value);
     void setIsActive(const bool& value);
+
+    void setBinding(VesselGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -65,12 +92,25 @@ Q_SIGNALS:
     void vesselTypeChanged();
     void flagStateChanged();
     void isActiveChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void imoNumberIsValidChanged();
+    void mmsiIsValidChanged();
+    void callSignIsValidChanged();
+    void nameIsValidChanged();
+    void vesselTypeIsValidChanged();
+    void flagStateIsValidChanged();
+    void isActiveIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_imo_number;
     QString m_mmsi;
@@ -79,6 +119,19 @@ private:
     QString m_vessel_type;
     QString m_flag_state;
     bool m_is_active = false;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    VesselGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_imo_number_is_valid = false;
+    bool m_mmsi_is_valid = false;
+    bool m_call_sign_is_valid = false;
+    bool m_name_is_valid = false;
+    bool m_vessel_type_is_valid = false;
+    bool m_flag_state_is_valid = false;
+    bool m_is_active_is_valid = true;
 };
 
 } // namespace muscovite_harbor::vessel_traffic::qml

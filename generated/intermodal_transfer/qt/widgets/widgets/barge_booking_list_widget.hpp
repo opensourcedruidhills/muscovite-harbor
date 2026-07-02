@@ -16,16 +16,18 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QSortFilterProxyModel>
 
 #include "../models/barge_booking_model.hpp"
+#include <grpcpp/grpcpp.h>
 
 namespace muscovite_harbor::widgets {
 
 class BargeBookingListWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit BargeBookingListWidget(QWidget* parent = nullptr);
+    explicit BargeBookingListWidget(QWidget* parent = nullptr, std::shared_ptr<grpc::Channel> channel = nullptr);
 
     [[nodiscard]] auto model() -> BargeBookingModel* { return model_; }
     [[nodiscard]] auto tableView() -> QTableView* { return table_; }
@@ -34,11 +36,15 @@ Q_SIGNALS:
     void createRequested();
     void editRequested(int row);
     void deleteRequested(int row);
-    void refreshRequested();
+    void refreshRequested(int page, int pageSize);
+    void searchRequested(const QString& text);
 
 private Q_SLOTS:
+    void onCreateAction();
     void onEditAction();
     void onDeleteAction();
+    void onNextPage();
+    void onPrevPage();
     void onDataChanged();
     void onSelectionChanged();
 
@@ -52,6 +58,9 @@ private:
     QTableView* table_ = nullptr;
     QToolBar* toolbar_ = nullptr;
     QVBoxLayout* layout_ = nullptr;
+    std::shared_ptr<grpc::Channel> channel_;
+    int currentPage_{0};
+    int pageSize_{50};
 };
 
 } // namespace muscovite_harbor::widgets

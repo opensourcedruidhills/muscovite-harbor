@@ -8,9 +8,9 @@ Dialog {
     id: dischargeSequenceDialog
     title: qsTr("Edit DischargeSequence")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("LoadPlanId") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("LoadPlanId")
             text: viewModel.loadPlanId
             onTextChanged: viewModel.setLoadPlanId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.loadPlanIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ContainerId") }
@@ -39,13 +51,26 @@ Dialog {
             text: viewModel.containerId
             onTextChanged: viewModel.setContainerId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.containerIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("SequenceOrder") }
         SpinBox {
             id: sequenceOrderField
             from: 0
             to: 999999
             value: viewModel.sequenceOrder
             onValueChanged: viewModel.setSequenceOrder(value)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.sequenceOrderIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("CraneId") }
@@ -55,9 +80,27 @@ Dialog {
             text: viewModel.craneId
             onTextChanged: viewModel.setCraneId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.craneIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); dischargeSequenceDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); dischargeSequenceDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

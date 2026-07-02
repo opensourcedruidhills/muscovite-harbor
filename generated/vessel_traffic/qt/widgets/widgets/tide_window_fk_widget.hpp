@@ -25,9 +25,13 @@ class TideWindowFkWidget : public QWidget {
 public:
     explicit TideWindowFkWidget(QWidget* parent = nullptr);
 
+    [[nodiscard]] auto serverAddress() const -> QString { return m_server_address; }
+    void setServerAddress(const QString& address);
+
     [[nodiscard]] auto selectedBerth() const -> QString;
 
 Q_SIGNALS:
+    void serverAddressChanged();
     void berthChanged(const QString& id);
 
 public Q_SLOTS:
@@ -35,7 +39,9 @@ public Q_SLOTS:
 
 private:
     void setupUi();
+    void loadBerthOptions();
 
+    QString m_server_address = QStringLiteral("localhost:50051");
     QComboBox* berth_combo_ = nullptr;
 };
 

@@ -2,25 +2,24 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "invoice_line_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace harbour_control {
 
 auto InvoiceLineRepositoryImpl::insert(pqxx::work& tx, const InvoiceLine& entity) -> void {
     tx.exec_params(kInsert,
         entity.id,
-        entity.id,
         entity.vessel_id,
         entity.service_type,
         entity.amount,
         entity.currency,
-        entity.issued_at,
-    );
+        entity.issued_at);
 }
 
 auto InvoiceLineRepositoryImpl::update(pqxx::work& tx, const InvoiceLine& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
-    params.append(entity.id);
     params.append(entity.id);
     params.append(entity.vessel_id);
     params.append(entity.service_type);

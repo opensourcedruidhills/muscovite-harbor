@@ -12,12 +12,24 @@
 #include "truck_visit_fk_widget.hpp"
 
 #include <QHBoxLayout>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+#include <spdlog/spdlog.h>
+#include "transfer_slot.grpc.pb.h"
 
 namespace muscovite_harbor::widgets {
 
 TruckVisitFkWidget::TruckVisitFkWidget(QWidget* parent)
     : QWidget{parent} {
     setupUi();
+    loadTransferSlotOptions();
+}
+
+void TruckVisitFkWidget::setServerAddress(const QString& address) {
+    if (m_server_address != address) {
+        m_server_address = address;
+        Q_EMIT serverAddressChanged();
+    }
 }
 
 void TruckVisitFkWidget::setupUi() {
@@ -34,6 +46,26 @@ void TruckVisitFkWidget::setupUi() {
 
 auto TruckVisitFkWidget::selectedTransferSlot() const -> QString {
     return transfer_slot_combo_->currentText();
+}
+
+void TruckVisitFkWidget::loadTransferSlotOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = TransferSlotService::NewStub(channel_);
+    ListTransferSlotsRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListTransferSlotsResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListTransferSlots(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("TruckVisitFkWidget::loadTransferSlotOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populateTransferSlotOptions(options);
 }
 
 void TruckVisitFkWidget::populateTransferSlotOptions(const QStringList& options) {

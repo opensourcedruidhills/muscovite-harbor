@@ -12,6 +12,10 @@
 #pragma once
 
 #include <grpcpp/grpcpp.h>
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "passenger_terminal/passenger_terminal_state_machine_service.grpc.pb.h"
 #include "passenger_terminal/passenger_terminal_state_machine_service.pb.h"
@@ -20,13 +24,85 @@ namespace passenger_terminal {
 
 class GateStatusServiceImpl final : public passengerterminal::GateStatusService::Service {
 public:
+    class GateRecord {
+    public:
+        auto set_id(std::string value) -> void { id_ = std::move(value); }
+        [[nodiscard]] auto id() const -> const std::string& { return id_; }
+        auto set_state(std::string value) -> void { state_ = std::move(value); }
+        [[nodiscard]] auto state() const -> const std::string& { return state_; }
+
+    private:
+        std::string id_{};
+        std::string state_{"CLOSED"};
+    };
+
+    class GateRepository {
+    public:
+        virtual ~GateRepository() = default;
+        [[nodiscard]] virtual auto find_by_id(const std::string& entity_id) -> std::optional<GateRecord> = 0;
+        virtual auto save(const GateRecord& entity) -> void = 0;
+    };
+
+    class StateMachineRuntime {
+    public:
+        [[nodiscard]] auto is_valid_transition(const std::string& current_state,
+                                                const std::string& event) const -> bool {
+            if (current_state == "CLOSED" && event == "OpenCheckIn") { return true; }
+            else if (current_state == "CHECK_IN_OPEN" && event == "StartBoarding") { return true; }
+            else if (current_state == "BOARDING" && event == "AnnounceFinalCall") { return true; }
+            else if (current_state == "FINAL_CALL" && event == "CloseGate") { return true; }
+            else if (current_state == "CHECK_IN_OPEN" && event == "CancelBoarding") { return true; }
+            return false;
+        }
+
+        [[nodiscard]] auto next_state(const std::string& current_state,
+                                      const std::string& event) const -> std::string {
+            if (current_state == "CLOSED" && event == "OpenCheckIn") { return "CHECK_IN_OPEN"; }
+            else if (current_state == "CHECK_IN_OPEN" && event == "StartBoarding") { return "BOARDING"; }
+            else if (current_state == "BOARDING" && event == "AnnounceFinalCall") { return "FINAL_CALL"; }
+            else if (current_state == "FINAL_CALL" && event == "CloseGate") { return "CLOSED"; }
+            else if (current_state == "CHECK_IN_OPEN" && event == "CancelBoarding") { return "CLOSED"; }
+            return current_state;
+        }
+
+        [[nodiscard]] auto available_transitions(const std::string& current_state) const -> std::vector<std::string> {
+            auto result = std::vector<std::string>{};
+            if (current_state == "CLOSED") { result.push_back("OpenCheckIn"); }
+            if (current_state == "CHECK_IN_OPEN") { result.push_back("StartBoarding"); }
+            if (current_state == "BOARDING") { result.push_back("AnnounceFinalCall"); }
+            if (current_state == "FINAL_CALL") { result.push_back("CloseGate"); }
+            if (current_state == "CHECK_IN_OPEN") { result.push_back("CancelBoarding"); }
+            return result;
+        }
+    };
+
+    explicit GateStatusServiceImpl(
+            GateRepository* entity_repository = nullptr)
+        : entity_repository_{entity_repository} {}
+
     ::grpc::Status Transition(
             ::grpc::ServerContext* context,
             const passengerterminal::GateStatusTransitionRequest* request,
             passengerterminal::GateStatusTransitionResponse* response) override {
         static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
+        if (entity_repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "entity repository not wired");
+        }
+        auto entity = entity_repository_->find_by_id(request->entity_id());
+        if (!entity) {
+            return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "entity not found");
+        }
+        const auto current_state = entity->state();
+        if (!state_machine_.is_valid_transition(current_state, request->event())) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "invalid transition: " + current_state + " + " + request->event());
+        }
+        response->set_previous_state(to_proto_state(current_state));
+        entity->set_state(state_machine_.next_state(current_state, request->event()));
+        entity_repository_->save(*entity);
+        response->set_current_state(to_proto_state(entity->state()));
+        response->set_accepted(true);
         return ::grpc::Status::OK;
     }
 
@@ -35,10 +111,32 @@ public:
             const passengerterminal::GetGateStatusStateRequest* request,
             passengerterminal::GetGateStatusStateResponse* response) override {
         static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
+        if (entity_repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "entity repository not wired");
+        }
+        auto entity = entity_repository_->find_by_id(request->entity_id());
+        if (!entity) {
+            return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "entity not found");
+        }
+        response->set_current_state(to_proto_state(entity->state()));
+        for (const auto& transition : state_machine_.available_transitions(entity->state())) {
+            response->add_available_transitions(transition);
+        }
         return ::grpc::Status::OK;
     }
+
+private:
+    [[nodiscard]] static auto to_proto_state(const std::string& state) -> passengerterminal::GateStatusState {
+        if (state == "CLOSED") { return passengerterminal::GATE_STATUS_CLOSED; }
+        else if (state == "CHECK_IN_OPEN") { return passengerterminal::GATE_STATUS_CHECK_IN_OPEN; }
+        else if (state == "BOARDING") { return passengerterminal::GATE_STATUS_BOARDING; }
+        else if (state == "FINAL_CALL") { return passengerterminal::GATE_STATUS_FINAL_CALL; }
+        return passengerterminal::GATE_STATUS_CLOSED;
+    }
+
+    GateRepository* entity_repository_{nullptr};
+    StateMachineRuntime state_machine_{};
 };
 
 } // namespace passenger_terminal

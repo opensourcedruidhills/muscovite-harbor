@@ -15,6 +15,8 @@ syntax = "proto3";
 package vesseltraffic;
 
 import "voyage.proto";
+import "vessel.proto";
+import "berth.proto";
 import "pilot_assignment.proto";
 import "tug_booking.proto";
 import "google/protobuf/timestamp.proto";
@@ -82,6 +84,10 @@ service VoyageService {
   rpc UpdateVoyage(UpdateVoyageRequest) returns (UpdateVoyageResponse);
   rpc DeleteVoyage(DeleteVoyageRequest) returns (DeleteVoyageResponse);
   rpc ListVoyages(ListVoyagesRequest) returns (ListVoyagesResponse);
+
+  // Commands
+  rpc AnnounceVessel(AnnounceVesselRequest) returns (AnnounceVesselResponse);
+  rpc AllocateBerth(AllocateBerthRequest) returns (AllocateBerthResponse);
 
   // PilotAssignment operations
   rpc AddPilotAssignment(AddPilotAssignmentRequest) returns (AddPilotAssignmentResponse);

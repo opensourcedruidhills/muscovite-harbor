@@ -17,16 +17,16 @@ add_custom_target(coverage-llvm-cargo_operations
     COMMENT "Generating llvm-cov report for context CargoOperations"
 )
 
-# llvm-cov report for entity: DischargeSequence
-add_custom_target(coverage-llvm-discharge_sequence
-    COMMAND llvm-profdata merge -sparse ${CMAKE_BINARY_DIR}/profiles/discharge_sequence/*.profraw
-            -o ${CMAKE_BINARY_DIR}/profiles/discharge_sequence/merged.profdata
+# llvm-cov report for entity: Container
+add_custom_target(coverage-llvm-container
+    COMMAND llvm-profdata merge -sparse ${CMAKE_BINARY_DIR}/profiles/container/*.profraw
+            -o ${CMAKE_BINARY_DIR}/profiles/container/merged.profdata
     COMMAND llvm-cov report ${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:${PROJECT_NAME}_tests>
-            -instr-profile=${CMAKE_BINARY_DIR}/profiles/discharge_sequence/merged.profdata
+            -instr-profile=${CMAKE_BINARY_DIR}/profiles/container/merged.profdata
     COMMAND llvm-cov show ${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:${PROJECT_NAME}_tests>
-            -instr-profile=${CMAKE_BINARY_DIR}/profiles/discharge_sequence/merged.profdata
-            -format=html -output-dir=${CMAKE_BINARY_DIR}/coverage-html/discharge_sequence
-    COMMENT "Generating llvm-cov report for DischargeSequence"
+            -instr-profile=${CMAKE_BINARY_DIR}/profiles/container/merged.profdata
+            -format=html -output-dir=${CMAKE_BINARY_DIR}/coverage-html/container
+    COMMENT "Generating llvm-cov report for Container"
 )
 
 # Compiler flags required for LLVM source-based coverage

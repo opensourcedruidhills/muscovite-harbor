@@ -1,0 +1,54 @@
+{
+  "routes": [
+    {
+      "handlers": [
+        {
+          "class_name": "",
+          "name": "VesselMovementLog",
+          "start_on_event": false,
+          "type": "projection"
+        }
+      ],
+      "subject": "muscovite.vessel_traffic.events.berth_allocated"
+    },
+    {
+      "handlers": [
+        {
+          "class_name": "auto_dispatch_pilot_handler",
+          "name": "AutoDispatchPilot",
+          "start_on_event": false,
+          "type": "policy"
+        },
+        {
+          "class_name": "",
+          "name": "VesselMovementLog",
+          "start_on_event": false,
+          "type": "projection"
+        }
+      ],
+      "subject": "muscovite.vessel_traffic.events.vessel_announced"
+    },
+    {
+      "handlers": [
+        {
+          "class_name": "",
+          "name": "VesselMovementLog",
+          "start_on_event": false,
+          "type": "projection"
+        }
+      ],
+      "subject": "muscovite.vessel_traffic.events.vessel_departed_event"
+    },
+    {
+      "handlers": [
+        {
+          "class_name": "",
+          "name": "VesselMovementLog",
+          "start_on_event": false,
+          "type": "projection"
+        }
+      ],
+      "subject": "muscovite.vessel_traffic.events.vessel_moored_event"
+    }
+  ]
+}

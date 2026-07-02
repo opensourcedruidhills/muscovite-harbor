@@ -3,18 +3,23 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include "policies.hpp"
+#include <future>
 
 namespace cargo_decomposition {
 
 auto TrackParcelDispatchPolicyHandler::matches(const ParcelDispatched& event) const -> bool {
     // WHY: #1476 — compiled from DSL policy condition
     (void)event;
-    return ;
+    return carrier IS NOT NULL;
 }
 
 auto TrackParcelDispatchPolicyHandler::execute(const ParcelDispatched& event) const -> PolicyResult {
-    (void)event;
-    // Send notification: LogisticsOps
+    if (matches(event)) {
+    auto notification = Notification{.type = "LogisticsOps", .payload = event};
+    if (!notifier_ || !notifier_->send(notification)) {
+        return PolicyResult::ActionFailed;
+    }
+    }
     return PolicyResult::Success;
 }
 

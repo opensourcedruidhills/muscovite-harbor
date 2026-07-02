@@ -8,9 +8,9 @@ Dialog {
     id: palletDialog
     title: qsTr("Edit Pallet")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("PalletId") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("PalletId")
             text: viewModel.palletId
             onTextChanged: viewModel.setPalletId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.palletIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ContainerId") }
@@ -39,7 +51,14 @@ Dialog {
             text: viewModel.containerId
             onTextChanged: viewModel.setContainerId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.containerIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("WeightKg") }
         DoubleSpinBox {
             id: weightKgField
             from: 0.0
@@ -48,7 +67,14 @@ Dialog {
             value: parseFloat(viewModel.weightKg) || 0.0
             onValueChanged: viewModel.setWeightKg(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.weightKgIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("LengthCm") }
         DoubleSpinBox {
             id: lengthCmField
             from: 0.0
@@ -57,7 +83,14 @@ Dialog {
             value: parseFloat(viewModel.lengthCm) || 0.0
             onValueChanged: viewModel.setLengthCm(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.lengthCmIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("WidthCm") }
         DoubleSpinBox {
             id: widthCmField
             from: 0.0
@@ -66,7 +99,14 @@ Dialog {
             value: parseFloat(viewModel.widthCm) || 0.0
             onValueChanged: viewModel.setWidthCm(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.widthCmIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("HeightCm") }
         DoubleSpinBox {
             id: heightCmField
             from: 0.0
@@ -74,6 +114,12 @@ Dialog {
             stepSize: 0.01
             value: parseFloat(viewModel.heightCm) || 0.0
             onValueChanged: viewModel.setHeightCm(value.toString())
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.heightCmIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("HsCode") }
@@ -83,9 +129,27 @@ Dialog {
             text: viewModel.hsCode
             onTextChanged: viewModel.setHsCode(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.hsCodeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); palletDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); palletDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

@@ -19,7 +19,7 @@ public:
     explicit ContainerEventRepository(ContainerEventStore& store)
         : store_{store} {}
 
-    /// Save entity by appending events.
+    /// Save entity (no sourced events — no-op).
     auto save(const Container& entity, std::int64_t version) -> void;
 
     /// Load entity from event store (snapshot + replay).

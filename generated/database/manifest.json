@@ -3,7 +3,7 @@
     {
       "dependencies": [],
       "deploy": "deploy/001-extensions.sql",
-      "hash": "fnv1a:4f5532452fb10b9c",
+      "hash": "fnv1a:082e3d476d95c17d",
       "name": "001-extensions",
       "note": "Extensions",
       "revert": "revert/001-extensions.sql",
@@ -14,7 +14,7 @@
         "001-extensions"
       ],
       "deploy": "vessel_traffic/deploy/000-schema.sql",
-      "hash": "fnv1a:4092e8e6cbfdcd72",
+      "hash": "fnv1a:e2141fd607453e1a",
       "name": "002-vessel_traffic",
       "note": "Schema vessel_traffic",
       "revert": "vessel_traffic/revert/000-schema.sql",
@@ -25,7 +25,7 @@
         "002-vessel_traffic"
       ],
       "deploy": "cargo_operations/deploy/000-schema.sql",
-      "hash": "fnv1a:328c3447bac9bf49",
+      "hash": "fnv1a:5bb54c7c51d25658",
       "name": "003-cargo_operations",
       "note": "Schema cargo_operations",
       "revert": "cargo_operations/revert/000-schema.sql",
@@ -36,7 +36,7 @@
         "003-cargo_operations"
       ],
       "deploy": "passenger_terminal/deploy/000-schema.sql",
-      "hash": "fnv1a:9238db12bbcfaf9b",
+      "hash": "fnv1a:d6e3a760a73548a7",
       "name": "004-passenger_terminal",
       "note": "Schema passenger_terminal",
       "revert": "passenger_terminal/revert/000-schema.sql",
@@ -47,7 +47,7 @@
         "004-passenger_terminal"
       ],
       "deploy": "intermodal_transfer/deploy/000-schema.sql",
-      "hash": "fnv1a:dc3533a0dcfe05a5",
+      "hash": "fnv1a:56368376e2afec60",
       "name": "005-intermodal_transfer",
       "note": "Schema intermodal_transfer",
       "revert": "intermodal_transfer/revert/000-schema.sql",
@@ -58,7 +58,7 @@
         "005-intermodal_transfer"
       ],
       "deploy": "cargo_decomposition/deploy/000-schema.sql",
-      "hash": "fnv1a:825c15c7f67ef404",
+      "hash": "fnv1a:d5918d7cfaf1d5a0",
       "name": "006-cargo_decomposition",
       "note": "Schema cargo_decomposition",
       "revert": "cargo_decomposition/revert/000-schema.sql",
@@ -69,7 +69,7 @@
         "006-cargo_decomposition"
       ],
       "deploy": "harbour_control/deploy/000-schema.sql",
-      "hash": "fnv1a:2c44c086668efc7f",
+      "hash": "fnv1a:5a075298af90cf9f",
       "name": "007-harbour_control",
       "note": "Schema harbour_control",
       "revert": "harbour_control/revert/000-schema.sql",
@@ -80,7 +80,7 @@
         "007-harbour_control"
       ],
       "deploy": "security/deploy/000-schema.sql",
-      "hash": "fnv1a:d66d269ab014c908",
+      "hash": "fnv1a:f1dcaab3d8b86ba0",
       "name": "008-security",
       "note": "Schema security",
       "revert": "security/revert/000-schema.sql",
@@ -91,7 +91,7 @@
         "008-security"
       ],
       "deploy": "spatial/deploy/000-schema.sql",
-      "hash": "fnv1a:c2e0cce0fbf3b435",
+      "hash": "fnv1a:72e3342fb5c4dffd",
       "name": "009-spatial",
       "note": "Schema spatial",
       "revert": "spatial/revert/000-schema.sql",
@@ -102,7 +102,7 @@
         "009-spatial"
       ],
       "deploy": "deploy/010-security.sql",
-      "hash": "fnv1a:ec4f8eed0e7c3bca",
+      "hash": "fnv1a:0062113653629158",
       "name": "010-security",
       "note": "Roles and grants",
       "revert": "revert/010-security.sql",

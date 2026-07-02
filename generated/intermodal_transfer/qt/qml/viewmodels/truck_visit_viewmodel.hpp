@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/truck_visit_grpc_binding.hpp"
 
 namespace muscovite_harbor::intermodal_transfer::qml {
 
@@ -28,6 +29,16 @@ class TruckVisitViewModel : public QObject {
     Q_PROPERTY(QString slotId READ slotId WRITE setSlotId NOTIFY slotIdChanged REQUIRED)
     Q_PROPERTY(QDateTime arrivedAt READ arrivedAt WRITE setArrivedAt NOTIFY arrivedAtChanged)
     Q_PROPERTY(QDateTime departedAt READ departedAt WRITE setDepartedAt NOTIFY departedAtChanged)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool truckPlateIsValid READ truckPlateIsValid NOTIFY truckPlateIsValidChanged)
+    Q_PROPERTY(bool carrierNameIsValid READ carrierNameIsValid NOTIFY carrierNameIsValidChanged)
+    Q_PROPERTY(bool slotIdIsValid READ slotIdIsValid NOTIFY slotIdIsValidChanged)
+    Q_PROPERTY(bool arrivedAtIsValid READ arrivedAtIsValid NOTIFY arrivedAtIsValidChanged)
+    Q_PROPERTY(bool departedAtIsValid READ departedAtIsValid NOTIFY departedAtIsValidChanged)
 
 public:
     explicit TruckVisitViewModel(QObject* parent = nullptr);
@@ -38,6 +49,16 @@ public:
     [[nodiscard]] auto slotId() const -> QString { return m_slot_id; }
     [[nodiscard]] auto arrivedAt() const -> QDateTime { return m_arrived_at; }
     [[nodiscard]] auto departedAt() const -> QDateTime { return m_departed_at; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto truckPlateIsValid() const -> bool { return m_truck_plate_is_valid; }
+    [[nodiscard]] auto carrierNameIsValid() const -> bool { return m_carrier_name_is_valid; }
+    [[nodiscard]] auto slotIdIsValid() const -> bool { return m_slot_id_is_valid; }
+    [[nodiscard]] auto arrivedAtIsValid() const -> bool { return m_arrived_at_is_valid; }
+    [[nodiscard]] auto departedAtIsValid() const -> bool { return m_departed_at_is_valid; }
 
     void setId(const QString& value);
     void setTruckPlate(const QString& value);
@@ -45,6 +66,8 @@ public:
     void setSlotId(const QString& value);
     void setArrivedAt(const QDateTime& value);
     void setDepartedAt(const QDateTime& value);
+
+    void setBinding(TruckVisitGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -58,18 +81,40 @@ Q_SIGNALS:
     void slotIdChanged();
     void arrivedAtChanged();
     void departedAtChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void truckPlateIsValidChanged();
+    void carrierNameIsValidChanged();
+    void slotIdIsValidChanged();
+    void arrivedAtIsValidChanged();
+    void departedAtIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_truck_plate;
     QString m_carrier_name;
     QString m_slot_id;
     QDateTime m_arrived_at;
     QDateTime m_departed_at;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    TruckVisitGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_truck_plate_is_valid = false;
+    bool m_carrier_name_is_valid = false;
+    bool m_slot_id_is_valid = false;
+    bool m_arrived_at_is_valid = true;
+    bool m_departed_at_is_valid = true;
 };
 
 } // namespace muscovite_harbor::intermodal_transfer::qml

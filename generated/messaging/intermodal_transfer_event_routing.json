@@ -1,0 +1,15 @@
+{
+  "routes": [
+    {
+      "handlers": [
+        {
+          "class_name": "log_departure_handler",
+          "name": "LogDeparture",
+          "start_on_event": false,
+          "type": "policy"
+        }
+      ],
+      "subject": "muscovite.intermodal_transfer.events.departure_confirmed"
+    }
+  ]
+}

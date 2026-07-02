@@ -3,7 +3,7 @@ BEGIN;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'intermodal_transfer_owner') THEN
-    CREATE ROLE intermodal_transfer_owner;
+    CREATE ROLE intermodal_transfer_owner NOLOGIN;
   END IF;
 END $$;
 
@@ -11,11 +11,11 @@ CREATE SCHEMA IF NOT EXISTS intermodal_transfer;
 ALTER SCHEMA intermodal_transfer OWNER TO intermodal_transfer_owner;
 SET search_path TO intermodal_transfer, public;
 
-CREATE DOMAIN intermodal_transfer.slot_reference AS text;
-CREATE DOMAIN intermodal_transfer.truck_plate AS text;
+CREATE DOMAIN intermodal_transfer.slot_reference AS TEXT;
+CREATE DOMAIN intermodal_transfer.truck_plate AS TEXT;
 
 CREATE TABLE intermodal_transfer.transfer_slots (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     reference slot_reference NOT NULL,
     container_id UUID NOT NULL,
     transport_mode TEXT NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE intermodal_transfer.transfer_slots (
 );
 
 CREATE TABLE intermodal_transfer.truck_visits (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     truck_plate truck_plate NOT NULL,
     carrier_name TEXT NOT NULL,
     slot_id UUID NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE intermodal_transfer.truck_visits (
 );
 
 CREATE TABLE intermodal_transfer.rail_wagons (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     wagon_number TEXT NOT NULL,
     max_weight_kg NUMERIC NOT NULL,
     slot_id UUID,
@@ -55,7 +55,7 @@ CREATE TABLE intermodal_transfer.rail_wagons (
 );
 
 CREATE TABLE intermodal_transfer.barge_bookings (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     barge_name TEXT NOT NULL,
     capacity_teu INTEGER NOT NULL,
     departure_at TIMESTAMPTZ NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE intermodal_transfer.barge_bookings (
 );
 
 CREATE TABLE intermodal_transfer.chassis_units (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     chassis_number TEXT NOT NULL,
     chassis_type TEXT NOT NULL,
     is_available BOOLEAN NOT NULL,
@@ -80,64 +80,71 @@ CREATE TABLE intermodal_transfer.chassis_units (
 );
 
 CREATE TABLE intermodal_transfer.outbox (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     aggregate_type TEXT NOT NULL,
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     retry_count INTEGER NOT NULL DEFAULT 0,
+    last_retry_at TIMESTAMPTZ,
     processed_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
-CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE intermodal_transfer.dead_letter_queue (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     original_event_id UUID NOT NULL,
+    aggregate_id UUID,
     event_type TEXT NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
     error_message TEXT NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failure_reason TEXT NOT NULL DEFAULT '',
     CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
-CREATE TABLE dead_letter_queue_default PARTITION OF dead_letter_queue DEFAULT;
 
 CREATE TABLE intermodal_transfer.idempotency_keys (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     key TEXT NOT NULL,
+    response JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMPTZ NOT NULL,
-    CONSTRAINT pk_idempotency_keys PRIMARY KEY (key)
+    CONSTRAINT pk_idempotency_keys PRIMARY KEY (id)
 );
 
-CREATE TABLE intermodal_transfer.container_handoff_saga (
-    id UUID NOT NULL DEFAULT uuidv7(),
-    status TEXT NOT NULL DEFAULT 'pending',
-    current_step TEXT,
-    payload JSONB NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT pk_container_handoff_saga PRIMARY KEY (id)
-);
-
-CREATE TABLE intermodal_transfer.container_handoff_step_log (
-    id UUID NOT NULL DEFAULT uuidv7(),
-    saga_id UUID NOT NULL,
-    step_name TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'pending',
-    result TEXT,
-    started_at TIMESTAMPTZ,
-    completed_at TIMESTAMPTZ,
-    CONSTRAINT pk_container_handoff_step_log PRIMARY KEY (id)
-)
-WITH (fillfactor = 100);
+CREATE TABLE IF NOT EXISTS intermodal_transfer.outbox_y2026_q1 PARTITION OF intermodal_transfer.outbox
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS intermodal_transfer.outbox_y2026_q2 PARTITION OF intermodal_transfer.outbox
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS intermodal_transfer.outbox_y2026_q3 PARTITION OF intermodal_transfer.outbox
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS intermodal_transfer.outbox_y2026_q4 PARTITION OF intermodal_transfer.outbox
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS intermodal_transfer.outbox_default PARTITION OF intermodal_transfer.outbox DEFAULT;
+CREATE TABLE IF NOT EXISTS intermodal_transfer.dead_letter_queue_y2026_q1 PARTITION OF intermodal_transfer.dead_letter_queue
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS intermodal_transfer.dead_letter_queue_y2026_q2 PARTITION OF intermodal_transfer.dead_letter_queue
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS intermodal_transfer.dead_letter_queue_y2026_q3 PARTITION OF intermodal_transfer.dead_letter_queue
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS intermodal_transfer.dead_letter_queue_y2026_q4 PARTITION OF intermodal_transfer.dead_letter_queue
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS intermodal_transfer.dead_letter_queue_default PARTITION OF intermodal_transfer.dead_letter_queue DEFAULT;
 
 ALTER TABLE intermodal_transfer.transfer_slots ADD CONSTRAINT uq_transfer_slots_reference UNIQUE (reference);
 ALTER TABLE intermodal_transfer.rail_wagons ADD CONSTRAINT uq_rail_wagons_wagon_number UNIQUE (wagon_number);
 ALTER TABLE intermodal_transfer.chassis_units ADD CONSTRAINT uq_chassis_units_chassis_number UNIQUE (chassis_number);
+ALTER TABLE intermodal_transfer.idempotency_keys ADD CONSTRAINT uq_idempotency_keys_key UNIQUE (key);
 CREATE INDEX idx_truck_visits_slot_id ON intermodal_transfer.truck_visits USING btree (slot_id);
-CREATE INDEX idx_outbox_unprocessed ON intermodal_transfer.outbox USING btree (created_at) WHERE processed_at IS NULL;
+CREATE INDEX idx_outbox_created_at ON intermodal_transfer.outbox USING btree (created_at);
+CREATE INDEX idx_dead_letter_queue_created_at ON intermodal_transfer.dead_letter_queue USING btree (created_at);
+CREATE INDEX idx_idempotency_keys_expires_at ON intermodal_transfer.idempotency_keys USING btree (expires_at);
+CREATE INDEX idx_outbox_unprocessed ON intermodal_transfer.outbox USING btree (occurred_at) WHERE processed_at IS NULL;
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
@@ -160,7 +167,14 @@ CREATE OR REPLACE FUNCTION intermodal_transfer.notify_outbox_inserted()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
 AS $$
 BEGIN
-  PERFORM pg_notify('outbox_inserted', NEW.aggregate_type);
+  PERFORM pg_notify(
+    'muscovite_outbox_inserted',
+    json_build_object(
+      'schema', TG_TABLE_SCHEMA,
+      'table', TG_TABLE_NAME,
+      'aggregate_type', NEW.aggregate_type
+    )::text
+  );
   RETURN NEW;
 END;
 $$;
@@ -195,10 +209,50 @@ CREATE TRIGGER trg_intermodal_transfer_outbox_notify
     FOR EACH ROW
     EXECUTE FUNCTION intermodal_transfer.notify_outbox_inserted();
 
+CREATE OR REPLACE VIEW intermodal_transfer.domain_events AS
+SELECT id,
+       aggregate_type,
+       aggregate_id,
+       event_type,
+       payload,
+       occurred_at,
+       processed_at,
+       retry_count,
+       last_retry_at,
+       NULL::UUID AS actor_id,
+       NULL::TEXT AS actor_name,
+       created_at
+FROM intermodal_transfer.outbox
+;
+
+CREATE OR REPLACE VIEW intermodal_transfer.domain_events_dlq AS
+SELECT original_event_id AS id,
+       event_type,
+       aggregate_id,
+       payload,
+       occurred_at,
+       retry_count,
+       failed_at,
+       failure_reason
+FROM intermodal_transfer.dead_letter_queue
+;
+
+COMMENT ON ROLE intermodal_transfer_owner IS 'Owns schema intermodal_transfer and manages DDL for generated objects.';
+COMMENT ON ROLE intermodal_transfer_app IS 'Application runtime role for intermodal_transfer with generated CRUD and EXECUTE grants.';
+COMMENT ON ROLE intermodal_transfer_readonly IS 'Read-only access role for intermodal_transfer with generated SELECT and EXECUTE grants.';
+COMMENT ON FUNCTION intermodal_transfer.set_updated_at() IS 'Audit trigger function: stamps updated_at on every row modification.';
+COMMENT ON TRIGGER trg_transfer_slots_updated_at ON intermodal_transfer.transfer_slots IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE intermodal_transfer.transfer_slots IS 'A time slot for container transfer to outbound transport';
+COMMENT ON TRIGGER trg_truck_visits_updated_at ON intermodal_transfer.truck_visits IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE intermodal_transfer.truck_visits IS 'A truck arriving for container pickup';
+COMMENT ON TRIGGER trg_rail_wagons_updated_at ON intermodal_transfer.rail_wagons IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE intermodal_transfer.rail_wagons IS 'A rail wagon for container transport';
+COMMENT ON TRIGGER trg_barge_bookings_updated_at ON intermodal_transfer.barge_bookings IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE intermodal_transfer.barge_bookings IS 'Booking for barge transport of containers';
+COMMENT ON TRIGGER trg_chassis_units_updated_at ON intermodal_transfer.chassis_units IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE intermodal_transfer.chassis_units IS 'Chassis for container road transport';
+COMMENT ON DOMAIN intermodal_transfer.slot_reference IS 'Transfer slot reference (e.g. TS-20260415-0001)';
+COMMENT ON DOMAIN intermodal_transfer.truck_plate IS 'Truck licence plate number';
+COMMENT ON TABLE intermodal_transfer.idempotency_keys IS 'Idempotency key store. Expired rows are removed nightly by pg_cron via cleanup_expired_idempotency_keys().';
 
 COMMIT;

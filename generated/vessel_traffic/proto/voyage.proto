@@ -98,3 +98,28 @@ message ListVoyagesResponse {
   int32 total_count = 3;
 }
 
+message AnnounceVesselRequest {
+  string vessel_id = 1;
+  google.protobuf.Timestamp eta = 2;
+  string cargo_category = 3;
+  bool requires_vessel_exists = 4;
+  optional string idempotency_key = 5;
+}
+
+message AnnounceVesselResponse {
+  bool success = 1;
+  repeated string emitted_events = 2;
+}
+
+message AllocateBerthRequest {
+  string berth_id = 1;
+  bool requires_voyage_announced = 2;
+  bool requires_berth_available = 3;
+  optional string idempotency_key = 4;
+}
+
+message AllocateBerthResponse {
+  bool success = 1;
+  repeated string emitted_events = 2;
+}
+

@@ -6,8 +6,7 @@
 // MUSCOVITE:SIDECAR:UNMODIFIED — remove this line when editing this file
 
 #include "voyage.hpp"
-#include <string>
-#include <vector>
+#include <muscovite/validation/validation_errors.hpp>
 
 namespace vessel_traffic {
 
@@ -16,9 +15,10 @@ namespace vessel_traffic {
 class VoyagePluginValidator {
 public:
     /// Validate user-defined rules. Returns accumulated error messages.
-    [[nodiscard]] static auto validate(const Voyage& entity) -> std::vector<std::string> {
+    [[nodiscard]] static auto validate(const Voyage& entity) -> muscovite::validation::ValidationErrors {
         (void)entity;
-        return {}; // Add custom validation rules here
+        auto errors = muscovite::validation::ValidationErrors{};
+        return errors; // Add custom validation rules here
     }
 };
 

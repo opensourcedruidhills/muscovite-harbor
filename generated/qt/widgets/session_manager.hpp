@@ -11,8 +11,11 @@
 
 #pragma once
 
+#include <memory>
 #include <QObject>
 #include <QString>
+
+namespace grpc { class Channel; }
 
 namespace muscovite_harbor::widgets_app {
 
@@ -24,6 +27,8 @@ public:
     explicit SessionManager(QObject* parent = nullptr);
     [[nodiscard]] auto isAuthenticated() const -> bool;
     [[nodiscard]] auto token() const -> const QString&;
+    [[nodiscard]] auto channel() -> std::shared_ptr<grpc::Channel>;
+    void authenticate(const QString& username, const QString& password);
     void setToken(const QString& token);
     void clear();
 
@@ -33,6 +38,8 @@ Q_SIGNALS:
 private:
     QString token_;
     QString endpoint_;
+    std::shared_ptr<grpc::Channel> channel_;
+    // SECURITY capability: authenticate() calls AuthService::Login.
 };
 
 } // namespace muscovite_harbor::widgets_app

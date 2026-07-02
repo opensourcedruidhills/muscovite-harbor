@@ -20,6 +20,8 @@ public:
     auto create(const Container& entity) -> void;
     auto update(const Container& entity) -> void;
     auto remove(const Container::Id& id) -> void;
+    auto place_container(const boost::uuids::uuid& slot_id, const std::int32_t& tier) -> void;
+    auto pick_container(const boost::uuids::uuid& picked_by) -> void;
 
 private:
     ContainerCommandRepository& repository_;

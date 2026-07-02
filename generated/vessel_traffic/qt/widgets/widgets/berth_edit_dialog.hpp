@@ -16,9 +16,11 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QString>
 #include <QVBoxLayout>
 #include <memory>
 #include <QVariantMap>
+#include <grpcpp/grpcpp.h>
 #include "common/entity_edit_dialog_base.hpp"
 
 namespace muscovite_harbor::widgets {
@@ -26,11 +28,34 @@ namespace muscovite_harbor::widgets {
 class BerthEditDialog : public EntityEditDialogBase {
     Q_OBJECT
 public:
-    explicit BerthEditDialog(QWidget* parent = nullptr);
+    class EntityDialogStateMachine {
+    public:
+        enum class State { Clean, Dirty, Valid, Invalid };
+
+        void onFieldChanged();
+        void onValidationPassed();
+        void onValidationFailed(const QString& message);
+        void onSaveAccepted();
+
+        [[nodiscard]] auto state() const -> State { return state_; }
+        [[nodiscard]] auto saveEnabled() const -> bool { return save_enabled_; }
+        [[nodiscard]] auto errorText() const -> QString { return error_text_; }
+
+    private:
+        State state_ = State::Clean;
+        bool save_enabled_ = false;
+        QString error_text_;
+    };
+
+    explicit BerthEditDialog(QWidget* parent, std::shared_ptr<grpc::Channel> channel);
+
+    /// Set the entity ID for update mode. Empty = create mode.
+    void setEntityId(const QString& id) { entity_id_ = id; }
+    [[nodiscard]] auto entityId() const -> const QString& { return entity_id_; }
 
     /// Create and show dialog safely. Ownership transfers to Qt on success.
-    static void showSafe(QWidget* parent) {
-        auto dlg = std::unique_ptr<BerthEditDialog>{new BerthEditDialog{parent}};
+    static void showSafe(QWidget* parent, std::shared_ptr<grpc::Channel> channel) {
+        auto dlg = std::unique_ptr<BerthEditDialog>{new BerthEditDialog{parent, channel}};
         dlg->setAttribute(Qt::WA_DeleteOnClose);
         dlg.release()->show();
     }
@@ -62,6 +87,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void onAccepted();
+    void onRejected();
 
 private:
     void setupUi();
@@ -76,9 +102,12 @@ private:
     QCheckBox* has_crane_access_ = nullptr;
     QCheckBox* has_reefer_plugs_ = nullptr;
     QCheckBox* is_active_ = nullptr;
+    EntityDialogStateMachine state_machine_{};
     QDialogButtonBox* button_box_ = nullptr;
     QFormLayout* form_ = nullptr;
     ValidationDisplayWidget* validation_display_ = nullptr;
+    std::shared_ptr<grpc::Channel> channel_;
+    QString entity_id_;
 };
 
 } // namespace muscovite_harbor::widgets

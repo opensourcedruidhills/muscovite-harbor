@@ -117,19 +117,19 @@ Parcel dispatched for last-mile delivery
 
 ### PalletId
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Pallet identifier (e.g. PLT-ABC12345)
 
 ### TrackingNumber
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Parcel tracking number
 
 ### HSCode
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Harmonised System tariff classification code
 

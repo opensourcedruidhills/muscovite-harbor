@@ -8,9 +8,9 @@ Dialog {
     id: bargeBookingDialog
     title: qsTr("Edit BargeBooking")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("BargeName") }
         TextField {
@@ -31,13 +37,26 @@ Dialog {
             text: viewModel.bargeName
             onTextChanged: viewModel.setBargeName(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.bargeNameIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("CapacityTeu") }
         SpinBox {
             id: capacityTeuField
             from: 0
             to: 999999
             value: viewModel.capacityTeu
             onValueChanged: viewModel.setCapacityTeu(value)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.capacityTeuIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("DepartureAt") }
@@ -47,6 +66,12 @@ Dialog {
             text: viewModel.departureAt
             onTextChanged: viewModel.setDepartureAt(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.departureAtIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Status") }
         TextField {
@@ -55,9 +80,27 @@ Dialog {
             text: viewModel.status
             onTextChanged: viewModel.setStatus(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.statusIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); bargeBookingDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); bargeBookingDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

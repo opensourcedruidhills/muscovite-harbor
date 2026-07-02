@@ -55,6 +55,12 @@ public:
         (void)service_name; (void)method_name;
     }
 
+    [[nodiscard]] static auto create(
+        std::string_view method_name,
+        const grpc::ServerContext* ctx = nullptr) -> GrpcMethodSpan {
+        return GrpcMethodSpan("grpc", method_name, ctx);
+    }
+
     void set_status_ok() {
 #ifdef MUSCOVITE_TELEMETRY_AVAILABLE
         if (span_) span_->SetStatus(opentelemetry::trace::StatusCode::kOk);

@@ -5,13 +5,13 @@ BEGIN;
 
 SET search_path TO passenger_terminal, public;
 
-INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuidv7(), 'CLOSED') ON CONFLICT DO NOTHING;
-INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuidv7(), 'CHECK_IN_OPEN') ON CONFLICT DO NOTHING;
-INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuidv7(), 'BOARDING') ON CONFLICT DO NOTHING;
-INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuidv7(), 'FINAL_CALL') ON CONFLICT DO NOTHING;
-INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuidv7(), 'CHECKED_IN') ON CONFLICT DO NOTHING;
-INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuidv7(), 'SECURITY_CLEARED') ON CONFLICT DO NOTHING;
-INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuidv7(), 'BOARDED') ON CONFLICT DO NOTHING;
-INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuidv7(), 'DISEMBARKED') ON CONFLICT DO NOTHING;
+INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.CLOSED'), 'CLOSED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.CHECK_IN_OPEN'), 'CHECK_IN_OPEN') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.BOARDING'), 'BOARDING') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.FINAL_CALL'), 'FINAL_CALL') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.CHECKED_IN'), 'CHECKED_IN') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.SECURITY_CLEARED'), 'SECURITY_CLEARED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.BOARDED'), 'BOARDED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.DISEMBARKED'), 'DISEMBARKED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
 
 COMMIT;

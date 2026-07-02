@@ -8,9 +8,9 @@ Dialog {
     id: loadPlanDialog
     title: qsTr("Edit LoadPlan")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("VoyageId") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("VoyageId")
             text: viewModel.voyageId
             onTextChanged: viewModel.setVoyageId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.voyageIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("CreatedAt") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.createdAt
             onTextChanged: viewModel.setCreatedAt(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.createdAtIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Status") }
         TextField {
@@ -47,9 +65,27 @@ Dialog {
             text: viewModel.status
             onTextChanged: viewModel.setStatus(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.statusIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); loadPlanDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); loadPlanDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

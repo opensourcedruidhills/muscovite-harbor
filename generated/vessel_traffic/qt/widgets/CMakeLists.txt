@@ -20,6 +20,7 @@ add_library(vessel_traffic-qt-models
 target_link_libraries(vessel_traffic-qt-models PUBLIC
     Qt6::Core
     Qt6::Gui
+    gRPC::grpc++
 )
 
 add_library(vessel_traffic-qt-widgets
@@ -53,6 +54,7 @@ target_link_libraries(vessel_traffic-qt-widgets PUBLIC
     vessel_traffic-qt-models
     Qt6::Core
     Qt6::Gui
+    Qt6::Concurrent
     Qt6::Widgets
 )
 

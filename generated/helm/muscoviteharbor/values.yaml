@@ -1,0 +1,55 @@
+# Default values for muscoviteharbor.
+vesseltraffic:
+  replicaCount: 1
+  image:
+    repository: vesseltraffic
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 50051
+cargooperations:
+  replicaCount: 1
+  image:
+    repository: cargooperations
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 50051
+passengerterminal:
+  replicaCount: 1
+  image:
+    repository: passengerterminal
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 50051
+intermodaltransfer:
+  replicaCount: 1
+  image:
+    repository: intermodaltransfer
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 50051
+cargodecomposition:
+  replicaCount: 1
+  image:
+    repository: cargodecomposition
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 50051
+harbourcontrol:
+  replicaCount: 1
+  image:
+    repository: harbourcontrol
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 50051

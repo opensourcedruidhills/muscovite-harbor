@@ -12,12 +12,26 @@
 #include "boarding_pass_fk_widget.hpp"
 
 #include <QHBoxLayout>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+#include <spdlog/spdlog.h>
+#include "passenger.grpc.pb.h"
+#include "gate.grpc.pb.h"
 
 namespace muscovite_harbor::widgets {
 
 BoardingPassFkWidget::BoardingPassFkWidget(QWidget* parent)
     : QWidget{parent} {
     setupUi();
+    loadPassengerOptions();
+    loadGateOptions();
+}
+
+void BoardingPassFkWidget::setServerAddress(const QString& address) {
+    if (m_server_address != address) {
+        m_server_address = address;
+        Q_EMIT serverAddressChanged();
+    }
 }
 
 void BoardingPassFkWidget::setupUi() {
@@ -45,6 +59,46 @@ auto BoardingPassFkWidget::selectedPassenger() const -> QString {
 
 auto BoardingPassFkWidget::selectedGate() const -> QString {
     return gate_combo_->currentText();
+}
+
+void BoardingPassFkWidget::loadPassengerOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = PassengerService::NewStub(channel_);
+    ListPassengersRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListPassengersResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListPassengers(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("BoardingPassFkWidget::loadPassengerOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populatePassengerOptions(options);
+}
+
+void BoardingPassFkWidget::loadGateOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = GateService::NewStub(channel_);
+    ListGatesRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListGatesResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListGates(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("BoardingPassFkWidget::loadGateOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populateGateOptions(options);
 }
 
 void BoardingPassFkWidget::populatePassengerOptions(const QStringList& options) {

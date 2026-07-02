@@ -50,6 +50,14 @@ virtual void ListContainersAsync(
     const ListContainersRequest& request,
     std::function<void(grpc::Status, ListContainersResponse)> callback) = 0;
 
+virtual void PlaceContainerAsync(
+    const PlaceContainerRequest& request,
+    std::function<void(grpc::Status, PlaceContainerResponse)> callback) = 0;
+
+virtual void PickContainerAsync(
+    const PickContainerRequest& request,
+    std::function<void(grpc::Status, PickContainerResponse)> callback) = 0;
+
 // Async handlers for YardSlot
 virtual void CreateYardSlotAsync(
     const CreateYardSlotRequest& request,
@@ -154,14 +162,6 @@ virtual void DeleteDischargeSequenceAsync(
 virtual void ListDischargeSequencesAsync(
     const ListDischargeSequencesRequest& request,
     std::function<void(grpc::Status, ListDischargeSequencesResponse)> callback) = 0;
-
-virtual void PlaceContainerAsync(
-    const PlaceContainerRequest& request,
-    std::function<void(grpc::Status, PlaceContainerResponse)> callback) = 0;
-
-virtual void PickContainerAsync(
-    const PickContainerRequest& request,
-    std::function<void(grpc::Status, PickContainerResponse)> callback) = 0;
 
 };
 

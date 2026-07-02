@@ -15,9 +15,10 @@
 SCENARIO("Boundary: weight_kg min value") {
     GIVEN("a Pallet with min weight_kg") {
         auto val = std::numeric_limits<double>::lowest();
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.weight_kg == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PalletValidator::validate(entity)
+                // CHECK(!PalletValidator::validate(entity).has_error_for("weight_kg"));
             }
         }
     }
@@ -26,9 +27,10 @@ SCENARIO("Boundary: weight_kg min value") {
 SCENARIO("Boundary: weight_kg max value") {
     GIVEN("a Pallet with max weight_kg") {
         auto val = std::numeric_limits<double>::max();
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.weight_kg == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PalletValidator::validate(entity)
+                // CHECK(!PalletValidator::validate(entity).has_error_for("weight_kg"));
             }
         }
     }
@@ -37,9 +39,10 @@ SCENARIO("Boundary: weight_kg max value") {
 SCENARIO("Boundary: length_cm min value") {
     GIVEN("a Pallet with min length_cm") {
         auto val = std::numeric_limits<double>::lowest();
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.length_cm == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PalletValidator::validate(entity)
+                // CHECK(!PalletValidator::validate(entity).has_error_for("length_cm"));
             }
         }
     }
@@ -48,9 +51,10 @@ SCENARIO("Boundary: length_cm min value") {
 SCENARIO("Boundary: length_cm max value") {
     GIVEN("a Pallet with max length_cm") {
         auto val = std::numeric_limits<double>::max();
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.length_cm == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PalletValidator::validate(entity)
+                // CHECK(!PalletValidator::validate(entity).has_error_for("length_cm"));
             }
         }
     }
@@ -59,9 +63,10 @@ SCENARIO("Boundary: length_cm max value") {
 SCENARIO("Boundary: width_cm min value") {
     GIVEN("a Pallet with min width_cm") {
         auto val = std::numeric_limits<double>::lowest();
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.width_cm == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PalletValidator::validate(entity)
+                // CHECK(!PalletValidator::validate(entity).has_error_for("width_cm"));
             }
         }
     }
@@ -70,9 +75,10 @@ SCENARIO("Boundary: width_cm min value") {
 SCENARIO("Boundary: width_cm max value") {
     GIVEN("a Pallet with max width_cm") {
         auto val = std::numeric_limits<double>::max();
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.width_cm == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PalletValidator::validate(entity)
+                // CHECK(!PalletValidator::validate(entity).has_error_for("width_cm"));
             }
         }
     }
@@ -81,9 +87,10 @@ SCENARIO("Boundary: width_cm max value") {
 SCENARIO("Boundary: height_cm min value") {
     GIVEN("a Pallet with min height_cm") {
         auto val = std::numeric_limits<double>::lowest();
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.height_cm == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PalletValidator::validate(entity)
+                // CHECK(!PalletValidator::validate(entity).has_error_for("height_cm"));
             }
         }
     }
@@ -92,9 +99,10 @@ SCENARIO("Boundary: height_cm min value") {
 SCENARIO("Boundary: height_cm max value") {
     GIVEN("a Pallet with max height_cm") {
         auto val = std::numeric_limits<double>::max();
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.height_cm == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke PalletValidator::validate(entity)
+                // CHECK(!PalletValidator::validate(entity).has_error_for("height_cm"));
             }
         }
     }

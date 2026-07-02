@@ -13,7 +13,9 @@ auto VoyageStatusStateMachine::can_transition(const std::string& current_state,
     } else if (current_state == "PILOT_ORDERED" && event == "VesselApproaching") {
         return true;
     } else if (current_state == "APPROACHING" && event == "BeginBerthing") {
-        return true;
+        if (tide_window_open) {
+            return true;
+        }
     } else if (current_state == "BERTHING" && event == "VesselMoored") {
         return true;
     } else if (current_state == "MOORED" && event == "BeginCargoOps") {
@@ -21,7 +23,9 @@ auto VoyageStatusStateMachine::can_transition(const std::string& current_state,
     } else if (current_state == "CARGO_OPS" && event == "CargoComplete") {
         return true;
     } else if (current_state == "DEPARTURE_PREP" && event == "CastOff") {
-        return true;
+        if (departure_clearance) {
+            return true;
+        }
     } else if (current_state == "UNMOORED" && event == "VesselDeparted") {
         return true;
     } else if (current_state == "APPROACHING" && event == "AbortApproach") {
@@ -39,7 +43,9 @@ auto VoyageStatusStateMachine::transition(const std::string& current_state,
     } else if (current_state == "PILOT_ORDERED" && event == "VesselApproaching") {
         return TransitionResult{.success = true, .new_state_id = "APPROACHING"};
     } else if (current_state == "APPROACHING" && event == "BeginBerthing") {
-        return TransitionResult{.success = true, .new_state_id = "BERTHING"};
+        if (tide_window_open) {
+            return TransitionResult{.success = true, .new_state_id = "BERTHING"};
+        }
     } else if (current_state == "BERTHING" && event == "VesselMoored") {
         return TransitionResult{.success = true, .new_state_id = "MOORED"};
     } else if (current_state == "MOORED" && event == "BeginCargoOps") {
@@ -47,7 +53,9 @@ auto VoyageStatusStateMachine::transition(const std::string& current_state,
     } else if (current_state == "CARGO_OPS" && event == "CargoComplete") {
         return TransitionResult{.success = true, .new_state_id = "DEPARTURE_PREP"};
     } else if (current_state == "DEPARTURE_PREP" && event == "CastOff") {
-        return TransitionResult{.success = true, .new_state_id = "UNMOORED"};
+        if (departure_clearance) {
+            return TransitionResult{.success = true, .new_state_id = "UNMOORED"};
+        }
     } else if (current_state == "UNMOORED" && event == "VesselDeparted") {
         return TransitionResult{.success = true, .new_state_id = "DEPARTED"};
     } else if (current_state == "APPROACHING" && event == "AbortApproach") {
@@ -61,34 +69,34 @@ auto VoyageStatusStateMachine::transition(const std::string& current_state,
 auto VoyageStatusStateMachine::allowed_transitions(const std::string& current_state) const -> std::vector<AllowedTransition> {
     auto result = std::vector<AllowedTransition>{};
     if (current_state == "ANNOUNCED") {
-        result.push_back(AllowedTransition{.to_state = "PILOT_ORDERED", .event_name = "OrderPilot"});
+        result.push_back(AllowedTransition{.to_state = "PILOT_ORDERED", .event_name = "OrderPilot", .guard_expression = std::nullopt});
     }
     if (current_state == "PILOT_ORDERED") {
-        result.push_back(AllowedTransition{.to_state = "APPROACHING", .event_name = "VesselApproaching"});
+        result.push_back(AllowedTransition{.to_state = "APPROACHING", .event_name = "VesselApproaching", .guard_expression = std::nullopt});
     }
     if (current_state == "APPROACHING") {
-        result.push_back(AllowedTransition{.to_state = "BERTHING", .event_name = "BeginBerthing"});
+        result.push_back(AllowedTransition{.to_state = "BERTHING", .event_name = "BeginBerthing", .guard_expression = "tide_window_open"});
     }
     if (current_state == "BERTHING") {
-        result.push_back(AllowedTransition{.to_state = "MOORED", .event_name = "VesselMoored"});
+        result.push_back(AllowedTransition{.to_state = "MOORED", .event_name = "VesselMoored", .guard_expression = std::nullopt});
     }
     if (current_state == "MOORED") {
-        result.push_back(AllowedTransition{.to_state = "CARGO_OPS", .event_name = "BeginCargoOps"});
+        result.push_back(AllowedTransition{.to_state = "CARGO_OPS", .event_name = "BeginCargoOps", .guard_expression = std::nullopt});
     }
     if (current_state == "CARGO_OPS") {
-        result.push_back(AllowedTransition{.to_state = "DEPARTURE_PREP", .event_name = "CargoComplete"});
+        result.push_back(AllowedTransition{.to_state = "DEPARTURE_PREP", .event_name = "CargoComplete", .guard_expression = std::nullopt});
     }
     if (current_state == "DEPARTURE_PREP") {
-        result.push_back(AllowedTransition{.to_state = "UNMOORED", .event_name = "CastOff"});
+        result.push_back(AllowedTransition{.to_state = "UNMOORED", .event_name = "CastOff", .guard_expression = "departure_clearance"});
     }
     if (current_state == "UNMOORED") {
-        result.push_back(AllowedTransition{.to_state = "DEPARTED", .event_name = "VesselDeparted"});
+        result.push_back(AllowedTransition{.to_state = "DEPARTED", .event_name = "VesselDeparted", .guard_expression = std::nullopt});
     }
     if (current_state == "APPROACHING") {
-        result.push_back(AllowedTransition{.to_state = "ANNOUNCED", .event_name = "AbortApproach"});
+        result.push_back(AllowedTransition{.to_state = "ANNOUNCED", .event_name = "AbortApproach", .guard_expression = std::nullopt});
     }
     if (current_state == "BERTHING") {
-        result.push_back(AllowedTransition{.to_state = "APPROACHING", .event_name = "AbortBerthing"});
+        result.push_back(AllowedTransition{.to_state = "APPROACHING", .event_name = "AbortBerthing", .guard_expression = std::nullopt});
     }
     return result;
 }

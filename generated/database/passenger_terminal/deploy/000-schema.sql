@@ -3,7 +3,7 @@ BEGIN;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'passenger_terminal_owner') THEN
-    CREATE ROLE passenger_terminal_owner;
+    CREATE ROLE passenger_terminal_owner NOLOGIN;
   END IF;
 END $$;
 
@@ -11,8 +11,10 @@ CREATE SCHEMA IF NOT EXISTS passenger_terminal;
 ALTER SCHEMA passenger_terminal OWNER TO passenger_terminal_owner;
 SET search_path TO passenger_terminal, public;
 
-CREATE DOMAIN passenger_terminal.booking_reference AS text;
-CREATE DOMAIN passenger_terminal.gate_code AS text;
+CREATE TYPE passenger_terminal.passenger_type AS ENUM ();
+
+CREATE DOMAIN passenger_terminal.booking_reference AS TEXT;
+CREATE DOMAIN passenger_terminal.gate_code AS TEXT;
 
 CREATE TYPE passenger_terminal.passenger_name AS (
     given_name TEXT,
@@ -20,11 +22,10 @@ CREATE TYPE passenger_terminal.passenger_name AS (
 );
 
 CREATE TABLE passenger_terminal.passengers (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     booking_ref booking_reference NOT NULL,
     passenger_type TEXT NOT NULL,
     voyage_id UUID NOT NULL,
-    status TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by UUID,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -34,11 +35,10 @@ CREATE TABLE passenger_terminal.passengers (
 );
 
 CREATE TABLE passenger_terminal.gates (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     code gate_code NOT NULL,
     name TEXT NOT NULL,
     capacity INTEGER NOT NULL,
-    status TEXT NOT NULL,
     voyage_id UUID,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by UUID,
@@ -49,7 +49,7 @@ CREATE TABLE passenger_terminal.gates (
 );
 
 CREATE TABLE passenger_terminal.boarding_passes (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     passenger_id UUID NOT NULL,
     gate_id UUID,
     boarding_group TEXT NOT NULL,
@@ -64,45 +64,51 @@ CREATE TABLE passenger_terminal.boarding_passes (
 );
 
 CREATE TABLE passenger_terminal.outbox (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     aggregate_type TEXT NOT NULL,
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     retry_count INTEGER NOT NULL DEFAULT 0,
+    last_retry_at TIMESTAMPTZ,
     processed_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
-CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE passenger_terminal.dead_letter_queue (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     original_event_id UUID NOT NULL,
+    aggregate_id UUID,
     event_type TEXT NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
     error_message TEXT NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failure_reason TEXT NOT NULL DEFAULT '',
     CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
-CREATE TABLE dead_letter_queue_default PARTITION OF dead_letter_queue DEFAULT;
 
 CREATE TABLE passenger_terminal.idempotency_keys (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     key TEXT NOT NULL,
+    response JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMPTZ NOT NULL,
-    CONSTRAINT pk_idempotency_keys PRIMARY KEY (key)
+    CONSTRAINT pk_idempotency_keys PRIMARY KEY (id)
 );
 
 CREATE TABLE passenger_terminal.gate_status_states (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     name TEXT NOT NULL,
     CONSTRAINT pk_gate_status_states PRIMARY KEY (id)
 );
 
 CREATE TABLE passenger_terminal.gate_status_transitions (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     entity_id UUID NOT NULL,
     from_state TEXT NOT NULL,
     to_state TEXT NOT NULL,
@@ -113,13 +119,13 @@ CREATE TABLE passenger_terminal.gate_status_transitions (
 WITH (fillfactor = 100);
 
 CREATE TABLE passenger_terminal.passenger_status_states (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     name TEXT NOT NULL,
     CONSTRAINT pk_passenger_status_states PRIMARY KEY (id)
 );
 
 CREATE TABLE passenger_terminal.passenger_status_transitions (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     entity_id UUID NOT NULL,
     from_state TEXT NOT NULL,
     to_state TEXT NOT NULL,
@@ -129,8 +135,28 @@ CREATE TABLE passenger_terminal.passenger_status_transitions (
 )
 WITH (fillfactor = 100);
 
+CREATE TABLE IF NOT EXISTS passenger_terminal.outbox_y2026_q1 PARTITION OF passenger_terminal.outbox
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS passenger_terminal.outbox_y2026_q2 PARTITION OF passenger_terminal.outbox
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS passenger_terminal.outbox_y2026_q3 PARTITION OF passenger_terminal.outbox
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS passenger_terminal.outbox_y2026_q4 PARTITION OF passenger_terminal.outbox
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS passenger_terminal.outbox_default PARTITION OF passenger_terminal.outbox DEFAULT;
+CREATE TABLE IF NOT EXISTS passenger_terminal.dead_letter_queue_y2026_q1 PARTITION OF passenger_terminal.dead_letter_queue
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS passenger_terminal.dead_letter_queue_y2026_q2 PARTITION OF passenger_terminal.dead_letter_queue
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS passenger_terminal.dead_letter_queue_y2026_q3 PARTITION OF passenger_terminal.dead_letter_queue
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS passenger_terminal.dead_letter_queue_y2026_q4 PARTITION OF passenger_terminal.dead_letter_queue
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS passenger_terminal.dead_letter_queue_default PARTITION OF passenger_terminal.dead_letter_queue DEFAULT;
+
 ALTER TABLE passenger_terminal.passengers ADD CONSTRAINT uq_passengers_booking_ref UNIQUE (booking_ref);
 ALTER TABLE passenger_terminal.gates ADD CONSTRAINT uq_gates_code UNIQUE (code);
+ALTER TABLE passenger_terminal.idempotency_keys ADD CONSTRAINT uq_idempotency_keys_key UNIQUE (key);
 -- CHECK: chk_gate_status_transitions_from_state
 ALTER TABLE passenger_terminal.gate_status_transitions ADD CONSTRAINT chk_gate_status_transitions_from_state
     CHECK (from_state IN ('CLOSED', 'CHECK_IN_OPEN', 'BOARDING', 'FINAL_CALL'));
@@ -138,6 +164,10 @@ ALTER TABLE passenger_terminal.gate_status_transitions ADD CONSTRAINT chk_gate_s
 -- CHECK: chk_gate_status_transitions_to_state
 ALTER TABLE passenger_terminal.gate_status_transitions ADD CONSTRAINT chk_gate_status_transitions_to_state
     CHECK (to_state IN ('CLOSED', 'CHECK_IN_OPEN', 'BOARDING', 'FINAL_CALL'));
+
+-- CHECK: chk_gates_status_id
+ALTER TABLE passenger_terminal.gates ADD CONSTRAINT chk_gates_status_id
+    CHECK (status_id IN (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.CLOSED'), uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.CHECK_IN_OPEN'), uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.BOARDING'), uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.FINAL_CALL')));
 
 -- CHECK: chk_passenger_status_transitions_from_state
 ALTER TABLE passenger_terminal.passenger_status_transitions ADD CONSTRAINT chk_passenger_status_transitions_from_state
@@ -147,9 +177,16 @@ ALTER TABLE passenger_terminal.passenger_status_transitions ADD CONSTRAINT chk_p
 ALTER TABLE passenger_terminal.passenger_status_transitions ADD CONSTRAINT chk_passenger_status_transitions_to_state
     CHECK (to_state IN ('CHECKED_IN', 'SECURITY_CLEARED', 'BOARDED', 'DISEMBARKED'));
 
+-- CHECK: chk_passengers_status_id
+ALTER TABLE passenger_terminal.passengers ADD CONSTRAINT chk_passengers_status_id
+    CHECK (status_id IN (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.CHECKED_IN'), uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.SECURITY_CLEARED'), uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.BOARDED'), uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.DISEMBARKED')));
+
 CREATE INDEX idx_boarding_passes_passenger_id ON passenger_terminal.boarding_passes USING btree (passenger_id);
 CREATE INDEX idx_boarding_passes_gate_id ON passenger_terminal.boarding_passes USING btree (gate_id);
-CREATE INDEX idx_outbox_unprocessed ON passenger_terminal.outbox USING btree (created_at) WHERE processed_at IS NULL;
+CREATE INDEX idx_outbox_created_at ON passenger_terminal.outbox USING btree (created_at);
+CREATE INDEX idx_dead_letter_queue_created_at ON passenger_terminal.dead_letter_queue USING btree (created_at);
+CREATE INDEX idx_idempotency_keys_expires_at ON passenger_terminal.idempotency_keys USING btree (expires_at);
+CREATE INDEX idx_outbox_unprocessed ON passenger_terminal.outbox USING btree (occurred_at) WHERE processed_at IS NULL;
 
 CREATE OR REPLACE FUNCTION passenger_terminal.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
@@ -172,7 +209,14 @@ CREATE OR REPLACE FUNCTION passenger_terminal.notify_outbox_inserted()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
 AS $$
 BEGIN
-  PERFORM pg_notify('outbox_inserted', NEW.aggregate_type);
+  PERFORM pg_notify(
+    'muscovite_outbox_inserted',
+    json_build_object(
+      'schema', TG_TABLE_SCHEMA,
+      'table', TG_TABLE_NAME,
+      'aggregate_type', NEW.aggregate_type
+    )::text
+  );
   RETURN NEW;
 END;
 $$;
@@ -197,16 +241,65 @@ CREATE TRIGGER trg_passenger_terminal_outbox_notify
     FOR EACH ROW
     EXECUTE FUNCTION passenger_terminal.notify_outbox_inserted();
 
+CREATE OR REPLACE VIEW passenger_terminal.domain_events AS
+SELECT id,
+       aggregate_type,
+       aggregate_id,
+       event_type,
+       payload,
+       occurred_at,
+       processed_at,
+       retry_count,
+       last_retry_at,
+       NULL::UUID AS actor_id,
+       NULL::TEXT AS actor_name,
+       created_at
+FROM passenger_terminal.outbox
+;
+
+CREATE OR REPLACE VIEW passenger_terminal.domain_events_dlq AS
+SELECT original_event_id AS id,
+       event_type,
+       aggregate_id,
+       payload,
+       occurred_at,
+       retry_count,
+       failed_at,
+       failure_reason
+FROM passenger_terminal.dead_letter_queue
+;
+
 CREATE MATERIALIZED VIEW passenger_terminal.departure_board AS
-SELECT 1 WHERE false /* ERROR: projection 'DepartureBoard' has no source_sql or source_entity */
+SELECT vg.number AS voyage_number, ve.name AS vessel_name, vg.destination AS destination, vg.departure_time AS departure_time, g.code AS gate_code, 'scheduled' AS status FROM vessel_traffic.voyages vg JOIN vessel_traffic.vessels ve ON vg.id = ve.id JOIN passenger_terminal.gates g ON g.id = vg.id
 WITH DATA;
 
 CREATE MATERIALIZED VIEW passenger_terminal.arrival_board AS
-SELECT 1 WHERE false /* ERROR: projection 'ArrivalBoard' has no source_sql or source_entity */
+SELECT vg.number AS voyage_number, ve.name AS vessel_name, vg.origin AS origin, vg.arrival_time AS arrival_time, 'arriving' AS status FROM vessel_traffic.voyages vg JOIN vessel_traffic.vessels ve ON vg.id = ve.id
 WITH DATA;
 
+COMMENT ON ROLE passenger_terminal_owner IS 'Owns schema passenger_terminal and manages DDL for generated objects.';
+COMMENT ON ROLE passenger_terminal_app IS 'Application runtime role for passenger_terminal with generated CRUD and EXECUTE grants.';
+COMMENT ON ROLE passenger_terminal_readonly IS 'Read-only access role for passenger_terminal with generated SELECT and EXECUTE grants.';
+COMMENT ON FUNCTION passenger_terminal.set_updated_at() IS 'Audit trigger function: stamps updated_at on every row modification.';
+COMMENT ON TRIGGER trg_passengers_updated_at ON passenger_terminal.passengers IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE passenger_terminal.passengers IS 'A passenger travelling on a voyage';
+COMMENT ON TRIGGER trg_gates_updated_at ON passenger_terminal.gates IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE passenger_terminal.gates IS 'A physical gate in the passenger terminal';
+COMMENT ON COLUMN passenger_terminal.gates.capacity IS 'Maximum passengers in gate area';
+COMMENT ON TRIGGER trg_boarding_passes_updated_at ON passenger_terminal.boarding_passes IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE passenger_terminal.boarding_passes IS 'Issued boarding pass for a passenger';
+COMMENT ON DOMAIN passenger_terminal.booking_reference IS 'Passenger booking reference (e.g. AB123456)';
+COMMENT ON DOMAIN passenger_terminal.gate_code IS 'Terminal gate identifier (e.g. G1, G12)';
+COMMENT ON TABLE passenger_terminal.idempotency_keys IS 'Idempotency key store. Expired rows are removed nightly by pg_cron via cleanup_expired_idempotency_keys().';
+COMMENT ON TABLE passenger_terminal.passengers IS 'stories: DepartureInfo, FastCheckIn';
+
+INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.CLOSED'), 'CLOSED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.CHECK_IN_OPEN'), 'CHECK_IN_OPEN') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.BOARDING'), 'BOARDING') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.gate_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.gate_status_states.FINAL_CALL'), 'FINAL_CALL') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.CHECKED_IN'), 'CHECKED_IN') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.SECURITY_CLEARED'), 'SECURITY_CLEARED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.BOARDED'), 'BOARDED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO passenger_terminal.passenger_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'passenger_terminal.passenger_status_states.DISEMBARKED'), 'DISEMBARKED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
 
 COMMIT;

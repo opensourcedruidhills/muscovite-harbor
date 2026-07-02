@@ -14,6 +14,7 @@
 #include <QMainWindow>
 #include <QString>
 #include "session_manager.hpp"
+// SECURITY capability present: MainWindow authenticates via SessionManager::authenticate.
 
 class QTabWidget;
 class QMdiArea;
@@ -27,6 +28,7 @@ public:
 
 private:
     void setup_central_widget();
+    void setup_context_menu();
     void populate_context_views();
     void apply_startup_context();
     void on_context_changed(int index);

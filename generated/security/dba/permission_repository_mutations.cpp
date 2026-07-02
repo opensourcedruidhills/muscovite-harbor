@@ -2,6 +2,9 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "permission_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace security {
 
@@ -10,12 +13,10 @@ auto PermissionRepositoryImpl::insert(pqxx::work& tx, const Permission& entity) 
         entity.id,
         entity.name,
         entity.resource,
-        entity.action,
-    );
+        entity.action);
 }
 
 auto PermissionRepositoryImpl::update(pqxx::work& tx, const Permission& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
     params.append(entity.id);
     params.append(entity.name);

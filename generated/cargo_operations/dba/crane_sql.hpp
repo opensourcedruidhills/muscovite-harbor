@@ -9,16 +9,16 @@ namespace cargo_operations {
 
 // SQL constants for table: cranes
 inline constexpr std::string_view kSelectAll =
-    "SELECT id, id, name, crane_type, max_lift_kg, is_active FROM cranes";
+    "SELECT id, name, crane_type, max_lift_kg, is_active FROM cranes";
 
 inline constexpr std::string_view kSelectById =
-    "SELECT id, id, name, crane_type, max_lift_kg, is_active FROM cranes WHERE id = $1";
+    "SELECT id, name, crane_type, max_lift_kg, is_active FROM cranes WHERE id = $1";
 
 inline constexpr std::string_view kInsert =
-    "INSERT INTO cranes (id, id, name, crane_type, max_lift_kg, is_active) VALUES ($1, $2, $3, $4, $5, $6)";
+    "INSERT INTO cranes (id, name, crane_type, max_lift_kg, is_active) VALUES ($1, $2, $3, $4, $5)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE cranes SET id = $2, name = $3, crane_type = $4, max_lift_kg = $5, is_active = $6 WHERE id = $7";
+    "UPDATE cranes SET name = $2, crane_type = $3, max_lift_kg = $4, is_active = $5 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM cranes WHERE id = $1";

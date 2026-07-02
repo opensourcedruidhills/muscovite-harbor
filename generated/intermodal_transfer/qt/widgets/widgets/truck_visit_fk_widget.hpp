@@ -25,9 +25,13 @@ class TruckVisitFkWidget : public QWidget {
 public:
     explicit TruckVisitFkWidget(QWidget* parent = nullptr);
 
+    [[nodiscard]] auto serverAddress() const -> QString { return m_server_address; }
+    void setServerAddress(const QString& address);
+
     [[nodiscard]] auto selectedTransferSlot() const -> QString;
 
 Q_SIGNALS:
+    void serverAddressChanged();
     void transferSlotChanged(const QString& id);
 
 public Q_SLOTS:
@@ -35,7 +39,9 @@ public Q_SLOTS:
 
 private:
     void setupUi();
+    void loadTransferSlotOptions();
 
+    QString m_server_address = QStringLiteral("localhost:50051");
     QComboBox* transfer_slot_combo_ = nullptr;
 };
 

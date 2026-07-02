@@ -213,7 +213,40 @@
           "storage_mode": "table"
         },
         {
-          "commands": [],
+          "commands": [
+            {
+              "emits": [
+                "VesselAnnounced"
+              ],
+              "name": "AnnounceVessel",
+              "parameters": [
+                {
+                  "name": "vessel_id",
+                  "type": "UUID"
+                },
+                {
+                  "name": "eta",
+                  "type": "DateTime"
+                },
+                {
+                  "name": "cargo_category",
+                  "type": "String"
+                }
+              ]
+            },
+            {
+              "emits": [
+                "BerthAllocated"
+              ],
+              "name": "AllocateBerth",
+              "parameters": [
+                {
+                  "name": "berth_id",
+                  "type": "UUID"
+                }
+              ]
+            }
+          ],
           "doc": "A single vessel call at the harbour",
           "fields": [
             {
@@ -275,13 +308,13 @@
           "relationships": [
             {
               "direction": "to-one",
-              "name": "Voyage",
+              "name": "VoyageToVessel",
               "required": true,
               "target": "Vessel"
             },
             {
               "direction": "to-one",
-              "name": "Voyage",
+              "name": "VoyageToBerth",
               "target": "Berth"
             }
           ],
@@ -398,40 +431,7 @@
           "storage_mode": "table"
         },
         {
-          "commands": [
-            {
-              "emits": [
-                "VesselAnnounced"
-              ],
-              "name": "AnnounceVessel",
-              "parameters": [
-                {
-                  "name": "vessel_id",
-                  "type": "UUID"
-                },
-                {
-                  "name": "eta",
-                  "type": "DateTime"
-                },
-                {
-                  "name": "cargo_category",
-                  "type": "String"
-                }
-              ]
-            },
-            {
-              "emits": [
-                "BerthAllocated"
-              ],
-              "name": "AllocateBerth",
-              "parameters": [
-                {
-                  "name": "berth_id",
-                  "type": "UUID"
-                }
-              ]
-            }
-          ],
+          "commands": [],
           "doc": "A tidal window with navigable draft at a specific berth",
           "fields": [
             {
@@ -588,13 +588,13 @@
       "relationship_graph": [
         {
           "direction": "to-one",
-          "name": "Voyage",
+          "name": "VoyageToVessel",
           "source": "Voyage",
           "target": "Vessel"
         },
         {
           "direction": "to-one",
-          "name": "Voyage",
+          "name": "VoyageToBerth",
           "source": "Voyage",
           "target": "Berth"
         },
@@ -630,22 +630,22 @@
       ],
       "strong_types": [
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "IMO vessel identification number (7 digits)",
           "name": "IMONumber"
         },
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Maritime Mobile Service Identity (9 digits)",
           "name": "MMSI"
         },
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "International radio call sign",
           "name": "CallSign"
         },
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Berth identifier (e.g. NQ-12, SC-3)",
           "name": "BerthCode"
         }
@@ -792,7 +792,36 @@
       ],
       "entities": [
         {
-          "commands": [],
+          "commands": [
+            {
+              "emits": [
+                "ContainerPlaced"
+              ],
+              "name": "PlaceContainer",
+              "parameters": [
+                {
+                  "name": "slot_id",
+                  "type": "UUID"
+                },
+                {
+                  "name": "tier",
+                  "type": "Integer"
+                }
+              ]
+            },
+            {
+              "emits": [
+                "ContainerPicked"
+              ],
+              "name": "PickContainer",
+              "parameters": [
+                {
+                  "name": "picked_by",
+                  "type": "UUID"
+                }
+              ]
+            }
+          ],
           "doc": "A shipping container in terminal operations",
           "fields": [
             {
@@ -1048,36 +1077,7 @@
           "storage_mode": "table"
         },
         {
-          "commands": [
-            {
-              "emits": [
-                "ContainerPlaced"
-              ],
-              "name": "PlaceContainer",
-              "parameters": [
-                {
-                  "name": "slot_id",
-                  "type": "UUID"
-                },
-                {
-                  "name": "tier",
-                  "type": "Integer"
-                }
-              ]
-            },
-            {
-              "emits": [
-                "ContainerPicked"
-              ],
-              "name": "PickContainer",
-              "parameters": [
-                {
-                  "name": "picked_by",
-                  "type": "UUID"
-                }
-              ]
-            }
-          ],
+          "commands": [],
           "doc": "Ordered sequence for container discharge",
           "fields": [
             {
@@ -1116,19 +1116,19 @@
           "relationships": [
             {
               "direction": "to-one",
-              "name": "DischargeSequence",
+              "name": "DSLoadPlan",
               "required": true,
               "target": "LoadPlan"
             },
             {
               "direction": "to-one",
-              "name": "DischargeSequence",
+              "name": "DSContainer",
               "required": true,
               "target": "Container"
             },
             {
               "direction": "to-one",
-              "name": "DischargeSequence",
+              "name": "DSCrane",
               "target": "Crane"
             }
           ],
@@ -1278,19 +1278,19 @@
         },
         {
           "direction": "to-one",
-          "name": "DischargeSequence",
+          "name": "DSLoadPlan",
           "source": "DischargeSequence",
           "target": "LoadPlan"
         },
         {
           "direction": "to-one",
-          "name": "DischargeSequence",
+          "name": "DSContainer",
           "source": "DischargeSequence",
           "target": "Container"
         },
         {
           "direction": "to-one",
-          "name": "DischargeSequence",
+          "name": "DSCrane",
           "source": "DischargeSequence",
           "target": "Crane"
         }
@@ -1299,12 +1299,12 @@
       "specifications": [],
       "strong_types": [
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "ISO 6346 container number (4 letters + 7 digits)",
           "name": "ContainerNumber"
         },
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Yard slot address: bay-row-tier (e.g. A01-03-02)",
           "name": "YardSlotCode"
         }
@@ -1512,13 +1512,13 @@
           "relationships": [
             {
               "direction": "to-one",
-              "name": "BoardingPass",
+              "name": "BPPassenger",
               "required": true,
               "target": "Passenger"
             },
             {
               "direction": "to-one",
-              "name": "BoardingPass",
+              "name": "BPGate",
               "target": "Gate"
             }
           ],
@@ -1593,13 +1593,13 @@
       "relationship_graph": [
         {
           "direction": "to-one",
-          "name": "BoardingPass",
+          "name": "BPPassenger",
           "source": "BoardingPass",
           "target": "Passenger"
         },
         {
           "direction": "to-one",
-          "name": "BoardingPass",
+          "name": "BPGate",
           "source": "BoardingPass",
           "target": "Gate"
         }
@@ -1608,12 +1608,12 @@
       "specifications": [],
       "strong_types": [
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Passenger booking reference (e.g. AB123456)",
           "name": "BookingReference"
         },
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Terminal gate identifier (e.g. G1, G12)",
           "name": "GateCode"
         }
@@ -1629,6 +1629,7 @@
           "creates": [
             "BoardingPass"
           ],
+          "doc": "Agent checks in passenger and issues boarding pass",
           "name": "PassengerCheckIn",
           "triggers": [
             "PassengerCheckedIn"
@@ -2101,12 +2102,12 @@
       "specifications": [],
       "strong_types": [
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Transfer slot reference (e.g. TS-20260415-0001)",
           "name": "SlotReference"
         },
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Truck licence plate number",
           "name": "TruckPlate"
         }
@@ -2120,9 +2121,7 @@
     {
       "aggregates": [
         {
-          "entities": [
-            "Parcel"
-          ],
+          "entities": [],
           "event_sourced": false,
           "name": "ContainerUnpack",
           "root": "Pallet"
@@ -2454,17 +2453,17 @@
       "specifications": [],
       "strong_types": [
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Pallet identifier (e.g. PLT-ABC12345)",
           "name": "PalletId"
         },
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Parcel tracking number",
           "name": "TrackingNumber"
         },
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Harmonised System tariff classification code",
           "name": "HSCode"
         }
@@ -2828,12 +2827,12 @@
       "specifications": [],
       "strong_types": [
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Hazmat permit number (e.g. HP-2026-000123)",
           "name": "PermitNumber"
         },
         {
-          "base_type": "TEXT ",
+          "base_type": "TEXT",
           "doc": "Safety zone code (e.g. SZ-NQ01)",
           "name": "ZoneCode"
         }
@@ -2845,7 +2844,113 @@
       }
     }
   ],
-  "cross_context_relationships": [],
+  "cross_context_relationships": [
+    {
+      "doc": "Cargo ops consumes vessel schedule and berth allocation",
+      "downstream": "CargoOperations",
+      "implemented_via": "GRPC",
+      "relationship": "customer-supplier",
+      "upstream": "VesselTraffic"
+    },
+    {
+      "doc": "Terminal consumes voyage status for departure boards",
+      "downstream": "PassengerTerminal",
+      "implemented_via": "EVENTS",
+      "relationship": "customer-supplier",
+      "upstream": "VesselTraffic"
+    },
+    {
+      "doc": "Yard exit and handoff events flow bidirectionally",
+      "downstream": "IntermodalTransfer",
+      "implemented_via": "EVENTS",
+      "relationship": "partnership",
+      "upstream": "CargoOperations"
+    },
+    {
+      "doc": "Decomposition receives container data, never modifies it",
+      "downstream": "CargoDecomposition",
+      "implemented_via": "GRPC",
+      "relationship": "customer-supplier",
+      "upstream": "CargoOperations"
+    },
+    {
+      "doc": "Carrier dispatch events published for decomposition",
+      "downstream": "CargoDecomposition",
+      "implemented_via": "EVENTS",
+      "relationship": "open-host-service",
+      "upstream": "IntermodalTransfer"
+    },
+    {
+      "doc": "Radar and AIS data translated to harbour domain model",
+      "downstream": "VesselTraffic",
+      "implemented_via": "GRPC",
+      "relationship": "anticorruption-layer",
+      "upstream": "HarbourControl"
+    },
+    {
+      "doc": "Compliance reporting consumes cargo events as-is",
+      "downstream": "CargoOperations",
+      "implemented_via": "EVENTS",
+      "relationship": "conformist",
+      "upstream": "HarbourControl"
+    },
+    {
+      "doc": "Carrier billing tables shared between intermodal and control",
+      "downstream": "HarbourControl",
+      "implemented_via": "SHARED_DB",
+      "relationship": "shared-kernel",
+      "upstream": "IntermodalTransfer"
+    },
+    {
+      "downstream": "CargoOperations",
+      "implemented_via": "GRPC",
+      "relationship": "customer-supplier",
+      "upstream": "VesselTraffic"
+    },
+    {
+      "downstream": "PassengerTerminal",
+      "implemented_via": "EVENTS",
+      "relationship": "customer-supplier",
+      "upstream": "VesselTraffic"
+    },
+    {
+      "downstream": "IntermodalTransfer",
+      "implemented_via": "EVENTS",
+      "relationship": "partnership",
+      "upstream": "CargoOperations"
+    },
+    {
+      "downstream": "CargoDecomposition",
+      "implemented_via": "GRPC",
+      "relationship": "customer-supplier",
+      "upstream": "CargoOperations"
+    },
+    {
+      "downstream": "CargoDecomposition",
+      "implemented_via": "EVENTS",
+      "relationship": "open-host-service",
+      "upstream": "IntermodalTransfer"
+    },
+    {
+      "downstream": "VesselTraffic",
+      "implemented_via": "GRPC",
+      "relationship": "anticorruption-layer",
+      "upstream": "HarbourControl"
+    },
+    {
+      "downstream": "CargoOperations",
+      "implemented_via": "EVENTS",
+      "relationship": "conformist",
+      "upstream": "HarbourControl"
+    },
+    {
+      "doc": "Billing decoupled from shared DB to event-driven",
+      "downstream": "HarbourControl",
+      "implemented_via": "EVENTS",
+      "relationship": "customer-supplier",
+      "upstream": "IntermodalTransfer"
+    }
+  ],
   "ddd_glossary": [],
   "metadata": {
     "generator": "muscomp",

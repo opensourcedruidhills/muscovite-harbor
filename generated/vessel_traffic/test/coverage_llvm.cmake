@@ -17,16 +17,16 @@ add_custom_target(coverage-llvm-vessel_traffic
     COMMENT "Generating llvm-cov report for context VesselTraffic"
 )
 
-# llvm-cov report for entity: TideWindow
-add_custom_target(coverage-llvm-tide_window
-    COMMAND llvm-profdata merge -sparse ${CMAKE_BINARY_DIR}/profiles/tide_window/*.profraw
-            -o ${CMAKE_BINARY_DIR}/profiles/tide_window/merged.profdata
+# llvm-cov report for entity: Voyage
+add_custom_target(coverage-llvm-voyage
+    COMMAND llvm-profdata merge -sparse ${CMAKE_BINARY_DIR}/profiles/voyage/*.profraw
+            -o ${CMAKE_BINARY_DIR}/profiles/voyage/merged.profdata
     COMMAND llvm-cov report ${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:${PROJECT_NAME}_tests>
-            -instr-profile=${CMAKE_BINARY_DIR}/profiles/tide_window/merged.profdata
+            -instr-profile=${CMAKE_BINARY_DIR}/profiles/voyage/merged.profdata
     COMMAND llvm-cov show ${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:${PROJECT_NAME}_tests>
-            -instr-profile=${CMAKE_BINARY_DIR}/profiles/tide_window/merged.profdata
-            -format=html -output-dir=${CMAKE_BINARY_DIR}/coverage-html/tide_window
-    COMMENT "Generating llvm-cov report for TideWindow"
+            -instr-profile=${CMAKE_BINARY_DIR}/profiles/voyage/merged.profdata
+            -format=html -output-dir=${CMAKE_BINARY_DIR}/coverage-html/voyage
+    COMMENT "Generating llvm-cov report for Voyage"
 )
 
 # Compiler flags required for LLVM source-based coverage

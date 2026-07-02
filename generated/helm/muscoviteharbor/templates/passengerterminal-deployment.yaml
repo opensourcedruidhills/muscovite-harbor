@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: passengerterminal
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.passengerterminal.replicaCount }}
+  selector:
+    matchLabels:
+      app: passengerterminal
+  template:
+    metadata:
+      labels:
+        app: passengerterminal
+    spec:
+      containers:
+        - name: passengerterminal
+          image: "{{ .Values.passengerterminal.image.repository }}:{{ .Values.passengerterminal.image.tag }}"
+          imagePullPolicy: {{ .Values.passengerterminal.image.pullPolicy }}
+          ports:
+            - containerPort: 50051

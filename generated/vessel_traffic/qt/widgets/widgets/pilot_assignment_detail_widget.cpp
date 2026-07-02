@@ -29,21 +29,28 @@ void PilotAssignmentDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     voyage_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("VoyageId"), voyage_id_value_);
+    section_form_1->addRow(QStringLiteral("VoyageId"), voyage_id_value_);
     pilot_name_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("PilotName"), pilot_name_value_);
+    section_form_1->addRow(QStringLiteral("PilotName"), pilot_name_value_);
     pilot_zone_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("PilotZone"), pilot_zone_value_);
+    section_form_1->addRow(QStringLiteral("PilotZone"), pilot_zone_value_);
     boarding_time_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("BoardingTime"), boarding_time_value_);
-    disembark_time_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("DisembarkTime"), disembark_time_value_);
+    section_form_1->addRow(QStringLiteral("BoardingTime"), boarding_time_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    disembark_time_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("DisembarkTime"), disembark_time_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -72,7 +79,7 @@ void PilotAssignmentDetailWidget::setDisembarkTime(const QDateTime& value) {
 }
 
 void PilotAssignmentDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

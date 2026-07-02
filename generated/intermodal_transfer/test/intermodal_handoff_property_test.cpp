@@ -15,9 +15,10 @@
 SCENARIO("Boundary: transport_mode min value") {
     GIVEN("a TransferSlot with min transport_mode") {
         auto val = "boundary";
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.transport_mode == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke TransferSlotValidator::validate(entity)
+                // CHECK(!TransferSlotValidator::validate(entity).has_error_for("transport_mode"));
             }
         }
     }
@@ -26,9 +27,10 @@ SCENARIO("Boundary: transport_mode min value") {
 SCENARIO("Boundary: transport_mode max value") {
     GIVEN("a TransferSlot with max transport_mode") {
         auto val = std::string(10000, 'x');
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.transport_mode == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke TransferSlotValidator::validate(entity)
+                // CHECK(!TransferSlotValidator::validate(entity).has_error_for("transport_mode"));
             }
         }
     }
@@ -37,9 +39,10 @@ SCENARIO("Boundary: transport_mode max value") {
 SCENARIO("Boundary: status min value") {
     GIVEN("a TransferSlot with min status") {
         auto val = "boundary";
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.status == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke TransferSlotValidator::validate(entity)
+                // CHECK(!TransferSlotValidator::validate(entity).has_error_for("status"));
             }
         }
     }
@@ -48,9 +51,10 @@ SCENARIO("Boundary: status min value") {
 SCENARIO("Boundary: status max value") {
     GIVEN("a TransferSlot with max status") {
         auto val = std::string(10000, 'x');
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.status == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke TransferSlotValidator::validate(entity)
+                // CHECK(!TransferSlotValidator::validate(entity).has_error_for("status"));
             }
         }
     }

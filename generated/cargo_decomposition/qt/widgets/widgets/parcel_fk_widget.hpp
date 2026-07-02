@@ -25,9 +25,13 @@ class ParcelFkWidget : public QWidget {
 public:
     explicit ParcelFkWidget(QWidget* parent = nullptr);
 
+    [[nodiscard]] auto serverAddress() const -> QString { return m_server_address; }
+    void setServerAddress(const QString& address);
+
     [[nodiscard]] auto selectedPallet() const -> QString;
 
 Q_SIGNALS:
+    void serverAddressChanged();
     void palletChanged(const QString& id);
 
 public Q_SLOTS:
@@ -35,7 +39,9 @@ public Q_SLOTS:
 
 private:
     void setupUi();
+    void loadPalletOptions();
 
+    QString m_server_address = QStringLiteral("localhost:50051");
     QComboBox* pallet_combo_ = nullptr;
 };
 

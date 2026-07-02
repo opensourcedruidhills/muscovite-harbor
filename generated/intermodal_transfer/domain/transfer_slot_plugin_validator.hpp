@@ -6,8 +6,7 @@
 // MUSCOVITE:SIDECAR:UNMODIFIED — remove this line when editing this file
 
 #include "transfer_slot.hpp"
-#include <string>
-#include <vector>
+#include <muscovite/validation/validation_errors.hpp>
 
 namespace intermodal_transfer {
 
@@ -16,9 +15,10 @@ namespace intermodal_transfer {
 class TransferSlotPluginValidator {
 public:
     /// Validate user-defined rules. Returns accumulated error messages.
-    [[nodiscard]] static auto validate(const TransferSlot& entity) -> std::vector<std::string> {
+    [[nodiscard]] static auto validate(const TransferSlot& entity) -> muscovite::validation::ValidationErrors {
         (void)entity;
-        return {}; // Add custom validation rules here
+        auto errors = muscovite::validation::ValidationErrors{};
+        return errors; // Add custom validation rules here
     }
 };
 

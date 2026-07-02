@@ -25,9 +25,13 @@ class ReeferUnitFkWidget : public QWidget {
 public:
     explicit ReeferUnitFkWidget(QWidget* parent = nullptr);
 
+    [[nodiscard]] auto serverAddress() const -> QString { return m_server_address; }
+    void setServerAddress(const QString& address);
+
     [[nodiscard]] auto selectedContainer() const -> QString;
 
 Q_SIGNALS:
+    void serverAddressChanged();
     void containerChanged(const QString& id);
 
 public Q_SLOTS:
@@ -35,7 +39,9 @@ public Q_SLOTS:
 
 private:
     void setupUi();
+    void loadContainerOptions();
 
+    QString m_server_address = QStringLiteral("localhost:50051");
     QComboBox* container_combo_ = nullptr;
 };
 

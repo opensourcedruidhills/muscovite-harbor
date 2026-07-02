@@ -3,18 +3,20 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
-#include <muscovite/dba/type_converters.hpp>
+#include "types/double_.hpp"
 
 namespace spatial {
 
-/// Simple latitude/longitude point.
+/// ISO-6709 geographic point: latitude, longitude, and optional altitude.
 /// Value object — compared by value, not identity.
 struct GeoPoint {
-    muscovite::dba::Decimal latitude{};
-    muscovite::dba::Decimal longitude{};
+    Double lat{};
+    Double lon{};
+    Double alt{};
 
-    [[nodiscard]] auto get_latitude() const noexcept -> const muscovite::dba::Decimal& { return latitude; }
-    [[nodiscard]] auto get_longitude() const noexcept -> const muscovite::dba::Decimal& { return longitude; }
+    [[nodiscard]] auto get_lat() const noexcept -> const Double& { return lat; }
+    [[nodiscard]] auto get_lon() const noexcept -> const Double& { return lon; }
+    [[nodiscard]] auto get_alt() const noexcept -> const Double& { return alt; }
 
     auto operator==(const GeoPoint&) const -> bool = default;
 };

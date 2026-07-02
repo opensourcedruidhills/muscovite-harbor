@@ -15,9 +15,10 @@
 SCENARIO("Boundary: status min value") {
     GIVEN("a LoadPlan with min status") {
         auto val = "boundary";
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.status == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke LoadPlanValidator::validate(entity)
+                // CHECK(!LoadPlanValidator::validate(entity).has_error_for("status"));
             }
         }
     }
@@ -26,9 +27,10 @@ SCENARIO("Boundary: status min value") {
 SCENARIO("Boundary: status max value") {
     GIVEN("a LoadPlan with max status") {
         auto val = std::string(10000, 'x');
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.status == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke LoadPlanValidator::validate(entity)
+                // CHECK(!LoadPlanValidator::validate(entity).has_error_for("status"));
             }
         }
     }

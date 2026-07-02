@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/tug_booking_grpc_binding.hpp"
 
 namespace muscovite_harbor::vessel_traffic::qml {
 
@@ -26,6 +27,15 @@ class TugBookingViewModel : public QObject {
     Q_PROPERTY(QString tugName READ tugName WRITE setTugName NOTIFY tugNameChanged REQUIRED)
     Q_PROPERTY(QString bollardPullT READ bollardPullT WRITE setBollardPullT NOTIFY bollardPullTChanged REQUIRED)
     Q_PROPERTY(bool isConfirmed READ isConfirmed WRITE setIsConfirmed NOTIFY isConfirmedChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool voyageIdIsValid READ voyageIdIsValid NOTIFY voyageIdIsValidChanged)
+    Q_PROPERTY(bool tugNameIsValid READ tugNameIsValid NOTIFY tugNameIsValidChanged)
+    Q_PROPERTY(bool bollardPullTIsValid READ bollardPullTIsValid NOTIFY bollardPullTIsValidChanged)
+    Q_PROPERTY(bool isConfirmedIsValid READ isConfirmedIsValid NOTIFY isConfirmedIsValidChanged)
 
 public:
     explicit TugBookingViewModel(QObject* parent = nullptr);
@@ -35,12 +45,23 @@ public:
     [[nodiscard]] auto tugName() const -> QString { return m_tug_name; }
     [[nodiscard]] auto bollardPullT() const -> QString { return m_bollard_pull_t; }
     [[nodiscard]] auto isConfirmed() const -> bool { return m_is_confirmed; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto voyageIdIsValid() const -> bool { return m_voyage_id_is_valid; }
+    [[nodiscard]] auto tugNameIsValid() const -> bool { return m_tug_name_is_valid; }
+    [[nodiscard]] auto bollardPullTIsValid() const -> bool { return m_bollard_pull_t_is_valid; }
+    [[nodiscard]] auto isConfirmedIsValid() const -> bool { return m_is_confirmed_is_valid; }
 
     void setId(const QString& value);
     void setVoyageId(const QString& value);
     void setTugName(const QString& value);
     void setBollardPullT(const QString& value);
     void setIsConfirmed(const bool& value);
+
+    void setBinding(TugBookingGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -53,17 +74,37 @@ Q_SIGNALS:
     void tugNameChanged();
     void bollardPullTChanged();
     void isConfirmedChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void voyageIdIsValidChanged();
+    void tugNameIsValidChanged();
+    void bollardPullTIsValidChanged();
+    void isConfirmedIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_voyage_id;
     QString m_tug_name;
     QString m_bollard_pull_t;
     bool m_is_confirmed = false;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    TugBookingGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_voyage_id_is_valid = false;
+    bool m_tug_name_is_valid = false;
+    bool m_bollard_pull_t_is_valid = false;
+    bool m_is_confirmed_is_valid = true;
 };
 
 } // namespace muscovite_harbor::vessel_traffic::qml

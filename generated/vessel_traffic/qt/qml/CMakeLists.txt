@@ -55,6 +55,7 @@ target_include_directories(vessel_traffic_qml_viewmodels PRIVATE
 
 target_link_libraries(vessel_traffic_qml_viewmodels PUBLIC
     Qt6::Core
+    Qt6::Concurrent
     Qt6::Qml
     Qt6::Quick
     spdlog::spdlog

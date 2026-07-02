@@ -13,13 +13,13 @@ add_custom_target(coverage-gcov-cargo_operations
     COMMENT "Collecting gcov coverage for context CargoOperations"
 )
 
-# Coverage target for entity: DischargeSequence
-add_custom_target(coverage-gcov-discharge_sequence
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage/discharge_sequence
+# Coverage target for entity: Container
+add_custom_target(coverage-gcov-container
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage/container
     COMMAND gcov -b -c ${CMAKE_BINARY_DIR}/CMakeFiles/*.dir/**/*.gcno
-    COMMAND ${CMAKE_COMMAND} -E echo "gcov coverage collected for DischargeSequence"
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/coverage/discharge_sequence
-    COMMENT "Collecting gcov coverage for DischargeSequence"
+    COMMAND ${CMAKE_COMMAND} -E echo "gcov coverage collected for Container"
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/coverage/container
+    COMMENT "Collecting gcov coverage for Container"
 )
 
 # Compiler flags required for gcov instrumentation

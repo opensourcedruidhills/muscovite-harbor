@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: harbourcontrol
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.harbourcontrol.replicaCount }}
+  selector:
+    matchLabels:
+      app: harbourcontrol
+  template:
+    metadata:
+      labels:
+        app: harbourcontrol
+    spec:
+      containers:
+        - name: harbourcontrol
+          image: "{{ .Values.harbourcontrol.image.repository }}:{{ .Values.harbourcontrol.image.tag }}"
+          imagePullPolicy: {{ .Values.harbourcontrol.image.pullPolicy }}
+          ports:
+            - containerPort: 50051

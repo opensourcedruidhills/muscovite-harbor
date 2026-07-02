@@ -66,7 +66,7 @@ void DischargeSequenceDetailWidget::setCraneId(const QString& value) {
 }
 
 void DischargeSequenceDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

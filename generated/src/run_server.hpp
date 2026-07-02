@@ -11,22 +11,32 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstdlib>
 #include <fstream>
 #include <iterator>
 #include <memory>
-#include <string>
 #include <optional>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include <grpcpp/grpcpp.h>
 #include <spdlog/spdlog.h>
+#include "otel/domain_interceptor.hpp"
 
+#include <muscovite/dba/connection_pool.hpp>
+#include <pqxx/pqxx>
 #include "grpc/server/auth_interceptor.hpp"
 #include "grpc/server/jwt_auth_provider.hpp"
 #include "grpc/server/auth_service_impl.hpp"
+#include "security/dba/user_repository_impl.hpp"
+#include "security/dba/user_role_repository_impl.hpp"
+#include "security/dba/role_repository_impl.hpp"
 #include "vessel_traffic/grpc/server/version_service_impl.hpp"
 #include "vessel_traffic/grpc/server/voyage_service_impl.hpp"
 #include "vessel_traffic/grpc/server/voyage_status_service_impl.hpp"
+#include "vessel_traffic/grpc/server/event_streaming_service_impl.hpp"
 #include "cargo_operations/grpc/server/version_service_impl.hpp"
 #include "cargo_operations/grpc/server/container_service_impl.hpp"
 #include "cargo_operations/grpc/server/load_plan_service_impl.hpp"
@@ -34,19 +44,114 @@
 #include "passenger_terminal/grpc/server/passenger_service_impl.hpp"
 #include "passenger_terminal/grpc/server/gate_status_service_impl.hpp"
 #include "passenger_terminal/grpc/server/passenger_status_service_impl.hpp"
+#include "passenger_terminal/grpc/server/event_streaming_service_impl.hpp"
 #include "intermodal_transfer/grpc/server/version_service_impl.hpp"
 #include "intermodal_transfer/grpc/server/transfer_slot_service_impl.hpp"
-#include "intermodal_transfer/grpc/server/container_handoff_service_impl.hpp"
+#include "intermodal_transfer/grpc/server/event_streaming_service_impl.hpp"
 #include "cargo_decomposition/grpc/server/version_service_impl.hpp"
 #include "cargo_decomposition/grpc/server/pallet_service_impl.hpp"
 #include "cargo_decomposition/grpc/server/parcel_service_impl.hpp"
+#include "cargo_decomposition/grpc/server/event_streaming_service_impl.hpp"
 #include "harbour_control/grpc/server/version_service_impl.hpp"
+#include "harbour_control/grpc/server/event_streaming_service_impl.hpp"
 
 #ifdef MUSCOVITE_DEV_AUTH
 #include "grpc/server/dev_auth_provider.hpp"
 #endif
 
 namespace muscovite_harbor {
+
+class GeneratedUserRepositoryAdapter final : public IUserRepository {
+public:
+    explicit GeneratedUserRepositoryAdapter(std::shared_ptr<muscovite::dba::ConnectionPool> pool)
+        : pool_{std::move(pool)} {}
+
+    [[nodiscard]] auto find_password_hash(std::string_view username) const -> std::optional<std::string> override {
+        auto users = find_all_users();
+        const auto it = std::ranges::find_if(users, [&](const auto& user) {
+            return user.username == username;
+        });
+        if (it == users.end()) {
+            return std::nullopt;
+        }
+        return it->password_hash;
+    }
+
+    [[nodiscard]] auto find_roles(std::string_view username) const -> std::vector<std::string> override {
+        auto users = find_all_users();
+        const auto user_it = std::ranges::find_if(users, [&](const auto& user) {
+            return user.username == username;
+        });
+        if (user_it == users.end()) {
+            return {};
+        }
+
+        auto connection = acquire_connection();
+        if (!connection.has_value()) {
+            return {};
+        }
+
+        auto user_roles = security::UserRoleRepositoryImpl<pqxx::connection>{connection->get()}.find_all();
+        auto roles = security::RoleRepositoryImpl<pqxx::connection>{connection->get()}.find_all();
+        auto result = std::vector<std::string>{};
+        for (const auto& user_role : user_roles) {
+            if (user_role.user_id != user_it->id) {
+                continue;
+            }
+            const auto role_it = std::ranges::find_if(roles, [&](const auto& role) {
+                return role.id == user_role.role_id;
+            });
+            if (role_it != roles.end()) {
+                result.push_back(role_it->name);
+            }
+        }
+        return result;
+    }
+
+    auto update_password_hash(std::string_view username, std::string_view new_hash) -> bool override {
+        auto connection = acquire_connection();
+        if (!connection.has_value()) {
+            return false;
+        }
+
+        auto repo = security::UserRepositoryImpl<pqxx::connection>{connection->get()};
+        auto users = repo.find_all();
+        const auto it = std::ranges::find_if(users, [&](const auto& user) {
+            return user.username == username;
+        });
+        if (it == users.end()) {
+            return false;
+        }
+
+        auto updated_user = *it;
+        updated_user.password_hash = std::string{new_hash};
+        repo.save(updated_user);
+        return true;
+    }
+
+private:
+    [[nodiscard]] auto acquire_connection() const
+        -> std::optional<muscovite::dba::PooledConnection> {
+        if (!pool_) {
+            return std::nullopt;
+        }
+        auto pooled = pool_->acquire();
+        if (!pooled.has_value()) {
+            return std::nullopt;
+        }
+        return std::move(pooled.value());
+    }
+
+    [[nodiscard]] auto find_all_users() const -> std::vector<security::User> {
+        auto connection = acquire_connection();
+        if (!connection.has_value()) {
+            return {};
+        }
+        return security::UserRepositoryImpl<pqxx::connection>{connection->get()}.find_all();
+    }
+
+    std::shared_ptr<muscovite::dba::ConnectionPool> pool_;
+};
 
 /// Server configuration from environment variables (FTR-1408)
 struct ServerConfig {
@@ -56,7 +161,12 @@ struct ServerConfig {
     std::string grpc_tls_private_key;
     std::string grpc_tls_root_certs;
     std::string database_url;
+    std::string jwt_secret;
     std::string nats_url = "nats://localhost:4222";
+    std::string opensearch_host = "localhost";
+    std::string opensearch_port = "9200";
+    std::string opensearch_url;
+    std::string opensearch_index;
     int worker_threads = 4;
 
     static auto read_file(const char* path) -> std::string {
@@ -78,8 +188,23 @@ struct ServerConfig {
         if (auto* v = std::getenv("DATABASE_URL")) {
             cfg.database_url = v;
         }
+        if (auto* v = std::getenv("GRPC_JWT_SECRET")) {
+            cfg.jwt_secret = v;
+        }
         if (auto* v = std::getenv("NATS_URL")) {
             cfg.nats_url = v;
+        }
+        if (auto* v = std::getenv("OPENSEARCH_URL")) {
+            cfg.opensearch_url = v;
+        }
+        if (auto* v = std::getenv("OPENSEARCH_HOST")) {
+            cfg.opensearch_host = v;
+        }
+        if (auto* v = std::getenv("OPENSEARCH_PORT")) {
+            cfg.opensearch_port = v;
+        }
+        if (auto* v = std::getenv("OPENSEARCH_INDEX_PREFIX")) {
+            cfg.opensearch_index = v;
         }
         if (auto* v = std::getenv("GRPC_CREDENTIALS_MODE")) {
             cfg.grpc_credentials_mode = v;
@@ -106,6 +231,11 @@ inline auto run_server(int /*argc*/, char** /*argv*/) -> int {
     }
     spdlog::info("NATS: {}", config.nats_url);
 
+    if (!config.opensearch_host.empty()) {
+        spdlog::info("OpenSearch: {}:{}", config.opensearch_host, config.opensearch_port);
+        // TODO: Run search/apply_opensearch_mappings.sh on deploy to create/update indices
+    }
+
     ::grpc::ServerBuilder builder;
     std::shared_ptr<::grpc::ServerCredentials> server_credentials;
     if (config.grpc_credentials_mode == "tls") {
@@ -130,11 +260,37 @@ inline auto run_server(int /*argc*/, char** /*argv*/) -> int {
     }
     builder.AddListeningPort(config.grpc_address, server_credentials);
 
+    std::vector<std::unique_ptr<grpc::experimental::ServerInterceptorFactoryInterface>> interceptors;
+    interceptors.push_back(std::make_unique<otel::DomainInterceptorFactory>());
+
+    std::shared_ptr<muscovite_harbor::AuthProvider> auth_provider;
+    if (config.database_url.empty()) {
+        spdlog::error("DATABASE_URL is required when SECURITY capability is enabled");
+        return 1;
+    }
+    if (config.jwt_secret.empty()) {
+        spdlog::error("GRPC_JWT_SECRET is required when SECURITY capability is enabled");
+        return 1;
+    }
+    auto pool_result = muscovite::dba::ConnectionPool::create({.connection_string = config.database_url});
+    if (!pool_result.has_value()) {
+        spdlog::error("Failed to create database connection pool for auth wiring");
+        return 1;
+    }
+    auto db_pool = std::make_shared<muscovite::dba::ConnectionPool>(std::move(pool_result.value()));
+    auto user_repo = std::make_shared<GeneratedUserRepositoryAdapter>(db_pool);
+    auto jwt_auth = std::make_shared<JwtAuthProvider>(user_repo, config.jwt_secret);
+    auth_provider = jwt_auth;
+    auto auth_svc = AuthServiceImpl{jwt_auth};
+    builder.RegisterService(&auth_svc);
+
+    interceptors.push_back(std::make_unique<AuthInterceptorFactory>(jwt_auth));
+
     // VesselTraffic context services
     auto vessel_traffic_version_svc = vessel_traffic::VersionServiceImpl{};
     builder.RegisterService(&vessel_traffic_version_svc);
 
-    auto voyage_svc = vessel_traffic::VoyageServiceImpl{};
+    auto voyage_svc = vessel_traffic::VoyageServiceImpl{nullptr, nullptr, nullptr, auth_provider};
     builder.RegisterService(&voyage_svc);
     auto voyage_status_svc = vessel_traffic::VoyageStatusServiceImpl{};
     builder.RegisterService(&voyage_status_svc);
@@ -143,16 +299,16 @@ inline auto run_server(int /*argc*/, char** /*argv*/) -> int {
     auto cargo_operations_version_svc = cargo_operations::VersionServiceImpl{};
     builder.RegisterService(&cargo_operations_version_svc);
 
-    auto container_svc = cargo_operations::ContainerServiceImpl{};
+    auto container_svc = cargo_operations::ContainerServiceImpl{nullptr, nullptr, nullptr, auth_provider};
     builder.RegisterService(&container_svc);
-    auto load_plan_svc = cargo_operations::LoadPlanServiceImpl{};
+    auto load_plan_svc = cargo_operations::LoadPlanServiceImpl{nullptr, nullptr, nullptr, auth_provider};
     builder.RegisterService(&load_plan_svc);
 
     // PassengerTerminal context services
     auto passenger_terminal_version_svc = passenger_terminal::VersionServiceImpl{};
     builder.RegisterService(&passenger_terminal_version_svc);
 
-    auto passenger_svc = passenger_terminal::PassengerServiceImpl{};
+    auto passenger_svc = passenger_terminal::PassengerServiceImpl{nullptr, nullptr, nullptr, auth_provider};
     builder.RegisterService(&passenger_svc);
     auto gate_status_svc = passenger_terminal::GateStatusServiceImpl{};
     builder.RegisterService(&gate_status_svc);
@@ -163,18 +319,16 @@ inline auto run_server(int /*argc*/, char** /*argv*/) -> int {
     auto intermodal_transfer_version_svc = intermodal_transfer::VersionServiceImpl{};
     builder.RegisterService(&intermodal_transfer_version_svc);
 
-    auto transfer_slot_svc = intermodal_transfer::TransferSlotServiceImpl{};
+    auto transfer_slot_svc = intermodal_transfer::TransferSlotServiceImpl{nullptr, nullptr, nullptr, auth_provider};
     builder.RegisterService(&transfer_slot_svc);
-    auto container_handoff_svc = intermodal_transfer::ContainerHandoffServiceImpl{};
-    builder.RegisterService(&container_handoff_svc);
 
     // CargoDecomposition context services
     auto cargo_decomposition_version_svc = cargo_decomposition::VersionServiceImpl{};
     builder.RegisterService(&cargo_decomposition_version_svc);
 
-    auto pallet_svc = cargo_decomposition::PalletServiceImpl{};
+    auto pallet_svc = cargo_decomposition::PalletServiceImpl{nullptr, nullptr, nullptr, auth_provider};
     builder.RegisterService(&pallet_svc);
-    auto parcel_svc = cargo_decomposition::ParcelServiceImpl{};
+    auto parcel_svc = cargo_decomposition::ParcelServiceImpl{nullptr, nullptr, nullptr, auth_provider};
     builder.RegisterService(&parcel_svc);
 
     // HarbourControl context services
@@ -182,15 +336,7 @@ inline auto run_server(int /*argc*/, char** /*argv*/) -> int {
     builder.RegisterService(&harbour_control_version_svc);
 
 
-    std::shared_ptr<IUserRepository> user_repo{};
-    auto jwt_auth = std::make_shared<JwtAuthProvider>(user_repo, "development-secret");
-    auto auth_svc = AuthServiceImpl{jwt_auth};
-    builder.RegisterService(&auth_svc);
-
-    auto auth_interceptor_factory = std::make_unique<AuthInterceptorFactory>(jwt_auth);
-    std::vector<std::unique_ptr<grpc::experimental::ServerInterceptorFactoryInterface>> interceptors;
-    interceptors.push_back(std::move(auth_interceptor_factory));
-    builder.SetInterceptorCreators(std::move(interceptors));
+    builder.experimental().SetInterceptorCreators(std::move(interceptors));
 
     auto server = builder.BuildAndStart();
     if (!server) {

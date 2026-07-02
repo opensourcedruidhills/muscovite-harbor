@@ -19,9 +19,13 @@ namespace muscovite_harbor::widgets {
 
 class SearchHelper {
 public:
+    explicit SearchHelper(QObject* parent = nullptr)
+        : parent_{parent} {}
     static void connect(QLineEdit* filter, QSortFilterProxyModel* proxy) {
         QObject::connect(filter, &QLineEdit::textChanged, proxy, &QSortFilterProxyModel::setFilterFixedString);
     }
+private:
+    QObject* parent_ = nullptr;
 };
 
 } // namespace muscovite_harbor::widgets

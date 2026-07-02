@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/yard_slot_grpc_binding.hpp"
 
 namespace muscovite_harbor::cargo_operations::qml {
 
@@ -27,6 +28,16 @@ class YardSlotViewModel : public QObject {
     Q_PROPERTY(int maxTier READ maxTier WRITE setMaxTier NOTIFY maxTierChanged REQUIRED)
     Q_PROPERTY(bool hasPower READ hasPower WRITE setHasPower NOTIFY hasPowerChanged REQUIRED)
     Q_PROPERTY(bool isOccupied READ isOccupied WRITE setIsOccupied NOTIFY isOccupiedChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool codeIsValid READ codeIsValid NOTIFY codeIsValidChanged)
+    Q_PROPERTY(bool maxWeightKgIsValid READ maxWeightKgIsValid NOTIFY maxWeightKgIsValidChanged)
+    Q_PROPERTY(bool maxTierIsValid READ maxTierIsValid NOTIFY maxTierIsValidChanged)
+    Q_PROPERTY(bool hasPowerIsValid READ hasPowerIsValid NOTIFY hasPowerIsValidChanged)
+    Q_PROPERTY(bool isOccupiedIsValid READ isOccupiedIsValid NOTIFY isOccupiedIsValidChanged)
 
 public:
     explicit YardSlotViewModel(QObject* parent = nullptr);
@@ -37,6 +48,16 @@ public:
     [[nodiscard]] auto maxTier() const -> int { return m_max_tier; }
     [[nodiscard]] auto hasPower() const -> bool { return m_has_power; }
     [[nodiscard]] auto isOccupied() const -> bool { return m_is_occupied; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto codeIsValid() const -> bool { return m_code_is_valid; }
+    [[nodiscard]] auto maxWeightKgIsValid() const -> bool { return m_max_weight_kg_is_valid; }
+    [[nodiscard]] auto maxTierIsValid() const -> bool { return m_max_tier_is_valid; }
+    [[nodiscard]] auto hasPowerIsValid() const -> bool { return m_has_power_is_valid; }
+    [[nodiscard]] auto isOccupiedIsValid() const -> bool { return m_is_occupied_is_valid; }
 
     void setId(const QString& value);
     void setCode(const QString& value);
@@ -44,6 +65,8 @@ public:
     void setMaxTier(const int& value);
     void setHasPower(const bool& value);
     void setIsOccupied(const bool& value);
+
+    void setBinding(YardSlotGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -57,18 +80,40 @@ Q_SIGNALS:
     void maxTierChanged();
     void hasPowerChanged();
     void isOccupiedChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void codeIsValidChanged();
+    void maxWeightKgIsValidChanged();
+    void maxTierIsValidChanged();
+    void hasPowerIsValidChanged();
+    void isOccupiedIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_code;
     QString m_max_weight_kg;
     int m_max_tier = 0;
     bool m_has_power = false;
     bool m_is_occupied = false;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    YardSlotGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_code_is_valid = false;
+    bool m_max_weight_kg_is_valid = false;
+    bool m_max_tier_is_valid = true;
+    bool m_has_power_is_valid = true;
+    bool m_is_occupied_is_valid = true;
 };
 
 } // namespace muscovite_harbor::cargo_operations::qml

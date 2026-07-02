@@ -1,5 +1,5 @@
 -- MUSCOVITE:SIDECAR:UNMODIFIED
--- MUSCOVITE:QUERY-HASH:213a0d2dd069cd05
+-- MUSCOVITE:QUERY-HASH:35d8faa2aa5a91d3
 --  context: CargoOperations, entity: Crane, operation: update
 
-UPDATE cargo_operations.crane SET id = $2, name = $3, crane_type = $4, max_lift_kg = $5, is_active = $6 WHERE id = $1
+UPDATE cargo_operations.crane SET name = $2, crane_type = $3, max_lift_kg = $4, is_active = $5 WHERE id = $1

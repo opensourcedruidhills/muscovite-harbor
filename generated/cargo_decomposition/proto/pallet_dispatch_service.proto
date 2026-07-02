@@ -15,6 +15,7 @@ syntax = "proto3";
 package cargodecomposition;
 
 import "parcel.proto";
+import "pallet.proto";
 import "delivery_unit.proto";
 import "google/protobuf/timestamp.proto";
 

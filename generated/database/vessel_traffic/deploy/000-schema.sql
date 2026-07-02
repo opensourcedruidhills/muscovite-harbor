@@ -3,7 +3,7 @@ BEGIN;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'vessel_traffic_owner') THEN
-    CREATE ROLE vessel_traffic_owner;
+    CREATE ROLE vessel_traffic_owner NOLOGIN;
   END IF;
 END $$;
 
@@ -11,10 +11,14 @@ CREATE SCHEMA IF NOT EXISTS vessel_traffic;
 ALTER SCHEMA vessel_traffic OWNER TO vessel_traffic_owner;
 SET search_path TO vessel_traffic, public;
 
-CREATE DOMAIN vessel_traffic.imo_number AS text;
-CREATE DOMAIN vessel_traffic.mmsi AS text;
-CREATE DOMAIN vessel_traffic.call_sign AS text;
-CREATE DOMAIN vessel_traffic.berth_code AS text;
+CREATE TYPE vessel_traffic.vessel_type AS ENUM ();
+CREATE TYPE vessel_traffic.cargo_category AS ENUM ();
+CREATE TYPE vessel_traffic.pilot_zone AS ENUM ('zone_description');
+
+CREATE DOMAIN vessel_traffic.imo_number AS TEXT;
+CREATE DOMAIN vessel_traffic.mmsi AS TEXT;
+CREATE DOMAIN vessel_traffic.call_sign AS TEXT;
+CREATE DOMAIN vessel_traffic.berth_code AS TEXT;
 
 CREATE TYPE vessel_traffic.dimensions AS (
     loa_metres NUMERIC,
@@ -33,7 +37,7 @@ CREATE TYPE vessel_traffic.time_window AS (
 );
 
 CREATE TABLE vessel_traffic.vessels (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     imo_number imo_number NOT NULL,
     mmsi mmsi NOT NULL,
     call_sign call_sign NOT NULL,
@@ -49,7 +53,7 @@ CREATE TABLE vessel_traffic.vessels (
 );
 
 CREATE TABLE vessel_traffic.berths (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     code berth_code NOT NULL,
     name TEXT NOT NULL,
     max_loa_metres NUMERIC NOT NULL,
@@ -66,7 +70,7 @@ CREATE TABLE vessel_traffic.berths (
 );
 
 CREATE TABLE vessel_traffic.voyages (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     vessel_id UUID NOT NULL,
     berth_id UUID,
     voyage_number TEXT NOT NULL,
@@ -75,7 +79,6 @@ CREATE TABLE vessel_traffic.voyages (
     etd TIMESTAMPTZ,
     atd TIMESTAMPTZ,
     cargo_category TEXT NOT NULL,
-    status TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by UUID,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -85,7 +88,7 @@ CREATE TABLE vessel_traffic.voyages (
 );
 
 CREATE TABLE vessel_traffic.pilot_assignments (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     voyage_id UUID NOT NULL,
     pilot_name TEXT NOT NULL,
     pilot_zone TEXT NOT NULL,
@@ -99,7 +102,7 @@ CREATE TABLE vessel_traffic.pilot_assignments (
 );
 
 CREATE TABLE vessel_traffic.tug_bookings (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     voyage_id UUID NOT NULL,
     tug_name TEXT NOT NULL,
     bollard_pull_t NUMERIC NOT NULL,
@@ -112,7 +115,7 @@ CREATE TABLE vessel_traffic.tug_bookings (
 );
 
 CREATE TABLE vessel_traffic.tide_windows (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     berth_id UUID NOT NULL,
     tide_height_metres NUMERIC NOT NULL,
     available_draft NUMERIC NOT NULL,
@@ -128,45 +131,51 @@ CREATE TABLE vessel_traffic.tide_windows (
 );
 
 CREATE TABLE vessel_traffic.outbox (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     aggregate_type TEXT NOT NULL,
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     retry_count INTEGER NOT NULL DEFAULT 0,
+    last_retry_at TIMESTAMPTZ,
     processed_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
-CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE vessel_traffic.dead_letter_queue (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     original_event_id UUID NOT NULL,
+    aggregate_id UUID,
     event_type TEXT NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
     error_message TEXT NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failure_reason TEXT NOT NULL DEFAULT '',
     CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
-CREATE TABLE dead_letter_queue_default PARTITION OF dead_letter_queue DEFAULT;
 
 CREATE TABLE vessel_traffic.idempotency_keys (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     key TEXT NOT NULL,
+    response JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMPTZ NOT NULL,
-    CONSTRAINT pk_idempotency_keys PRIMARY KEY (key)
+    CONSTRAINT pk_idempotency_keys PRIMARY KEY (id)
 );
 
 CREATE TABLE vessel_traffic.voyage_status_states (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     name TEXT NOT NULL,
     CONSTRAINT pk_voyage_status_states PRIMARY KEY (id)
 );
 
 CREATE TABLE vessel_traffic.voyage_status_transitions (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     entity_id UUID NOT NULL,
     from_state TEXT NOT NULL,
     to_state TEXT NOT NULL,
@@ -176,10 +185,30 @@ CREATE TABLE vessel_traffic.voyage_status_transitions (
 )
 WITH (fillfactor = 100);
 
+CREATE TABLE IF NOT EXISTS vessel_traffic.outbox_y2026_q1 PARTITION OF vessel_traffic.outbox
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS vessel_traffic.outbox_y2026_q2 PARTITION OF vessel_traffic.outbox
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS vessel_traffic.outbox_y2026_q3 PARTITION OF vessel_traffic.outbox
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS vessel_traffic.outbox_y2026_q4 PARTITION OF vessel_traffic.outbox
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS vessel_traffic.outbox_default PARTITION OF vessel_traffic.outbox DEFAULT;
+CREATE TABLE IF NOT EXISTS vessel_traffic.dead_letter_queue_y2026_q1 PARTITION OF vessel_traffic.dead_letter_queue
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS vessel_traffic.dead_letter_queue_y2026_q2 PARTITION OF vessel_traffic.dead_letter_queue
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS vessel_traffic.dead_letter_queue_y2026_q3 PARTITION OF vessel_traffic.dead_letter_queue
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS vessel_traffic.dead_letter_queue_y2026_q4 PARTITION OF vessel_traffic.dead_letter_queue
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS vessel_traffic.dead_letter_queue_default PARTITION OF vessel_traffic.dead_letter_queue DEFAULT;
+
 ALTER TABLE vessel_traffic.vessels ADD CONSTRAINT uq_vessels_imo_number UNIQUE (imo_number);
 ALTER TABLE vessel_traffic.vessels ADD CONSTRAINT uq_vessels_mmsi UNIQUE (mmsi);
 ALTER TABLE vessel_traffic.berths ADD CONSTRAINT uq_berths_code UNIQUE (code);
 ALTER TABLE vessel_traffic.voyages ADD CONSTRAINT uq_voyages_voyage_number UNIQUE (voyage_number);
+ALTER TABLE vessel_traffic.idempotency_keys ADD CONSTRAINT uq_idempotency_keys_key UNIQUE (key);
 -- CHECK: chk_voyage_status_transitions_from_state
 ALTER TABLE vessel_traffic.voyage_status_transitions ADD CONSTRAINT chk_voyage_status_transitions_from_state
     CHECK (from_state IN ('ANNOUNCED', 'PILOT_ORDERED', 'APPROACHING', 'BERTHING', 'MOORED', 'CARGO_OPS', 'DEPARTURE_PREP', 'UNMOORED', 'DEPARTED'));
@@ -188,12 +217,19 @@ ALTER TABLE vessel_traffic.voyage_status_transitions ADD CONSTRAINT chk_voyage_s
 ALTER TABLE vessel_traffic.voyage_status_transitions ADD CONSTRAINT chk_voyage_status_transitions_to_state
     CHECK (to_state IN ('ANNOUNCED', 'PILOT_ORDERED', 'APPROACHING', 'BERTHING', 'MOORED', 'CARGO_OPS', 'DEPARTURE_PREP', 'UNMOORED', 'DEPARTED'));
 
+-- CHECK: chk_voyages_status_id
+ALTER TABLE vessel_traffic.voyages ADD CONSTRAINT chk_voyages_status_id
+    CHECK (status_id IN (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.ANNOUNCED'), uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.PILOT_ORDERED'), uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.APPROACHING'), uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.BERTHING'), uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.MOORED'), uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.CARGO_OPS'), uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.DEPARTURE_PREP'), uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.UNMOORED'), uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.DEPARTED')));
+
 CREATE INDEX idx_voyages_vessel_id ON vessel_traffic.voyages USING btree (vessel_id);
 CREATE INDEX idx_voyages_berth_id ON vessel_traffic.voyages USING btree (berth_id);
 CREATE INDEX idx_pilot_assignments_voyage_id ON vessel_traffic.pilot_assignments USING btree (voyage_id);
 CREATE INDEX idx_tug_bookings_voyage_id ON vessel_traffic.tug_bookings USING btree (voyage_id);
 CREATE INDEX idx_tide_windows_berth_id ON vessel_traffic.tide_windows USING btree (berth_id);
-CREATE INDEX idx_outbox_unprocessed ON vessel_traffic.outbox USING btree (created_at) WHERE processed_at IS NULL;
+CREATE INDEX idx_outbox_created_at ON vessel_traffic.outbox USING btree (created_at);
+CREATE INDEX idx_dead_letter_queue_created_at ON vessel_traffic.dead_letter_queue USING btree (created_at);
+CREATE INDEX idx_idempotency_keys_expires_at ON vessel_traffic.idempotency_keys USING btree (expires_at);
+CREATE INDEX idx_outbox_unprocessed ON vessel_traffic.outbox USING btree (occurred_at) WHERE processed_at IS NULL;
 
 CREATE OR REPLACE FUNCTION vessel_traffic.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
@@ -216,7 +252,14 @@ CREATE OR REPLACE FUNCTION vessel_traffic.notify_outbox_inserted()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
 AS $$
 BEGIN
-  PERFORM pg_notify('outbox_inserted', NEW.aggregate_type);
+  PERFORM pg_notify(
+    'muscovite_outbox_inserted',
+    json_build_object(
+      'schema', TG_TABLE_SCHEMA,
+      'table', TG_TABLE_NAME,
+      'aggregate_type', NEW.aggregate_type
+    )::text
+  );
   RETURN NEW;
 END;
 $$;
@@ -256,19 +299,77 @@ CREATE TRIGGER trg_vessel_traffic_outbox_notify
     FOR EACH ROW
     EXECUTE FUNCTION vessel_traffic.notify_outbox_inserted();
 
-CREATE MATERIALIZED VIEW vessel_traffic.berth_occupancy_board AS
-SELECT 1 WHERE false /* ERROR: projection 'BerthOccupancyBoard' has no source_sql or source_entity */
-WITH DATA;
+CREATE OR REPLACE VIEW vessel_traffic.domain_events AS
+SELECT id,
+       aggregate_type,
+       aggregate_id,
+       event_type,
+       payload,
+       occurred_at,
+       processed_at,
+       retry_count,
+       last_retry_at,
+       NULL::UUID AS actor_id,
+       NULL::TEXT AS actor_name,
+       created_at
+FROM vessel_traffic.outbox
+;
+
+CREATE OR REPLACE VIEW vessel_traffic.domain_events_dlq AS
+SELECT original_event_id AS id,
+       event_type,
+       aggregate_id,
+       payload,
+       occurred_at,
+       retry_count,
+       failed_at,
+       failure_reason
+FROM vessel_traffic.dead_letter_queue
+;
+
+CREATE OR REPLACE VIEW vessel_traffic.berth_occupancy_board AS
+SELECT 1 WHERE false /* ERROR: projection 'BerthOccupancyBoard' has no source */
+;
 
 CREATE MATERIALIZED VIEW vessel_traffic.vessel_movement_log AS
-SELECT 1 WHERE false /* ERROR: projection 'VesselMovementLog' has no source_sql or source_entity */
+SELECT vg.number AS voyage_number, ve.name AS vessel_name, 'movement' AS event_type, vg.created_at AS event_time, NULL AS details FROM vessel_traffic.voyages vg JOIN vessel_traffic.vessels ve ON vg.id = ve.id
 WITH DATA;
 
+COMMENT ON ROLE vessel_traffic_owner IS 'Owns schema vessel_traffic and manages DDL for generated objects.';
+COMMENT ON ROLE vessel_traffic_app IS 'Application runtime role for vessel_traffic with generated CRUD and EXECUTE grants.';
+COMMENT ON ROLE vessel_traffic_readonly IS 'Read-only access role for vessel_traffic with generated SELECT and EXECUTE grants.';
+COMMENT ON FUNCTION vessel_traffic.set_updated_at() IS 'Audit trigger function: stamps updated_at on every row modification.';
+COMMENT ON TRIGGER trg_vessels_updated_at ON vessel_traffic.vessels IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE vessel_traffic.vessels IS 'A registered vessel in the harbour traffic system';
+COMMENT ON TRIGGER trg_berths_updated_at ON vessel_traffic.berths IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE vessel_traffic.berths IS 'A physical berth where vessels moor';
+COMMENT ON COLUMN vessel_traffic.berths.max_loa_metres IS 'Maximum vessel LOA this berth can accommodate';
+COMMENT ON COLUMN vessel_traffic.berths.max_draft_metres IS 'Maximum draft at lowest astronomical tide';
+COMMENT ON TRIGGER trg_voyages_updated_at ON vessel_traffic.voyages IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE vessel_traffic.voyages IS 'A single vessel call at the harbour';
+COMMENT ON TRIGGER trg_pilot_assignments_updated_at ON vessel_traffic.pilot_assignments IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE vessel_traffic.pilot_assignments IS 'Assignment of a pilot to a voyage';
+COMMENT ON TRIGGER trg_tug_bookings_updated_at ON vessel_traffic.tug_bookings IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE vessel_traffic.tug_bookings IS 'Booking of a tug for vessel manoeuvring';
+COMMENT ON COLUMN vessel_traffic.tug_bookings.bollard_pull_t IS 'Bollard pull in tonnes';
+COMMENT ON TRIGGER trg_tide_windows_updated_at ON vessel_traffic.tide_windows IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE vessel_traffic.tide_windows IS 'A tidal window with navigable draft at a specific berth';
+COMMENT ON COLUMN vessel_traffic.tide_windows.tide_height_metres IS 'Predicted tide height above chart datum';
+COMMENT ON COLUMN vessel_traffic.tide_windows.available_draft IS 'Effective navigable draft = berth depth + tide height';
+COMMENT ON DOMAIN vessel_traffic.imo_number IS 'IMO vessel identification number (7 digits)';
+COMMENT ON DOMAIN vessel_traffic.mmsi IS 'Maritime Mobile Service Identity (9 digits)';
+COMMENT ON DOMAIN vessel_traffic.call_sign IS 'International radio call sign';
+COMMENT ON DOMAIN vessel_traffic.berth_code IS 'Berth identifier (e.g. NQ-12, SC-3)';
+COMMENT ON TABLE vessel_traffic.idempotency_keys IS 'Idempotency key store. Expired rows are removed nightly by pg_cron via cleanup_expired_idempotency_keys().';
+
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.ANNOUNCED'), 'ANNOUNCED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.PILOT_ORDERED'), 'PILOT_ORDERED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.APPROACHING'), 'APPROACHING') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.BERTHING'), 'BERTHING') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.MOORED'), 'MOORED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.CARGO_OPS'), 'CARGO_OPS') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.DEPARTURE_PREP'), 'DEPARTURE_PREP') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.UNMOORED'), 'UNMOORED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+INSERT INTO vessel_traffic.voyage_status_states (id, name) VALUES (uuid_generate_v5(uuid_ns_dns, 'vessel_traffic.voyage_status_states.DEPARTED'), 'DEPARTED') ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
 
 COMMIT;

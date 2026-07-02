@@ -84,9 +84,9 @@ Ordered sequence for container discharge
 
 **Relationships:**
 
-- **DischargeSequence**: to-one → **LoadPlan** [required]
-- **DischargeSequence**: to-one → **Container** [required]
-- **DischargeSequence**: to-one → **Crane**
+- **DSLoadPlan**: to-one → **LoadPlan** [required]
+- **DSContainer**: to-one → **Container** [required]
+- **DSCrane**: to-one → **Crane**
 
 ## Value Objects
 
@@ -104,13 +104,13 @@ Ordered sequence for container discharge
 
 ### ContainerNumber
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 ISO 6346 container number (4 letters + 7 digits)
 
 ### YardSlotCode
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Yard slot address: bay-row-tier (e.g. A01-03-02)
 

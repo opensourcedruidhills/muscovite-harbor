@@ -49,6 +49,7 @@ target_include_directories(intermodal_transfer_qml_viewmodels PRIVATE
 
 target_link_libraries(intermodal_transfer_qml_viewmodels PUBLIC
     Qt6::Core
+    Qt6::Concurrent
     Qt6::Qml
     Qt6::Quick
     spdlog::spdlog

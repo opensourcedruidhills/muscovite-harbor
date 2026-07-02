@@ -9,4 +9,26 @@
 
 TEST_SUITE("slice:walking_skeleton") {
 
+TEST_CASE("DepartureInfo [activity:Arrival]") {
+    SUBCASE("DepartureInfo executes successfully") {
+        if (!std::getenv("MUSCOVITE_SLICE_TEST_INTEGRATION")) {
+            SKIP("set MUSCOVITE_SLICE_TEST_INTEGRATION=1 to run slice tests");
+        }
+        auto arrivalService = PassengerTerminal::ArrivalService{};
+        auto result = arrivalService.departureInfo();
+        CHECK(result.ok());
+    }
+}
+
+TEST_CASE("FastCheckIn [activity:CheckIn]") {
+    SUBCASE("FastCheckIn executes successfully") {
+        if (!std::getenv("MUSCOVITE_SLICE_TEST_INTEGRATION")) {
+            SKIP("set MUSCOVITE_SLICE_TEST_INTEGRATION=1 to run slice tests");
+        }
+        auto checkInService = PassengerTerminal::CheckInService{};
+        auto result = checkInService.fastCheckIn();
+        CHECK(result.ok());
+    }
+}
+
 } // TEST_SUITE

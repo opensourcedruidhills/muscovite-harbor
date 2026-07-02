@@ -2,6 +2,9 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "user_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace security {
 
@@ -11,12 +14,10 @@ auto UserRepositoryImpl::insert(pqxx::work& tx, const User& entity) -> void {
         entity.username,
         entity.email,
         entity.password_hash,
-        entity.is_active,
-    );
+        entity.is_active);
 }
 
 auto UserRepositoryImpl::update(pqxx::work& tx, const User& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
     params.append(entity.id);
     params.append(entity.username);

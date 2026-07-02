@@ -8,9 +8,9 @@ Dialog {
     id: craneDialog
     title: qsTr("Edit Crane")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Name") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("Name")
             text: viewModel.name
             onTextChanged: viewModel.setName(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.nameIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("CraneType") }
@@ -39,7 +51,14 @@ Dialog {
             text: viewModel.craneType
             onTextChanged: viewModel.setCraneType(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.craneTypeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("MaxLiftKg") }
         DoubleSpinBox {
             id: maxLiftKgField
             from: 0.0
@@ -48,6 +67,12 @@ Dialog {
             value: parseFloat(viewModel.maxLiftKg) || 0.0
             onValueChanged: viewModel.setMaxLiftKg(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.maxLiftKgIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         CheckBox {
             id: isActiveField
@@ -55,9 +80,27 @@ Dialog {
             checked: viewModel.isActive
             onCheckedChanged: viewModel.setIsActive(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.isActiveIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); craneDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); craneDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

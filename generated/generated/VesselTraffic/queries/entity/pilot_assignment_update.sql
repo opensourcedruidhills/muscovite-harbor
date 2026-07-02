@@ -1,5 +1,5 @@
 -- MUSCOVITE:SIDECAR:UNMODIFIED
--- MUSCOVITE:QUERY-HASH:d41d6d1dc9bdf6fe
+-- MUSCOVITE:QUERY-HASH:ba188bf06931a677
 --  context: VesselTraffic, entity: PilotAssignment, operation: update
 
-UPDATE vessel_traffic.pilot_assignment SET id = $2, voyage_id = $3, pilot_name = $4, pilot_zone = $5, boarding_time = $6, disembark_time = $7 WHERE id = $1
+UPDATE vessel_traffic.pilot_assignment SET voyage_id = $2, pilot_name = $3, pilot_zone = $4, boarding_time = $5, disembark_time = $6 WHERE id = $1

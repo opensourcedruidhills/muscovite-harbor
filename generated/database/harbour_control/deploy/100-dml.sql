@@ -8,7 +8,7 @@ SET search_path TO harbour_control, public;
 -- DML: harbour_control.safety_zones
 
 CREATE OR REPLACE FUNCTION harbour_control.insert_safety_zones(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_zone_code zone_code,
     p_zone_name TEXT,
     p_security_level TEXT,
@@ -62,7 +62,7 @@ $$ LANGUAGE SQL;
 -- DML: harbour_control.hazmat_permits
 
 CREATE OR REPLACE FUNCTION harbour_control.insert_hazmat_permits(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_permit_number permit_number,
     p_vessel_id UUID,
     p_imo_class INTEGER,
@@ -122,7 +122,7 @@ $$ LANGUAGE SQL;
 -- DML: harbour_control.invoice_lines
 
 CREATE OR REPLACE FUNCTION harbour_control.insert_invoice_lines(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_vessel_id UUID,
     p_service_type TEXT,
     p_amount NUMERIC,
@@ -176,17 +176,19 @@ $$ LANGUAGE SQL;
 -- DML: harbour_control.outbox
 
 CREATE OR REPLACE FUNCTION harbour_control.insert_outbox(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_aggregate_type TEXT,
     p_aggregate_id UUID,
     p_event_type TEXT,
-    p_payload JSONB,
+    p_payload TEXT,
+    p_occurred_at TIMESTAMPTZ DEFAULT NOW(),
     p_created_at TIMESTAMPTZ DEFAULT NOW(),
     p_retry_count INTEGER DEFAULT 0,
+    p_last_retry_at TIMESTAMPTZ DEFAULT NULL,
     p_processed_at TIMESTAMPTZ DEFAULT NULL
 ) RETURNS harbour_control.outbox AS $$
-    INSERT INTO harbour_control.outbox(id, aggregate_type, aggregate_id, event_type, payload, created_at, retry_count, processed_at)
-    VALUES (p_id, p_aggregate_type, p_aggregate_id, p_event_type, p_payload, p_created_at, p_retry_count, p_processed_at)
+    INSERT INTO harbour_control.outbox(id, aggregate_type, aggregate_id, event_type, payload, occurred_at, created_at, retry_count, last_retry_at, processed_at)
+    VALUES (p_id, p_aggregate_type, p_aggregate_id, p_event_type, p_payload, p_occurred_at, p_created_at, p_retry_count, p_last_retry_at, p_processed_at)
     RETURNING *;
 $$ LANGUAGE SQL;
 
@@ -205,16 +207,20 @@ $$ LANGUAGE SQL;
 -- DML: harbour_control.dead_letter_queue
 
 CREATE OR REPLACE FUNCTION harbour_control.insert_dead_letter_queue(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_original_event_id UUID,
+    p_aggregate_id UUID DEFAULT NULL,
     p_event_type TEXT,
-    p_payload JSONB,
+    p_payload TEXT,
     p_error_message TEXT,
     p_retry_count INTEGER DEFAULT 0,
-    p_created_at TIMESTAMPTZ DEFAULT NOW()
+    p_created_at TIMESTAMPTZ DEFAULT NOW(),
+    p_occurred_at TIMESTAMPTZ DEFAULT NOW(),
+    p_failed_at TIMESTAMPTZ DEFAULT NOW(),
+    p_failure_reason TEXT DEFAULT ''
 ) RETURNS harbour_control.dead_letter_queue AS $$
-    INSERT INTO harbour_control.dead_letter_queue(id, original_event_id, event_type, payload, error_message, retry_count, created_at)
-    VALUES (p_id, p_original_event_id, p_event_type, p_payload, p_error_message, p_retry_count, p_created_at)
+    INSERT INTO harbour_control.dead_letter_queue(id, original_event_id, aggregate_id, event_type, payload, error_message, retry_count, created_at, occurred_at, failed_at, failure_reason)
+    VALUES (p_id, p_original_event_id, p_aggregate_id, p_event_type, p_payload, p_error_message, p_retry_count, p_created_at, p_occurred_at, p_failed_at, p_failure_reason)
     RETURNING *;
 $$ LANGUAGE SQL;
 
@@ -233,35 +239,41 @@ $$ LANGUAGE SQL;
 -- DML: harbour_control.idempotency_keys
 
 CREATE OR REPLACE FUNCTION harbour_control.insert_idempotency_keys(
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_key TEXT,
+    p_response JSONB DEFAULT NULL,
     p_created_at TIMESTAMPTZ DEFAULT NOW(),
     p_expires_at TIMESTAMPTZ
 ) RETURNS harbour_control.idempotency_keys AS $$
-    INSERT INTO harbour_control.idempotency_keys(key, created_at, expires_at)
-    VALUES (p_key, p_created_at, p_expires_at)
+    INSERT INTO harbour_control.idempotency_keys(id, key, response, created_at, expires_at)
+    VALUES (p_id, p_key, p_response, p_created_at, p_expires_at)
     RETURNING *;
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION harbour_control.select_idempotency_keys_by_id(
-    p_key TEXT
+    p_id UUID
 ) RETURNS SETOF harbour_control.idempotency_keys AS $$
-    SELECT * FROM harbour_control.idempotency_keys WHERE key = p_key;
+    SELECT * FROM harbour_control.idempotency_keys WHERE id = p_id;
 $$ LANGUAGE SQL STABLE;
 
 CREATE OR REPLACE FUNCTION harbour_control.update_idempotency_keys(
+    p_id UUID,
     p_key TEXT,
+    p_response JSONB DEFAULT NULL,
     p_expires_at TIMESTAMPTZ
 ) RETURNS harbour_control.idempotency_keys AS $$
     UPDATE harbour_control.idempotency_keys
-    SET expires_at = p_expires_at
-    WHERE key = p_key
+    SET key = p_key,
+        response = p_response,
+        expires_at = p_expires_at
+    WHERE id = p_id
     RETURNING *;
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION harbour_control.delete_idempotency_keys(
-    p_key TEXT
+    p_id UUID
 ) RETURNS void AS $$
-    DELETE FROM harbour_control.idempotency_keys WHERE key = p_key;
+    DELETE FROM harbour_control.idempotency_keys WHERE id = p_id;
 $$ LANGUAGE SQL;
 
 COMMIT;

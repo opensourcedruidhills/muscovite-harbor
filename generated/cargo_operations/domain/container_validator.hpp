@@ -5,7 +5,7 @@
 
 #include "container.hpp"
 #include <string>
-#include <vector>
+#include <muscovite/validation/validation_errors.hpp>
 
 namespace cargo_operations {
 
@@ -14,10 +14,18 @@ namespace cargo_operations {
 class ContainerValidator {
 public:
     /// Validate cross-field invariants. Returns accumulated error messages.
-    [[nodiscard]] static auto validate(const Container& entity) -> std::vector<std::string> {
+    [[nodiscard]] static auto validate(const Container& entity) -> muscovite::validation::ValidationErrors {
         (void)entity;
-        return {};
+        auto errors = muscovite::validation::ValidationErrors{};
+        return errors;
     }
+
+    /// REQUIRES: slot_empty
+    [[nodiscard]] static auto check_slot_empty(const Container& entity) -> bool;
+    /// REQUIRES: weight_ok
+    [[nodiscard]] static auto check_weight_ok(const Container& entity) -> bool;
+    /// REQUIRES: is_top
+    [[nodiscard]] static auto check_is_top(const Container& entity) -> bool;
 };
 
 } // namespace cargo_operations

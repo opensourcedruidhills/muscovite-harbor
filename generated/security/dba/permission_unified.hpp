@@ -15,11 +15,24 @@ struct Permission {
     std::string resource{};
     std::string action{};
 
-    /// Construct from a database row (stub — implementation in .cpp).
-    // static auto from_row(const pqxx::row& row) -> Permission;
+    /// Construct from a database row.
+    static auto from_row(const pqxx::row& row) -> Permission {
+        return Permission{
+            .id = row[0].as<std::string>(),
+            .name = row[1].as<std::string>(),
+            .resource = row[2].as<std::string>(),
+            .action = row[3].as<std::string>(),
+        };
+    }
 
     /// Try to construct; returns nullopt on missing required field.
-    // static auto try_from(const pqxx::row& row) -> std::optional<Permission>;
+    static auto try_from(const pqxx::row& row) -> std::optional<Permission> {
+        if (row[0].is_null()) return std::nullopt;
+        if (row[1].is_null()) return std::nullopt;
+        if (row[2].is_null()) return std::nullopt;
+        if (row[3].is_null()) return std::nullopt;
+        return from_row(row);
+    }
 };
 
 } // namespace security

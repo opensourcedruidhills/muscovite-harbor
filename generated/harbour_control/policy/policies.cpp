@@ -3,18 +3,23 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include "policies.hpp"
+#include <future>
 
 namespace harbour_control {
 
 auto LogHazmatApprovalPolicyHandler::matches(const HazmatPermitApproved& event) const -> bool {
     // WHY: #1476 — compiled from DSL policy condition
     (void)event;
-    return ;
+    return permit_number IS NOT NULL;
 }
 
 auto LogHazmatApprovalPolicyHandler::execute(const HazmatPermitApproved& event) const -> PolicyResult {
-    (void)event;
-    // Invoke command: AuditHazmatPermit
+    if (matches(event)) {
+    auto command = AuditHazmatPermit{event};
+    if (!command_dispatcher_ || !command_dispatcher_->dispatch(command)) {
+        return PolicyResult::ActionFailed;
+    }
+    }
     return PolicyResult::Success;
 }
 

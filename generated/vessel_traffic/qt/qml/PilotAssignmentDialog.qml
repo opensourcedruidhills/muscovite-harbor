@@ -8,9 +8,9 @@ Dialog {
     id: pilotAssignmentDialog
     title: qsTr("Edit PilotAssignment")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("VoyageId") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("VoyageId")
             text: viewModel.voyageId
             onTextChanged: viewModel.setVoyageId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.voyageIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("PilotName") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.pilotName
             onTextChanged: viewModel.setPilotName(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.pilotNameIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("PilotZone") }
         TextField {
@@ -46,6 +64,12 @@ Dialog {
             placeholderText: qsTr("PilotZone")
             text: viewModel.pilotZone
             onTextChanged: viewModel.setPilotZone(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.pilotZoneIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("BoardingTime") }
@@ -55,6 +79,12 @@ Dialog {
             text: viewModel.boardingTime
             onTextChanged: viewModel.setBoardingTime(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.boardingTimeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("DisembarkTime") }
         TextField {
@@ -63,9 +93,27 @@ Dialog {
             text: viewModel.disembarkTime
             onTextChanged: viewModel.setDisembarkTime(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.disembarkTimeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); pilotAssignmentDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); pilotAssignmentDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

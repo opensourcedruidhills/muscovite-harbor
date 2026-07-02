@@ -18,6 +18,7 @@ add_library(intermodal_transfer-qt-models
 target_link_libraries(intermodal_transfer-qt-models PUBLIC
     Qt6::Core
     Qt6::Gui
+    gRPC::grpc++
 )
 
 add_library(intermodal_transfer-qt-widgets
@@ -47,6 +48,7 @@ target_link_libraries(intermodal_transfer-qt-widgets PUBLIC
     intermodal_transfer-qt-models
     Qt6::Core
     Qt6::Gui
+    Qt6::Concurrent
     Qt6::Widgets
 )
 

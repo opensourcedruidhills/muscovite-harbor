@@ -29,21 +29,28 @@ void InvoiceLineDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     vessel_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("VesselId"), vessel_id_value_);
+    section_form_1->addRow(QStringLiteral("VesselId"), vessel_id_value_);
     service_type_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ServiceType"), service_type_value_);
+    section_form_1->addRow(QStringLiteral("ServiceType"), service_type_value_);
     amount_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Amount"), amount_value_);
+    section_form_1->addRow(QStringLiteral("Amount"), amount_value_);
     currency_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Currency"), currency_value_);
-    issued_at_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("IssuedAt"), issued_at_value_);
+    section_form_1->addRow(QStringLiteral("Currency"), currency_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    issued_at_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("IssuedAt"), issued_at_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -72,7 +79,7 @@ void InvoiceLineDetailWidget::setIssuedAt(const QDateTime& value) {
 }
 
 void InvoiceLineDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

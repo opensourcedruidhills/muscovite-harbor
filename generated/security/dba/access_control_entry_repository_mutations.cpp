@@ -2,6 +2,9 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "access_control_entry_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace security {
 
@@ -11,12 +14,10 @@ auto AccessControlEntryRepositoryImpl::insert(pqxx::work& tx, const AccessContro
         entity.principal,
         entity.resource,
         entity.permission,
-        entity.effect,
-    );
+        entity.effect);
 }
 
 auto AccessControlEntryRepositoryImpl::update(pqxx::work& tx, const AccessControlEntry& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
     params.append(entity.id);
     params.append(entity.principal);

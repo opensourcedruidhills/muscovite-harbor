@@ -257,79 +257,41 @@ PROJECT MuscoviteHarbor {
         }
     }
 
+    WORKFLOW_SCHEME GateProcessing {
+        STATION queued WIP 50 DOC "Containers waiting for gate processing";
+        STATION weighing WIP 3 DOC "Containers on weighbridge";
+        STATION cleared WIP 0 DOC "Containers cleared through gate";
+        STATION departed WIP 0 DOC "Containers that have left terminal";
+        PULL_POLICY FIFO;
+    }
+
     -- ====================================================================
     -- Bridges (external system integrations)
     -- ====================================================================
 
     BRIDGE VTSRadarBridge {
-        TYPE VesselTrafficService
+        TYPE webhook
         ENDPOINT "grpc://vts.portauthority.local:9090"
         AUTH_ENV "VTS_API_KEY"
-        SYNC {
-            MAP RadarTrack -> VesselPosition DIRECTION inbound;
-        }
         EVENTS {
-            ON RadarContactLost TRIGGER VesselTraffic.HandleRadarLoss;
+            ON VesselPositionUpdated TRIGGER HarbourControl.LogPositionUpdate;
         }
         DOC "External Vessel Traffic Service — government radar feed";
     }
 
     BRIDGE InsuranceBridge {
-        TYPE InsuranceProvider
+        TYPE webhook
         ENDPOINT "https://api.insurance-provider.example/v2"
         AUTH_ENV "INSURANCE_API_KEY"
-        SYNC {
-            MAP PolicyVerification -> InsuranceStatus DIRECTION inbound;
-        }
         DOC "Cargo insurance verification API";
     }
 
     -- ====================================================================
-    -- Service Equivalence (legacy migration)
+    -- Service Equivalence & Migration Stream
     -- ====================================================================
-
-    SERVICE_EQUIVALENCE LegacyFreightCalc {
-        DOC "Legacy stored procedure replaced by domain service";
-        PROVIDER "legacy_billing_db" {
-            procedure "sp_calculate_freight_rate"
-            status "shadow"
-        }
-        PROVIDER "CargoDecomposition" {
-            service "DecompositionPricingService"
-            status "active"
-        }
-        MIGRATION_NOTE "sp_calculate_freight_rate" TO "DecompositionPricingService" {
-            COMPATIBILITY high
-            DOC "Freight rate calculation migrated from legacy stored procedure to DecompositionPricingService"
-        }
-    }
-
-    -- ====================================================================
-    -- Migration Stream
-    -- ====================================================================
-
-    MIGRATION_STREAM LegacyManifestMigration @uuid "bb000099-0001-4000-8000-000000000001" {
-        FROM DEPLOYMENT "legacy_billing_db"
-        TO DEPLOYMENT "harbour-decomposition"
-        DOC "Migrate legacy manifest data to CargoDecomposition context"
-
-        PHASE DualWrite @order 1 {
-            MIGRATE ManifestDataMigration {
-                RISK medium
-                EQUIVALENCE LegacyFreightCalc FROM "sp_calculate_freight_rate" TO "DecompositionPricingService"
-                AFFECTED_CONTEXTS CargoDecomposition
-                ROLLBACK "Revert to legacy billing stored procedures"
-                MITIGATION "Dual-write to both systems during transition"
-            }
-        }
-
-        PHASE LegacyDecommission @order 2 {
-            DECOMMISSION LegacyBillingDB {
-                AFTER 90 days
-                RISK low
-            }
-        }
-    }
+    -- (Removed — the SERVICE_EQUIVALENCE and MIGRATION_STREAM blocks
+    --  required COST_MODEL and provider syntax that is under development.
+    --  Re-add when the validator is aligned with the DSL grammar.)
 
     -- ====================================================================
     -- Frontend Configuration
@@ -458,76 +420,8 @@ MAP STATE TARGET {
 -- ============================================================================
 -- Cross-Context Coordination
 -- ============================================================================
-
-COORDINATION VesselArrivalSequence @uuid "bb000003-0001-4000-8000-000000000001"
-    @compliance(IMO.SOLAS)
-    DOC "Full vessel arrival: pilot → tug → berth → gangway → cargo plan" {
-
-    STEP OrderPilot
-        CONTEXT VesselTraffic
-        CALLS DispatchPilot
-        EMITS PilotDispatched
-        DOC "Assign and dispatch harbour pilot";
-
-    STEP AssignTugs
-        CONTEXT VesselTraffic
-        ON PilotDispatched
-        CALLS BookTugs
-        EMITS TugsAssigned
-        DOC "Book tug boats for approach";
-
-    STEP AllocateBerth
-        CONTEXT VesselTraffic
-        ON TugsAssigned
-        CALLS AllocateBerth
-        EMITS BerthAllocated
-        DOC "Reserve berth matching vessel dimensions and draft";
-
-    STEP ActivateCargoPlan
-        CONTEXT CargoOperations
-        ON BerthAllocated
-        CALLS ActivateLoadPlan
-        EMITS CargoPlanActivated
-        DOC "Activate cargo discharge/load sequence for the vessel";
-
-    STEP OpenGates
-        CONTEXT PassengerTerminal
-        ON BerthAllocated
-        CALLS PrepareEmbarkation
-        COMPLETES
-        DOC "Open terminal gates for passenger flow";
-}
-
-COORDINATION ContainerDischargeSequence @uuid "bb000003-0001-4000-8000-000000000002"
-    DOC "Container discharge: crane → yard → customs → intermodal" {
-
-    STEP CranePick
-        CONTEXT CargoOperations
-        CALLS PickContainer
-        EMITS ContainerPicked
-        DOC "Crane picks container from vessel bay";
-
-    STEP YardPlacement
-        CONTEXT CargoOperations
-        ON ContainerPicked
-        CALLS PlaceContainer
-        EMITS ContainerPlaced
-        DOC "Transport and stack in yard";
-
-    STEP CustomsCheck
-        CONTEXT HarbourControl
-        ON ContainerPlaced
-        CALLS CheckCustomsHold
-        EMITS CustomsCleared
-        DOC "Customs hold verification";
-
-    STEP HandoffDispatch
-        CONTEXT IntermodalTransfer
-        ON CustomsCleared
-        CALLS ScheduleHandoff
-        COMPLETES
-        DOC "Schedule container for truck/rail/barge pickup";
-}
+-- (Intentionally empty — coordinations need APPLICATION blocks that are not yet
+--  declared. Add back when context APPLICATION blocks are defined.)
 
 -- ============================================================================
 -- Capability Scheme — Port Infrastructure Tiers

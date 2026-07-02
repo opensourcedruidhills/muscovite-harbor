@@ -19,6 +19,8 @@
 #include <unordered_set>
 #include <vector>
 #include <grpcpp/grpcpp.h>
+#include <jwt-cpp/jwt.h>
+#include <bcrypt.h>
 
 #include "grpc/server/auth_interceptor.hpp"
 
@@ -38,9 +40,23 @@ struct TokenPair {
     std::int64_t expires_at_epoch_seconds = 0;
 };
 
+struct VerifiedTokenClaims {
+    std::string subject;
+    std::string jti;
+};
+
+class ITokenBlacklist {
+public:
+    virtual ~ITokenBlacklist() = default;
+    [[nodiscard]] virtual auto is_blacklisted(std::string_view jti) const -> bool = 0;
+    virtual auto blacklist(std::string_view jti, std::chrono::seconds ttl) -> bool = 0;
+};
+
 class JwtAuthProvider final : public AuthProvider {
 public:
-    JwtAuthProvider(std::shared_ptr<IUserRepository> users, std::string jwt_secret);
+    JwtAuthProvider(std::shared_ptr<IUserRepository> users,
+                    std::string jwt_secret,
+                    std::shared_ptr<ITokenBlacklist> blacklist = nullptr);
 
     [[nodiscard]] auto verify(const grpc::ServerContext& ctx) const -> std::optional<AuthIdentity> override;
     [[nodiscard]] auto issue_token(std::string_view username, std::string_view password) const -> std::optional<TokenPair>;
@@ -52,15 +68,17 @@ public:
 
 private:
     [[nodiscard]] auto parse_bearer_token(const grpc::ServerContext& ctx) const -> std::optional<std::string>;
-    [[nodiscard]] auto verify_hs256(std::string_view token) const -> std::optional<std::string>;
+    [[nodiscard]] auto verify_hs256(std::string_view token) const -> std::optional<VerifiedTokenClaims>;
     [[nodiscard]] auto sign_hs256(std::string_view subject,
                                   std::chrono::seconds ttl,
                                   bool refresh_token) const -> std::string;
     [[nodiscard]] auto verify_password(std::string_view password,
                                        std::string_view password_hash) const -> bool;
+    [[nodiscard]] static auto hash_password(std::string_view password) -> std::string;
 
     std::shared_ptr<IUserRepository> users_;
     std::string jwt_secret_;
+    std::shared_ptr<ITokenBlacklist> blacklist_;
 };
 
 } // namespace muscovite_harbor

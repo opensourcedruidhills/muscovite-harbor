@@ -2,12 +2,14 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "voyage_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace vessel_traffic {
 
 auto VoyageRepositoryImpl::insert(pqxx::work& tx, const Voyage& entity) -> void {
     tx.exec_params(kInsert,
-        entity.id,
         entity.id,
         entity.vessel_id,
         entity.berth_id,
@@ -17,14 +19,11 @@ auto VoyageRepositoryImpl::insert(pqxx::work& tx, const Voyage& entity) -> void 
         entity.etd,
         entity.atd,
         entity.cargo_category,
-        entity.status,
-    );
+        entity.status);
 }
 
 auto VoyageRepositoryImpl::update(pqxx::work& tx, const Voyage& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
-    params.append(entity.id);
     params.append(entity.id);
     params.append(entity.vessel_id);
     params.append(entity.berth_id);

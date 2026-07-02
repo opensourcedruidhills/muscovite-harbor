@@ -29,25 +29,32 @@ void HazmatPermitDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     permit_number_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("PermitNumber"), permit_number_value_);
+    section_form_1->addRow(QStringLiteral("PermitNumber"), permit_number_value_);
     vessel_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("VesselId"), vessel_id_value_);
+    section_form_1->addRow(QStringLiteral("VesselId"), vessel_id_value_);
     imo_class_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ImoClass"), imo_class_value_);
+    section_form_1->addRow(QStringLiteral("ImoClass"), imo_class_value_);
     quantity_kg_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("QuantityKg"), quantity_kg_value_);
-    approved_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Approved"), approved_value_);
-    valid_from_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ValidFrom"), valid_from_value_);
-    valid_until_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ValidUntil"), valid_until_value_);
+    section_form_1->addRow(QStringLiteral("QuantityKg"), quantity_kg_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    approved_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("Approved"), approved_value_);
+    valid_from_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("ValidFrom"), valid_from_value_);
+    valid_until_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("ValidUntil"), valid_until_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -84,7 +91,7 @@ void HazmatPermitDetailWidget::setValidUntil(const QDateTime& value) {
 }
 
 void HazmatPermitDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

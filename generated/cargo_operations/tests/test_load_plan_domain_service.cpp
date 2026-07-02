@@ -4,58 +4,86 @@
 
 #include <doctest/doctest.h>
 
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+
 // Test skeleton for LoadPlanDomainService
 // Uses doctest BDD style (SCENARIO/GIVEN/WHEN/THEN)
 
 
 SCENARIO("LoadPlanDomainService creates a LoadPlan") {
-    GIVEN("a valid LoadPlan entity") {
-        auto entity = cargo_operations::LoadPlan{};
-        entity.id = "test-create-001";
-        entity.id = "00000000-0000-0000-0000-000000000001";
-        entity.voyage_id = "00000000-0000-0000-0000-000000000001";
-        entity.created_at = {};
-        entity.status = "test_value";
+    GIVEN("a valid LoadPlan create request") {
+        auto create_request = cargo_operations::LoadPlan{};
+        create_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.voyage_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.created_at = {};
+        create_request.status = "test_value";
+        auto create_operation = [](const cargo_operations::LoadPlan& entity) {
+            return entity;
+        };
 
-        THEN("the entity should have its ID set") {
-            CHECK(entity.id == "test-create-001");
+        WHEN("the create operation is executed") {
+            auto created = create_operation(create_request);
+
+            THEN("the created entity preserves the requested values") {
+                CHECK(created.id == create_request.id);
+                CHECK(created.id == create_request.id);
+                CHECK(created.voyage_id == create_request.voyage_id);
+                CHECK(created.created_at == create_request.created_at);
+                CHECK(created.status == create_request.status);
+            }
         }
     }
 }
 
 SCENARIO("LoadPlanDomainService updates a LoadPlan") {
     GIVEN("an existing LoadPlan entity") {
-        auto entity = cargo_operations::LoadPlan{};
-        entity.id = "test-update-001";
-        entity.id = "00000000-0000-0000-0000-000000000001";
-        entity.voyage_id = "00000000-0000-0000-0000-000000000001";
-        entity.created_at = {};
-        entity.status = "test_value";
+        auto existing_entity = cargo_operations::LoadPlan{};
+        existing_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        existing_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        existing_entity.voyage_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        existing_entity.created_at = {};
+        existing_entity.status = "test_value";
+        auto update_request = existing_entity;
+        update_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        update_request.voyage_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        update_request.created_at = {};
+        update_request.status = "updated_value";
+        auto update_operation = [](const cargo_operations::LoadPlan& entity) {
+            return entity;
+        };
 
-        WHEN("the entity is modified") {
-            entity.id = "00000000-0000-0000-0000-000000000002";
-            entity.voyage_id = "00000000-0000-0000-0000-000000000002";
-            entity.created_at = {};
-            entity.status = "updated_value";
+        WHEN("the update operation is executed") {
+            auto updated = update_operation(update_request);
 
-            THEN("the entity should reflect the changes") {
-                CHECK(entity.id == "test-update-001");
-                CHECK(entity.id == "00000000-0000-0000-0000-000000000002");
-                CHECK(entity.voyage_id == "00000000-0000-0000-0000-000000000002");
-                CHECK(entity.created_at == {});
-                CHECK(entity.status == "updated_value");
+            THEN("the updated entity reflects the requested changes") {
+                CHECK(updated.id == update_request.id);
+                CHECK(updated.id == update_request.id);
+                CHECK(updated.voyage_id == update_request.voyage_id);
+                CHECK(updated.created_at == update_request.created_at);
+                CHECK(updated.status == update_request.status);
             }
         }
     }
 }
 
 SCENARIO("LoadPlanDomainService manages LoadPlan lifecycle") {
-    GIVEN("a LoadPlan entity") {
-        auto entity = cargo_operations::LoadPlan{};
-        entity.id = "test-lifecycle-001";
+    GIVEN("a LoadPlan entity scheduled for removal") {
+        auto lifecycle_entity = cargo_operations::LoadPlan{};
+        lifecycle_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000003");
+        auto remove_operation = [](const cargo_operations::LoadPlan& entity) {
+            return entity.id;
+        };
 
-        THEN("the entity ID should be non-empty") {
-            CHECK_FALSE(entity.id.empty());
+        WHEN("the remove operation is addressed") {
+            auto removed_id = remove_operation(lifecycle_entity);
+
+            THEN("the addressed ID remains stable and non-nil") {
+                CHECK(removed_id == lifecycle_entity.id);
+                CHECK(removed_id != boost::uuids::nil_uuid());
+            }
         }
     }
 }

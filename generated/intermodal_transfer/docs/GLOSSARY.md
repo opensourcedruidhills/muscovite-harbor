@@ -125,13 +125,13 @@ Selects best transport mode based on urgency, destination, and availability
 
 ### SlotReference
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Transfer slot reference (e.g. TS-20260415-0001)
 
 ### TruckPlate
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Truck licence plate number
 

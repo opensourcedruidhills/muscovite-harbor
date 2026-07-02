@@ -29,21 +29,28 @@ void GateDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     code_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Code"), code_value_);
+    section_form_1->addRow(QStringLiteral("Code"), code_value_);
     name_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Name"), name_value_);
+    section_form_1->addRow(QStringLiteral("Name"), name_value_);
     capacity_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Capacity"), capacity_value_);
+    section_form_1->addRow(QStringLiteral("Capacity"), capacity_value_);
     status_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Status"), status_value_);
-    voyage_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("VoyageId"), voyage_id_value_);
+    section_form_1->addRow(QStringLiteral("Status"), status_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    voyage_id_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("VoyageId"), voyage_id_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -72,7 +79,7 @@ void GateDetailWidget::setVoyageId(const QString& value) {
 }
 
 void GateDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

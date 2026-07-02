@@ -21,7 +21,7 @@ struct EntityCoverageEntry {
 };
 
 /// Minimum coverage threshold (configurable per module).
-inline constexpr double COVERAGE_THRESHOLD_PCT = 80.0;
+inline constexpr double COVERAGE_THRESHOLD_PCT = 80;
 inline constexpr bool FAIL_ON_BELOW_THRESHOLD = true;
 
 /// Static entity registry for coverage tracking.
@@ -30,10 +30,10 @@ inline constexpr bool FAIL_ON_BELOW_THRESHOLD = true;
     return {
         {"Vessel", 0, 8, false},
         {"Berth", 0, 9, false},
-        {"Voyage", 0, 10, false},
+        {"Voyage", 0, 10, true},
         {"PilotAssignment", 0, 6, false},
         {"TugBooking", 0, 5, false},
-        {"TideWindow", 0, 4, true},
+        {"TideWindow", 0, 4, false},
     };
 }
 

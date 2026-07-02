@@ -1,0 +1,15 @@
+{
+  "routes": [
+    {
+      "handlers": [
+        {
+          "class_name": "log_hazmat_approval_handler",
+          "name": "LogHazmatApproval",
+          "start_on_event": false,
+          "type": "policy"
+        }
+      ],
+      "subject": "muscovite.harbour_control.events.hazmat_permit_approved"
+    }
+  ]
+}

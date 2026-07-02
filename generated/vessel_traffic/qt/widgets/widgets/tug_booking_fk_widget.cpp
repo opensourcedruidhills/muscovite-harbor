@@ -12,12 +12,24 @@
 #include "tug_booking_fk_widget.hpp"
 
 #include <QHBoxLayout>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+#include <spdlog/spdlog.h>
+#include "voyage.grpc.pb.h"
 
 namespace muscovite_harbor::widgets {
 
 TugBookingFkWidget::TugBookingFkWidget(QWidget* parent)
     : QWidget{parent} {
     setupUi();
+    loadVoyageOptions();
+}
+
+void TugBookingFkWidget::setServerAddress(const QString& address) {
+    if (m_server_address != address) {
+        m_server_address = address;
+        Q_EMIT serverAddressChanged();
+    }
 }
 
 void TugBookingFkWidget::setupUi() {
@@ -34,6 +46,26 @@ void TugBookingFkWidget::setupUi() {
 
 auto TugBookingFkWidget::selectedVoyage() const -> QString {
     return voyage_combo_->currentText();
+}
+
+void TugBookingFkWidget::loadVoyageOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = VoyageService::NewStub(channel_);
+    ListVoyagesRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListVoyagesResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListVoyages(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("TugBookingFkWidget::loadVoyageOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populateVoyageOptions(options);
 }
 
 void TugBookingFkWidget::populateVoyageOptions(const QStringList& options) {

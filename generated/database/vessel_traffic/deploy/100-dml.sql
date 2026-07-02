@@ -8,7 +8,7 @@ SET search_path TO vessel_traffic, public;
 -- DML: vessel_traffic.vessels
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_vessels(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_imo_number imo_number,
     p_mmsi mmsi,
     p_call_sign call_sign,
@@ -68,7 +68,7 @@ $$ LANGUAGE SQL;
 -- DML: vessel_traffic.berths
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_berths(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_code berth_code,
     p_name TEXT,
     p_max_loa_metres NUMERIC,
@@ -131,7 +131,7 @@ $$ LANGUAGE SQL;
 -- DML: vessel_traffic.voyages
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_voyages(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_vessel_id UUID,
     p_berth_id UUID DEFAULT NULL,
     p_voyage_number TEXT,
@@ -140,15 +140,14 @@ CREATE OR REPLACE FUNCTION vessel_traffic.insert_voyages(
     p_etd TIMESTAMPTZ DEFAULT NULL,
     p_atd TIMESTAMPTZ DEFAULT NULL,
     p_cargo_category TEXT,
-    p_status TEXT,
     p_created_at TIMESTAMPTZ DEFAULT NOW(),
     p_created_by UUID DEFAULT NULL,
     p_updated_at TIMESTAMPTZ DEFAULT NOW(),
     p_updated_by UUID DEFAULT NULL,
     p_status_id UUID
 ) RETURNS vessel_traffic.voyages AS $$
-    INSERT INTO vessel_traffic.voyages(id, vessel_id, berth_id, voyage_number, eta, ata, etd, atd, cargo_category, status, created_at, created_by, updated_at, updated_by, status_id)
-    VALUES (p_id, p_vessel_id, p_berth_id, p_voyage_number, p_eta, p_ata, p_etd, p_atd, p_cargo_category, p_status, p_created_at, p_created_by, p_updated_at, p_updated_by, p_status_id)
+    INSERT INTO vessel_traffic.voyages(id, vessel_id, berth_id, voyage_number, eta, ata, etd, atd, cargo_category, created_at, created_by, updated_at, updated_by, status_id)
+    VALUES (p_id, p_vessel_id, p_berth_id, p_voyage_number, p_eta, p_ata, p_etd, p_atd, p_cargo_category, p_created_at, p_created_by, p_updated_at, p_updated_by, p_status_id)
     RETURNING *;
 $$ LANGUAGE SQL;
 
@@ -168,7 +167,6 @@ CREATE OR REPLACE FUNCTION vessel_traffic.update_voyages(
     p_etd TIMESTAMPTZ DEFAULT NULL,
     p_atd TIMESTAMPTZ DEFAULT NULL,
     p_cargo_category TEXT,
-    p_status TEXT,
     p_created_by UUID DEFAULT NULL,
     p_updated_by UUID DEFAULT NULL,
     p_status_id UUID
@@ -182,7 +180,6 @@ CREATE OR REPLACE FUNCTION vessel_traffic.update_voyages(
         etd = p_etd,
         atd = p_atd,
         cargo_category = p_cargo_category,
-        status = p_status,
         created_by = p_created_by,
         updated_by = p_updated_by,
         status_id = p_status_id,
@@ -200,7 +197,7 @@ $$ LANGUAGE SQL;
 -- DML: vessel_traffic.pilot_assignments
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_pilot_assignments(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_voyage_id UUID,
     p_pilot_name TEXT,
     p_pilot_zone TEXT,
@@ -254,7 +251,7 @@ $$ LANGUAGE SQL;
 -- DML: vessel_traffic.tug_bookings
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_tug_bookings(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_voyage_id UUID,
     p_tug_name TEXT,
     p_bollard_pull_t NUMERIC,
@@ -305,7 +302,7 @@ $$ LANGUAGE SQL;
 -- DML: vessel_traffic.tide_windows
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_tide_windows(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_berth_id UUID,
     p_tide_height_metres NUMERIC,
     p_available_draft NUMERIC,
@@ -365,17 +362,19 @@ $$ LANGUAGE SQL;
 -- DML: vessel_traffic.outbox
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_outbox(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_aggregate_type TEXT,
     p_aggregate_id UUID,
     p_event_type TEXT,
-    p_payload JSONB,
+    p_payload TEXT,
+    p_occurred_at TIMESTAMPTZ DEFAULT NOW(),
     p_created_at TIMESTAMPTZ DEFAULT NOW(),
     p_retry_count INTEGER DEFAULT 0,
+    p_last_retry_at TIMESTAMPTZ DEFAULT NULL,
     p_processed_at TIMESTAMPTZ DEFAULT NULL
 ) RETURNS vessel_traffic.outbox AS $$
-    INSERT INTO vessel_traffic.outbox(id, aggregate_type, aggregate_id, event_type, payload, created_at, retry_count, processed_at)
-    VALUES (p_id, p_aggregate_type, p_aggregate_id, p_event_type, p_payload, p_created_at, p_retry_count, p_processed_at)
+    INSERT INTO vessel_traffic.outbox(id, aggregate_type, aggregate_id, event_type, payload, occurred_at, created_at, retry_count, last_retry_at, processed_at)
+    VALUES (p_id, p_aggregate_type, p_aggregate_id, p_event_type, p_payload, p_occurred_at, p_created_at, p_retry_count, p_last_retry_at, p_processed_at)
     RETURNING *;
 $$ LANGUAGE SQL;
 
@@ -394,16 +393,20 @@ $$ LANGUAGE SQL;
 -- DML: vessel_traffic.dead_letter_queue
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_dead_letter_queue(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_original_event_id UUID,
+    p_aggregate_id UUID DEFAULT NULL,
     p_event_type TEXT,
-    p_payload JSONB,
+    p_payload TEXT,
     p_error_message TEXT,
     p_retry_count INTEGER DEFAULT 0,
-    p_created_at TIMESTAMPTZ DEFAULT NOW()
+    p_created_at TIMESTAMPTZ DEFAULT NOW(),
+    p_occurred_at TIMESTAMPTZ DEFAULT NOW(),
+    p_failed_at TIMESTAMPTZ DEFAULT NOW(),
+    p_failure_reason TEXT DEFAULT ''
 ) RETURNS vessel_traffic.dead_letter_queue AS $$
-    INSERT INTO vessel_traffic.dead_letter_queue(id, original_event_id, event_type, payload, error_message, retry_count, created_at)
-    VALUES (p_id, p_original_event_id, p_event_type, p_payload, p_error_message, p_retry_count, p_created_at)
+    INSERT INTO vessel_traffic.dead_letter_queue(id, original_event_id, aggregate_id, event_type, payload, error_message, retry_count, created_at, occurred_at, failed_at, failure_reason)
+    VALUES (p_id, p_original_event_id, p_aggregate_id, p_event_type, p_payload, p_error_message, p_retry_count, p_created_at, p_occurred_at, p_failed_at, p_failure_reason)
     RETURNING *;
 $$ LANGUAGE SQL;
 
@@ -422,41 +425,47 @@ $$ LANGUAGE SQL;
 -- DML: vessel_traffic.idempotency_keys
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_idempotency_keys(
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_key TEXT,
+    p_response JSONB DEFAULT NULL,
     p_created_at TIMESTAMPTZ DEFAULT NOW(),
     p_expires_at TIMESTAMPTZ
 ) RETURNS vessel_traffic.idempotency_keys AS $$
-    INSERT INTO vessel_traffic.idempotency_keys(key, created_at, expires_at)
-    VALUES (p_key, p_created_at, p_expires_at)
+    INSERT INTO vessel_traffic.idempotency_keys(id, key, response, created_at, expires_at)
+    VALUES (p_id, p_key, p_response, p_created_at, p_expires_at)
     RETURNING *;
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION vessel_traffic.select_idempotency_keys_by_id(
-    p_key TEXT
+    p_id UUID
 ) RETURNS SETOF vessel_traffic.idempotency_keys AS $$
-    SELECT * FROM vessel_traffic.idempotency_keys WHERE key = p_key;
+    SELECT * FROM vessel_traffic.idempotency_keys WHERE id = p_id;
 $$ LANGUAGE SQL STABLE;
 
 CREATE OR REPLACE FUNCTION vessel_traffic.update_idempotency_keys(
+    p_id UUID,
     p_key TEXT,
+    p_response JSONB DEFAULT NULL,
     p_expires_at TIMESTAMPTZ
 ) RETURNS vessel_traffic.idempotency_keys AS $$
     UPDATE vessel_traffic.idempotency_keys
-    SET expires_at = p_expires_at
-    WHERE key = p_key
+    SET key = p_key,
+        response = p_response,
+        expires_at = p_expires_at
+    WHERE id = p_id
     RETURNING *;
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION vessel_traffic.delete_idempotency_keys(
-    p_key TEXT
+    p_id UUID
 ) RETURNS void AS $$
-    DELETE FROM vessel_traffic.idempotency_keys WHERE key = p_key;
+    DELETE FROM vessel_traffic.idempotency_keys WHERE id = p_id;
 $$ LANGUAGE SQL;
 
 -- DML: vessel_traffic.voyage_status_states
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_voyage_status_states(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_name TEXT
 ) RETURNS vessel_traffic.voyage_status_states AS $$
     INSERT INTO vessel_traffic.voyage_status_states(id, name)
@@ -489,7 +498,7 @@ $$ LANGUAGE SQL;
 -- DML: vessel_traffic.voyage_status_transitions
 
 CREATE OR REPLACE FUNCTION vessel_traffic.insert_voyage_status_transitions(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_entity_id UUID,
     p_from_state TEXT,
     p_to_state TEXT,

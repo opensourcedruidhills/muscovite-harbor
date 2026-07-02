@@ -20,10 +20,10 @@ message Pallet {
   string id = 1;
   string pallet_id = 2;
   string container_id = 3;
-  string weight_kg = 4;
-  string length_cm = 5;
-  string width_cm = 6;
-  string height_cm = 7;
+  string weight_kg = 4; // unit: KILOGRAM
+  string length_cm = 5; // unit: CENTIMETER
+  string width_cm = 6; // unit: CENTIMETER
+  string height_cm = 7; // unit: CENTIMETER
   string hs_code = 8;
   google.protobuf.Timestamp created_at = 9;
   optional string created_by = 10;
@@ -36,10 +36,10 @@ message Pallet {
 message CreatePalletRequest {
   string pallet_id = 1;
   string container_id = 2;
-  string weight_kg = 3;
-  string length_cm = 4;
-  string width_cm = 5;
-  string height_cm = 6;
+  string weight_kg = 3; // unit: KILOGRAM
+  string length_cm = 4; // unit: CENTIMETER
+  string width_cm = 5; // unit: CENTIMETER
+  string height_cm = 6; // unit: CENTIMETER
   string hs_code = 7;
   optional string idempotency_key = 8;
 }
@@ -60,10 +60,10 @@ message UpdatePalletRequest {
   string id = 1;
   string pallet_id = 2;
   string container_id = 3;
-  string weight_kg = 4;
-  string length_cm = 5;
-  string width_cm = 6;
-  string height_cm = 7;
+  string weight_kg = 4; // unit: KILOGRAM
+  string length_cm = 5; // unit: CENTIMETER
+  string width_cm = 6; // unit: CENTIMETER
+  string height_cm = 7; // unit: CENTIMETER
   string hs_code = 8;
   optional string idempotency_key = 9;
 }

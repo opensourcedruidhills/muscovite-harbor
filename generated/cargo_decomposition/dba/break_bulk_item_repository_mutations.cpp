@@ -2,24 +2,23 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "break_bulk_item_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace cargo_decomposition {
 
 auto BreakBulkItemRepositoryImpl::insert(pqxx::work& tx, const BreakBulkItem& entity) -> void {
     tx.exec_params(kInsert,
         entity.id,
-        entity.id,
         entity.container_id,
         entity.item_type,
         entity.weight_kg,
-        entity.requires_crane,
-    );
+        entity.requires_crane);
 }
 
 auto BreakBulkItemRepositoryImpl::update(pqxx::work& tx, const BreakBulkItem& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
-    params.append(entity.id);
     params.append(entity.id);
     params.append(entity.container_id);
     params.append(entity.item_type);

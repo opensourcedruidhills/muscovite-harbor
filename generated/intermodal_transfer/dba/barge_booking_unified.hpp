@@ -11,17 +11,31 @@ namespace intermodal_transfer {
 /// Unified DBA struct for BargeBooking.
 struct BargeBooking {
     boost::uuids::uuid id{};
-    boost::uuids::uuid id{};
     std::string barge_name{};
     std::int32_t capacity_teu{};
     muscovite::dba::Timestamp departure_at{};
     std::string status{};
 
-    /// Construct from a database row (stub — implementation in .cpp).
-    // static auto from_row(const pqxx::row& row) -> BargeBooking;
+    /// Construct from a database row.
+    static auto from_row(const pqxx::row& row) -> BargeBooking {
+        return BargeBooking{
+            .id = row[0].as<std::string>(),
+            .barge_name = row[1].as<std::string>(),
+            .capacity_teu = row[2].as<std::string>(),
+            .departure_at = row[3].as<std::string>(),
+            .status = row[4].as<std::string>(),
+        };
+    }
 
     /// Try to construct; returns nullopt on missing required field.
-    // static auto try_from(const pqxx::row& row) -> std::optional<BargeBooking>;
+    static auto try_from(const pqxx::row& row) -> std::optional<BargeBooking> {
+        if (row[0].is_null()) return std::nullopt;
+        if (row[1].is_null()) return std::nullopt;
+        if (row[2].is_null()) return std::nullopt;
+        if (row[3].is_null()) return std::nullopt;
+        if (row[4].is_null()) return std::nullopt;
+        return from_row(row);
+    }
 };
 
 } // namespace intermodal_transfer

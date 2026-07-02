@@ -6,6 +6,8 @@
 #include <boost/uuid/uuid.hpp>
 #include <string>
 #include "types/container_number.hpp"
+#include <span>
+#include <variant>
 
 namespace cargo_operations {
 
@@ -28,6 +30,12 @@ struct Container {
     [[nodiscard]] auto get_voyage_id() const noexcept -> const boost::uuids::uuid& { return voyage_id; }
     [[nodiscard]] auto get_yard_slot_id() const noexcept -> const boost::uuids::uuid& { return yard_slot_id; }
     [[nodiscard]] auto get_status() const noexcept -> const std::string& { return status; }
+
+    /// Apply a domain event to this aggregate (event replay).
+    void apply(const ContainerEventVariant& event);
+
+    /// Rehydrate an aggregate from a span of events.
+    [[nodiscard]] static auto rehydrate(std::span<const ContainerEventVariant> events) -> Container;
 };
 
 } // namespace cargo_operations

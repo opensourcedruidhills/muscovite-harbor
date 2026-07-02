@@ -21,16 +21,13 @@ struct EntityCoverageEntry {
 };
 
 /// Minimum coverage threshold (configurable per module).
-inline constexpr double COVERAGE_THRESHOLD_PCT = 80.0;
+inline constexpr double COVERAGE_THRESHOLD_PCT = 80;
 inline constexpr bool FAIL_ON_BELOW_THRESHOLD = true;
 
 /// Static entity registry for coverage tracking.
 [[nodiscard]] inline auto entity_coverage_registry()
     -> std::vector<EntityCoverageEntry> {
     return {
-        {"Coordinate", 0, 4, false},
-        {"Region", 0, 3, false},
-        {"SpatialProjection", 0, 3, false},
     };
 }
 

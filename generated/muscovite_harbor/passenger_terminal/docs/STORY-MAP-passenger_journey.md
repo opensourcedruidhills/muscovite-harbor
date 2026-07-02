@@ -10,13 +10,13 @@
 
 | Story | Slice |
 |-------|-------|
-| DepartureInfo | Walking Skeleton |
+| DepartureInfo | WalkingSkeleton |
 
 ### CheckIn (order: 2)
 
 | Story | Slice |
 |-------|-------|
-| FastCheckIn | Walking Skeleton |
+| FastCheckIn | WalkingSkeleton |
 
 ### Security (order: 3)
 

@@ -43,6 +43,7 @@ target_include_directories(cargo_decomposition_qml_viewmodels PRIVATE
 
 target_link_libraries(cargo_decomposition_qml_viewmodels PUBLIC
     Qt6::Core
+    Qt6::Concurrent
     Qt6::Qml
     Qt6::Quick
     spdlog::spdlog

@@ -8,7 +8,7 @@ SET search_path TO cargo_operations, public;
 -- DML: cargo_operations.containers
 
 CREATE OR REPLACE FUNCTION cargo_operations.insert_containers(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_container_number container_number,
     p_size_category TEXT,
     p_hazmat_class TEXT DEFAULT NULL,
@@ -40,7 +40,7 @@ $$ LANGUAGE SQL;
 -- DML: cargo_operations.yard_slots
 
 CREATE OR REPLACE FUNCTION cargo_operations.insert_yard_slots(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_code yard_slot_code,
     p_max_weight_kg NUMERIC,
     p_max_tier INTEGER,
@@ -94,7 +94,7 @@ $$ LANGUAGE SQL;
 -- DML: cargo_operations.cranes
 
 CREATE OR REPLACE FUNCTION cargo_operations.insert_cranes(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_name TEXT,
     p_crane_type TEXT,
     p_max_lift_kg NUMERIC,
@@ -145,7 +145,7 @@ $$ LANGUAGE SQL;
 -- DML: cargo_operations.reefer_units
 
 CREATE OR REPLACE FUNCTION cargo_operations.insert_reefer_units(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_container_id UUID,
     p_target_temp_c NUMERIC,
     p_current_temp_c NUMERIC DEFAULT NULL,
@@ -196,7 +196,7 @@ $$ LANGUAGE SQL;
 -- DML: cargo_operations.load_plans
 
 CREATE OR REPLACE FUNCTION cargo_operations.insert_load_plans(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_voyage_id UUID,
     p_created_at TIMESTAMPTZ,
     p_status TEXT,
@@ -241,7 +241,7 @@ $$ LANGUAGE SQL;
 -- DML: cargo_operations.discharge_sequences
 
 CREATE OR REPLACE FUNCTION cargo_operations.insert_discharge_sequences(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_load_plan_id UUID,
     p_container_id UUID,
     p_sequence_order INTEGER,
@@ -289,32 +289,135 @@ CREATE OR REPLACE FUNCTION cargo_operations.delete_discharge_sequences(
     DELETE FROM cargo_operations.discharge_sequences WHERE id = p_id;
 $$ LANGUAGE SQL;
 
--- DML: cargo_operations.container_stack_events
+-- DML: cargo_operations.outbox
 
-CREATE OR REPLACE FUNCTION cargo_operations.insert_container_stack_events(
-    p_id UUID DEFAULT uuidv7(),
+CREATE OR REPLACE FUNCTION cargo_operations.insert_outbox(
+    p_id UUID DEFAULT uuid_generate_v7(),
+    p_aggregate_type TEXT,
+    p_aggregate_id UUID,
+    p_event_type TEXT,
+    p_payload TEXT,
+    p_occurred_at TIMESTAMPTZ DEFAULT NOW(),
+    p_created_at TIMESTAMPTZ DEFAULT NOW(),
+    p_retry_count INTEGER DEFAULT 0,
+    p_last_retry_at TIMESTAMPTZ DEFAULT NULL,
+    p_processed_at TIMESTAMPTZ DEFAULT NULL
+) RETURNS cargo_operations.outbox AS $$
+    INSERT INTO cargo_operations.outbox(id, aggregate_type, aggregate_id, event_type, payload, occurred_at, created_at, retry_count, last_retry_at, processed_at)
+    VALUES (p_id, p_aggregate_type, p_aggregate_id, p_event_type, p_payload, p_occurred_at, p_created_at, p_retry_count, p_last_retry_at, p_processed_at)
+    RETURNING *;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION cargo_operations.select_outbox_by_id(
+    p_id UUID
+) RETURNS SETOF cargo_operations.outbox AS $$
+    SELECT * FROM cargo_operations.outbox WHERE id = p_id;
+$$ LANGUAGE SQL STABLE;
+
+CREATE OR REPLACE FUNCTION cargo_operations.delete_outbox(
+    p_id UUID
+) RETURNS void AS $$
+    DELETE FROM cargo_operations.outbox WHERE id = p_id;
+$$ LANGUAGE SQL;
+
+-- DML: cargo_operations.dead_letter_queue
+
+CREATE OR REPLACE FUNCTION cargo_operations.insert_dead_letter_queue(
+    p_id UUID DEFAULT uuid_generate_v7(),
+    p_original_event_id UUID,
+    p_aggregate_id UUID DEFAULT NULL,
+    p_event_type TEXT,
+    p_payload TEXT,
+    p_error_message TEXT,
+    p_retry_count INTEGER DEFAULT 0,
+    p_created_at TIMESTAMPTZ DEFAULT NOW(),
+    p_occurred_at TIMESTAMPTZ DEFAULT NOW(),
+    p_failed_at TIMESTAMPTZ DEFAULT NOW(),
+    p_failure_reason TEXT DEFAULT ''
+) RETURNS cargo_operations.dead_letter_queue AS $$
+    INSERT INTO cargo_operations.dead_letter_queue(id, original_event_id, aggregate_id, event_type, payload, error_message, retry_count, created_at, occurred_at, failed_at, failure_reason)
+    VALUES (p_id, p_original_event_id, p_aggregate_id, p_event_type, p_payload, p_error_message, p_retry_count, p_created_at, p_occurred_at, p_failed_at, p_failure_reason)
+    RETURNING *;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION cargo_operations.select_dead_letter_queue_by_id(
+    p_id UUID
+) RETURNS SETOF cargo_operations.dead_letter_queue AS $$
+    SELECT * FROM cargo_operations.dead_letter_queue WHERE id = p_id;
+$$ LANGUAGE SQL STABLE;
+
+CREATE OR REPLACE FUNCTION cargo_operations.delete_dead_letter_queue(
+    p_id UUID
+) RETURNS void AS $$
+    DELETE FROM cargo_operations.dead_letter_queue WHERE id = p_id;
+$$ LANGUAGE SQL;
+
+-- DML: cargo_operations.idempotency_keys
+
+CREATE OR REPLACE FUNCTION cargo_operations.insert_idempotency_keys(
+    p_id UUID DEFAULT uuid_generate_v7(),
+    p_key TEXT,
+    p_response JSONB DEFAULT NULL,
+    p_created_at TIMESTAMPTZ DEFAULT NOW(),
+    p_expires_at TIMESTAMPTZ
+) RETURNS cargo_operations.idempotency_keys AS $$
+    INSERT INTO cargo_operations.idempotency_keys(id, key, response, created_at, expires_at)
+    VALUES (p_id, p_key, p_response, p_created_at, p_expires_at)
+    RETURNING *;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION cargo_operations.select_idempotency_keys_by_id(
+    p_id UUID
+) RETURNS SETOF cargo_operations.idempotency_keys AS $$
+    SELECT * FROM cargo_operations.idempotency_keys WHERE id = p_id;
+$$ LANGUAGE SQL STABLE;
+
+CREATE OR REPLACE FUNCTION cargo_operations.update_idempotency_keys(
+    p_id UUID,
+    p_key TEXT,
+    p_response JSONB DEFAULT NULL,
+    p_expires_at TIMESTAMPTZ
+) RETURNS cargo_operations.idempotency_keys AS $$
+    UPDATE cargo_operations.idempotency_keys
+    SET key = p_key,
+        response = p_response,
+        expires_at = p_expires_at
+    WHERE id = p_id
+    RETURNING *;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION cargo_operations.delete_idempotency_keys(
+    p_id UUID
+) RETURNS void AS $$
+    DELETE FROM cargo_operations.idempotency_keys WHERE id = p_id;
+$$ LANGUAGE SQL;
+
+-- DML: cargo_operations.container_events
+
+CREATE OR REPLACE FUNCTION cargo_operations.insert_container_events(
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_aggregate_id UUID,
     p_event_type TEXT,
     p_payload TEXT,
     p_sequence_number BIGINT,
     p_created_at TIMESTAMPTZ DEFAULT now(),
     p_created_by TEXT DEFAULT 'system'
-) RETURNS cargo_operations.container_stack_events AS $$
-    INSERT INTO cargo_operations.container_stack_events(id, aggregate_id, event_type, payload, sequence_number, created_at, created_by)
+) RETURNS cargo_operations.container_events AS $$
+    INSERT INTO cargo_operations.container_events(id, aggregate_id, event_type, payload, sequence_number, created_at, created_by)
     VALUES (p_id, p_aggregate_id, p_event_type, p_payload, p_sequence_number, p_created_at, p_created_by)
     RETURNING *;
 $$ LANGUAGE SQL;
 
-CREATE OR REPLACE FUNCTION cargo_operations.select_container_stack_events_by_id(
+CREATE OR REPLACE FUNCTION cargo_operations.select_container_events_by_id(
     p_id UUID
-) RETURNS SETOF cargo_operations.container_stack_events AS $$
-    SELECT * FROM cargo_operations.container_stack_events WHERE id = p_id;
+) RETURNS SETOF cargo_operations.container_events AS $$
+    SELECT * FROM cargo_operations.container_events WHERE id = p_id;
 $$ LANGUAGE SQL STABLE;
 
-CREATE OR REPLACE FUNCTION cargo_operations.delete_container_stack_events(
+CREATE OR REPLACE FUNCTION cargo_operations.delete_container_events(
     p_id UUID
 ) RETURNS void AS $$
-    DELETE FROM cargo_operations.container_stack_events WHERE id = p_id;
+    DELETE FROM cargo_operations.container_events WHERE id = p_id;
 $$ LANGUAGE SQL;
 
 COMMIT;

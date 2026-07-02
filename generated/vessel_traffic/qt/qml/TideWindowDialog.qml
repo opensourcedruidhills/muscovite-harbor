@@ -8,9 +8,9 @@ Dialog {
     id: tideWindowDialog
     title: qsTr("Edit TideWindow")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("BerthId") }
         TextField {
@@ -31,7 +37,14 @@ Dialog {
             text: viewModel.berthId
             onTextChanged: viewModel.setBerthId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.berthIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("TideHeightMetres") }
         DoubleSpinBox {
             id: tideHeightMetresField
             from: 0.0
@@ -40,7 +53,14 @@ Dialog {
             value: parseFloat(viewModel.tideHeightMetres) || 0.0
             onValueChanged: viewModel.setTideHeightMetres(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.tideHeightMetresIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("AvailableDraft") }
         DoubleSpinBox {
             id: availableDraftField
             from: 0.0
@@ -49,9 +69,27 @@ Dialog {
             value: parseFloat(viewModel.availableDraft) || 0.0
             onValueChanged: viewModel.setAvailableDraft(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.availableDraftIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); tideWindowDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); tideWindowDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

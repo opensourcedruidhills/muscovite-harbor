@@ -9,6 +9,10 @@
 namespace vessel_traffic {
 
 /// Specification concept — any type with is_satisfied_by(), name(), description().
+///
+/// ADR 20260611-specification-dual-path: is_satisfied_by() performs in-memory
+/// domain validation; sql_where() provides SQL-level filtering for generated
+/// find_by_*() repository methods. CompositeSpecification supports AND/OR/NOT.
 template<typename T, typename Entity>
 concept Specification = requires(const T& spec, const Entity& entity) {
     { spec.is_satisfied_by(entity) } -> std::same_as<bool>;

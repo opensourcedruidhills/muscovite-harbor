@@ -20,6 +20,7 @@ add_library(cargo_operations-qt-models
 target_link_libraries(cargo_operations-qt-models PUBLIC
     Qt6::Core
     Qt6::Gui
+    gRPC::grpc++
 )
 
 add_library(cargo_operations-qt-widgets
@@ -53,6 +54,7 @@ target_link_libraries(cargo_operations-qt-widgets PUBLIC
     cargo_operations-qt-models
     Qt6::Core
     Qt6::Gui
+    Qt6::Concurrent
     Qt6::Widgets
 )
 

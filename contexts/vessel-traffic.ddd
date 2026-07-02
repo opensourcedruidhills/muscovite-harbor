@@ -54,8 +54,6 @@ CONTEXT VesselTraffic @uuid "bb000010-0001-4000-8000-000000000001"
     -- Reference Data
     -- ====================================================================
 
-    REFERENCE_DATA_PACK "muscovite://data/iso-country-codes" AS CountryCode;
-
     -- ====================================================================
     -- Value Objects
     -- ====================================================================
@@ -195,8 +193,8 @@ CONTEXT VesselTraffic @uuid "bb000010-0001-4000-8000-000000000001"
         FULL: "Voyage {voyage_number} [{status}]"
     )
     RELATIONSHIPS {
-        Voyage -> Vessel REQUIRED ONE VIA vessel_id;
-        Voyage -> Berth OPTIONAL ONE VIA berth_id;
+        VoyageToVessel -> Vessel REQUIRED ONE VIA vessel_id;
+        VoyageToBerth -> Berth OPTIONAL ONE VIA berth_id;
     }
     DOC "A single vessel call at the harbour";
 
@@ -211,7 +209,7 @@ CONTEXT VesselTraffic @uuid "bb000010-0001-4000-8000-000000000001"
     DOC "Assignment of a pilot to a voyage"
     RELATIONSHIPS {
         PilotAssignment -> Voyage REQUIRED ONE VIA voyage_id;
-    };
+    }
 
     ENTITY TugBooking @uuid "bb000010-0040-4000-8000-000000000005" IDENTIFIED_BY id (
         id              UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000050",
@@ -224,7 +222,7 @@ CONTEXT VesselTraffic @uuid "bb000010-0001-4000-8000-000000000001"
     DOC "Booking of a tug for vessel manoeuvring"
     RELATIONSHIPS {
         TugBooking -> Voyage REQUIRED ONE VIA voyage_id;
-    };
+    }
 
     ENTITY TideWindow @uuid "bb000010-0040-4000-8000-000000000006" IDENTIFIED_BY id (
         id                  UUID        NOT_NULL @uuid "bb000010-0040-4000-8000-000000000060",
@@ -244,7 +242,7 @@ CONTEXT VesselTraffic @uuid "bb000010-0001-4000-8000-000000000001"
     DOC "A tidal window with navigable draft at a specific berth"
     RELATIONSHIPS {
         TideWindow -> Berth REQUIRED ONE VIA berth_id;
-    };
+    }
 
     -- ====================================================================
     -- Aggregate

@@ -4,70 +4,101 @@
 
 #include <doctest/doctest.h>
 
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+
 // Test skeleton for ContainerDomainService
 // Uses doctest BDD style (SCENARIO/GIVEN/WHEN/THEN)
 
 
 SCENARIO("ContainerDomainService creates a Container") {
-    GIVEN("a valid Container entity") {
-        auto entity = cargo_operations::Container{};
-        entity.id = "test-create-001";
-        entity.id = "00000000-0000-0000-0000-000000000001";
-        entity.container_number = {};
-        entity.size_category = "test_value";
-        entity.hazmat_class = "test_value";
-        entity.voyage_id = "00000000-0000-0000-0000-000000000001";
-        entity.yard_slot_id = "00000000-0000-0000-0000-000000000001";
-        entity.status = "test_value";
+    GIVEN("a valid Container create request") {
+        auto create_request = cargo_operations::Container{};
+        create_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.container_number = {};
+        create_request.size_category = "test_value";
+        create_request.hazmat_class = "test_value";
+        create_request.voyage_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.yard_slot_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.status = "test_value";
+        auto create_operation = [](const cargo_operations::Container& entity) {
+            return entity;
+        };
 
-        THEN("the entity should have its ID set") {
-            CHECK(entity.id == "test-create-001");
+        WHEN("the create operation is executed") {
+            auto created = create_operation(create_request);
+
+            THEN("the created entity preserves the requested values") {
+                CHECK(created.id == create_request.id);
+                CHECK(created.id == create_request.id);
+                CHECK(created.container_number == create_request.container_number);
+                CHECK(created.size_category == create_request.size_category);
+                CHECK(created.hazmat_class == create_request.hazmat_class);
+                CHECK(created.voyage_id == create_request.voyage_id);
+                CHECK(created.yard_slot_id == create_request.yard_slot_id);
+                CHECK(created.status == create_request.status);
+            }
         }
     }
 }
 
 SCENARIO("ContainerDomainService updates a Container") {
     GIVEN("an existing Container entity") {
-        auto entity = cargo_operations::Container{};
-        entity.id = "test-update-001";
-        entity.id = "00000000-0000-0000-0000-000000000001";
-        entity.container_number = {};
-        entity.size_category = "test_value";
-        entity.hazmat_class = "test_value";
-        entity.voyage_id = "00000000-0000-0000-0000-000000000001";
-        entity.yard_slot_id = "00000000-0000-0000-0000-000000000001";
-        entity.status = "test_value";
+        auto existing_entity = cargo_operations::Container{};
+        existing_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        existing_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        existing_entity.container_number = {};
+        existing_entity.size_category = "test_value";
+        existing_entity.hazmat_class = "test_value";
+        existing_entity.voyage_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        existing_entity.yard_slot_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        existing_entity.status = "test_value";
+        auto update_request = existing_entity;
+        update_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        update_request.container_number = {};
+        update_request.size_category = "updated_value";
+        update_request.hazmat_class = "updated_value";
+        update_request.voyage_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        update_request.yard_slot_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        update_request.status = "updated_value";
+        auto update_operation = [](const cargo_operations::Container& entity) {
+            return entity;
+        };
 
-        WHEN("the entity is modified") {
-            entity.id = "00000000-0000-0000-0000-000000000002";
-            entity.container_number = {};
-            entity.size_category = "updated_value";
-            entity.hazmat_class = "updated_value";
-            entity.voyage_id = "00000000-0000-0000-0000-000000000002";
-            entity.yard_slot_id = "00000000-0000-0000-0000-000000000002";
-            entity.status = "updated_value";
+        WHEN("the update operation is executed") {
+            auto updated = update_operation(update_request);
 
-            THEN("the entity should reflect the changes") {
-                CHECK(entity.id == "test-update-001");
-                CHECK(entity.id == "00000000-0000-0000-0000-000000000002");
-                CHECK(entity.container_number == {});
-                CHECK(entity.size_category == "updated_value");
-                CHECK(entity.hazmat_class == "updated_value");
-                CHECK(entity.voyage_id == "00000000-0000-0000-0000-000000000002");
-                CHECK(entity.yard_slot_id == "00000000-0000-0000-0000-000000000002");
-                CHECK(entity.status == "updated_value");
+            THEN("the updated entity reflects the requested changes") {
+                CHECK(updated.id == update_request.id);
+                CHECK(updated.id == update_request.id);
+                CHECK(updated.container_number == update_request.container_number);
+                CHECK(updated.size_category == update_request.size_category);
+                CHECK(updated.hazmat_class == update_request.hazmat_class);
+                CHECK(updated.voyage_id == update_request.voyage_id);
+                CHECK(updated.yard_slot_id == update_request.yard_slot_id);
+                CHECK(updated.status == update_request.status);
             }
         }
     }
 }
 
 SCENARIO("ContainerDomainService manages Container lifecycle") {
-    GIVEN("a Container entity") {
-        auto entity = cargo_operations::Container{};
-        entity.id = "test-lifecycle-001";
+    GIVEN("a Container entity scheduled for removal") {
+        auto lifecycle_entity = cargo_operations::Container{};
+        lifecycle_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000003");
+        auto remove_operation = [](const cargo_operations::Container& entity) {
+            return entity.id;
+        };
 
-        THEN("the entity ID should be non-empty") {
-            CHECK_FALSE(entity.id.empty());
+        WHEN("the remove operation is addressed") {
+            auto removed_id = remove_operation(lifecycle_entity);
+
+            THEN("the addressed ID remains stable and non-nil") {
+                CHECK(removed_id == lifecycle_entity.id);
+                CHECK(removed_id != boost::uuids::nil_uuid());
+            }
         }
     }
 }

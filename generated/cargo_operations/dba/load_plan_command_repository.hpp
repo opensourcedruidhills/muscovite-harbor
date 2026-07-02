@@ -17,6 +17,7 @@ public:
     virtual ~LoadPlanCommandRepository() = default;
 
     virtual auto save(const LoadPlan& entity) -> void = 0;
+    virtual auto update(const LoadPlan& entity) -> void = 0;
     virtual auto remove(const LoadPlan::Id& id) -> void = 0;
     [[nodiscard]] virtual auto find_by_id(const LoadPlan::Id& id) -> std::optional<LoadPlan> = 0;
 };

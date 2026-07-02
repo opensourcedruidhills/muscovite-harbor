@@ -25,11 +25,15 @@ class DischargeSequenceFkWidget : public QWidget {
 public:
     explicit DischargeSequenceFkWidget(QWidget* parent = nullptr);
 
+    [[nodiscard]] auto serverAddress() const -> QString { return m_server_address; }
+    void setServerAddress(const QString& address);
+
     [[nodiscard]] auto selectedLoadPlan() const -> QString;
     [[nodiscard]] auto selectedContainer() const -> QString;
     [[nodiscard]] auto selectedCrane() const -> QString;
 
 Q_SIGNALS:
+    void serverAddressChanged();
     void loadPlanChanged(const QString& id);
     void containerChanged(const QString& id);
     void craneChanged(const QString& id);
@@ -41,7 +45,11 @@ public Q_SLOTS:
 
 private:
     void setupUi();
+    void loadLoadPlanOptions();
+    void loadContainerOptions();
+    void loadCraneOptions();
 
+    QString m_server_address = QStringLiteral("localhost:50051");
     QComboBox* load_plan_combo_ = nullptr;
     QComboBox* container_combo_ = nullptr;
     QComboBox* crane_combo_ = nullptr;

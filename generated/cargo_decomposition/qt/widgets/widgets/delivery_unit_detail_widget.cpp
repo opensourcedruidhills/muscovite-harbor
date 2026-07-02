@@ -66,7 +66,7 @@ void DeliveryUnitDetailWidget::setDispatchedAt(const QDateTime& value) {
 }
 
 void DeliveryUnitDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

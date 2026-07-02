@@ -10,7 +10,7 @@
 
 // Relationship integrity tests for VesselTraffic
 
-SCENARIO("Relationship integrity: Voyage -> Vessel via Voyage") {
+SCENARIO("Relationship integrity: Voyage -> Vessel via VoyageToVessel") {
     GIVEN("a Voyage referencing a Vessel") {
         auto rng = std::mt19937{std::random_device{}()};
         auto dist = std::uniform_int_distribution<int>{0, 10000};
@@ -26,7 +26,7 @@ SCENARIO("Relationship integrity: Voyage -> Vessel via Voyage") {
     }
 }
 
-SCENARIO("Relationship integrity: Voyage -> Berth via Voyage") {
+SCENARIO("Relationship integrity: Voyage -> Berth via VoyageToBerth") {
     GIVEN("a Voyage referencing a Berth") {
         auto rng = std::mt19937{std::random_device{}()};
         auto dist = std::uniform_int_distribution<int>{0, 10000};

@@ -20,12 +20,12 @@ result_columns:
     dsl_type: UUID
     not_null: true
   - name: user_id
-    pg_type: TEXT
-    dsl_type: String
+    pg_type: UUID
+    dsl_type: UUID
     not_null: true
   - name: role_id
-    pg_type: TEXT
-    dsl_type: String
+    pg_type: UUID
+    dsl_type: UUID
     not_null: true
 
 cardinality: one

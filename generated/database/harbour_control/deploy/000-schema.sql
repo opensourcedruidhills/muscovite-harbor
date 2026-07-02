@@ -3,7 +3,7 @@ BEGIN;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'harbour_control_owner') THEN
-    CREATE ROLE harbour_control_owner;
+    CREATE ROLE harbour_control_owner NOLOGIN;
   END IF;
 END $$;
 
@@ -11,11 +11,11 @@ CREATE SCHEMA IF NOT EXISTS harbour_control;
 ALTER SCHEMA harbour_control OWNER TO harbour_control_owner;
 SET search_path TO harbour_control, public;
 
-CREATE DOMAIN harbour_control.permit_number AS text;
-CREATE DOMAIN harbour_control.zone_code AS text;
+CREATE DOMAIN harbour_control.permit_number AS TEXT;
+CREATE DOMAIN harbour_control.zone_code AS TEXT;
 
 CREATE TABLE harbour_control.safety_zones (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     zone_code zone_code NOT NULL,
     zone_name TEXT NOT NULL,
     security_level TEXT NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE harbour_control.safety_zones (
 );
 
 CREATE TABLE harbour_control.hazmat_permits (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     permit_number permit_number NOT NULL,
     vessel_id UUID NOT NULL,
     imo_class INTEGER NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE harbour_control.hazmat_permits (
 );
 
 CREATE TABLE harbour_control.invoice_lines (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     vessel_id UUID NOT NULL,
     service_type TEXT NOT NULL,
     amount NUMERIC NOT NULL,
@@ -59,40 +59,69 @@ CREATE TABLE harbour_control.invoice_lines (
 );
 
 CREATE TABLE harbour_control.outbox (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     aggregate_type TEXT NOT NULL,
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     retry_count INTEGER NOT NULL DEFAULT 0,
+    last_retry_at TIMESTAMPTZ,
     processed_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
-CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE harbour_control.dead_letter_queue (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     original_event_id UUID NOT NULL,
+    aggregate_id UUID,
     event_type TEXT NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
     error_message TEXT NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failure_reason TEXT NOT NULL DEFAULT '',
     CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
-CREATE TABLE dead_letter_queue_default PARTITION OF dead_letter_queue DEFAULT;
 
 CREATE TABLE harbour_control.idempotency_keys (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     key TEXT NOT NULL,
+    response JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMPTZ NOT NULL,
-    CONSTRAINT pk_idempotency_keys PRIMARY KEY (key)
+    CONSTRAINT pk_idempotency_keys PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS harbour_control.outbox_y2026_q1 PARTITION OF harbour_control.outbox
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS harbour_control.outbox_y2026_q2 PARTITION OF harbour_control.outbox
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS harbour_control.outbox_y2026_q3 PARTITION OF harbour_control.outbox
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS harbour_control.outbox_y2026_q4 PARTITION OF harbour_control.outbox
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS harbour_control.outbox_default PARTITION OF harbour_control.outbox DEFAULT;
+CREATE TABLE IF NOT EXISTS harbour_control.dead_letter_queue_y2026_q1 PARTITION OF harbour_control.dead_letter_queue
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS harbour_control.dead_letter_queue_y2026_q2 PARTITION OF harbour_control.dead_letter_queue
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS harbour_control.dead_letter_queue_y2026_q3 PARTITION OF harbour_control.dead_letter_queue
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS harbour_control.dead_letter_queue_y2026_q4 PARTITION OF harbour_control.dead_letter_queue
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS harbour_control.dead_letter_queue_default PARTITION OF harbour_control.dead_letter_queue DEFAULT;
 
 ALTER TABLE harbour_control.safety_zones ADD CONSTRAINT uq_safety_zones_zone_code UNIQUE (zone_code);
 ALTER TABLE harbour_control.hazmat_permits ADD CONSTRAINT uq_hazmat_permits_permit_number UNIQUE (permit_number);
-CREATE INDEX idx_outbox_unprocessed ON harbour_control.outbox USING btree (created_at) WHERE processed_at IS NULL;
+ALTER TABLE harbour_control.idempotency_keys ADD CONSTRAINT uq_idempotency_keys_key UNIQUE (key);
+CREATE INDEX idx_outbox_created_at ON harbour_control.outbox USING btree (created_at);
+CREATE INDEX idx_dead_letter_queue_created_at ON harbour_control.dead_letter_queue USING btree (created_at);
+CREATE INDEX idx_idempotency_keys_expires_at ON harbour_control.idempotency_keys USING btree (expires_at);
+CREATE INDEX idx_outbox_unprocessed ON harbour_control.outbox USING btree (occurred_at) WHERE processed_at IS NULL;
 
 CREATE OR REPLACE FUNCTION harbour_control.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
@@ -115,7 +144,14 @@ CREATE OR REPLACE FUNCTION harbour_control.notify_outbox_inserted()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
 AS $$
 BEGIN
-  PERFORM pg_notify('outbox_inserted', NEW.aggregate_type);
+  PERFORM pg_notify(
+    'muscovite_outbox_inserted',
+    json_build_object(
+      'schema', TG_TABLE_SCHEMA,
+      'table', TG_TABLE_NAME,
+      'aggregate_type', NEW.aggregate_type
+    )::text
+  );
   RETURN NEW;
 END;
 $$;
@@ -140,9 +176,53 @@ CREATE TRIGGER trg_harbour_control_outbox_notify
     FOR EACH ROW
     EXECUTE FUNCTION harbour_control.notify_outbox_inserted();
 
+CREATE OR REPLACE VIEW harbour_control.port_call AS
+-- verify: SELECT column_name FROM information_schema.columns WHERE table_schema = 'harbour_control' AND table_name = 'port_call'
+SELECT t.id, t.vessel_name, t.imo_number, t.berth_code, t.arrival_time, t.departure_time, t.container_count, t.hazmat_permits, t.total_billed
+FROM harbour_control.port_calls  t
+;
+
+CREATE OR REPLACE VIEW harbour_control.domain_events AS
+SELECT id,
+       aggregate_type,
+       aggregate_id,
+       event_type,
+       payload,
+       occurred_at,
+       processed_at,
+       retry_count,
+       last_retry_at,
+       NULL::UUID AS actor_id,
+       NULL::TEXT AS actor_name,
+       created_at
+FROM harbour_control.outbox
+;
+
+CREATE OR REPLACE VIEW harbour_control.domain_events_dlq AS
+SELECT original_event_id AS id,
+       event_type,
+       aggregate_id,
+       payload,
+       occurred_at,
+       retry_count,
+       failed_at,
+       failure_reason
+FROM harbour_control.dead_letter_queue
+;
+
+COMMENT ON ROLE harbour_control_owner IS 'Owns schema harbour_control and manages DDL for generated objects.';
+COMMENT ON ROLE harbour_control_app IS 'Application runtime role for harbour_control with generated CRUD and EXECUTE grants.';
+COMMENT ON ROLE harbour_control_readonly IS 'Read-only access role for harbour_control with generated SELECT and EXECUTE grants.';
+COMMENT ON FUNCTION harbour_control.set_updated_at() IS 'Audit trigger function: stamps updated_at on every row modification.';
+COMMENT ON TRIGGER trg_safety_zones_updated_at ON harbour_control.safety_zones IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE harbour_control.safety_zones IS 'Designated safety zone within the port area';
+COMMENT ON TRIGGER trg_hazmat_permits_updated_at ON harbour_control.hazmat_permits IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE harbour_control.hazmat_permits IS 'Hazmat handling permit issued by port authority';
 COMMENT ON COLUMN harbour_control.hazmat_permits.quantity_kg IS 'unit:KILOGRAM';
+COMMENT ON TRIGGER trg_invoice_lines_updated_at ON harbour_control.invoice_lines IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE harbour_control.invoice_lines IS 'Port services invoice line item';
+COMMENT ON DOMAIN harbour_control.permit_number IS 'Hazmat permit number (e.g. HP-2026-000123)';
+COMMENT ON DOMAIN harbour_control.zone_code IS 'Safety zone code (e.g. SZ-NQ01)';
+COMMENT ON TABLE harbour_control.idempotency_keys IS 'Idempotency key store. Expired rows are removed nightly by pg_cron via cleanup_expired_idempotency_keys().';
 
 COMMIT;

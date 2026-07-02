@@ -86,13 +86,13 @@ Hazmat permit approved by port authority
 
 ### PermitNumber
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Hazmat permit number (e.g. HP-2026-000123)
 
 ### ZoneCode
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Safety zone code (e.g. SZ-NQ01)
 

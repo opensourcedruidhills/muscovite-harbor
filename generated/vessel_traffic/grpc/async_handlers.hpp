@@ -92,6 +92,14 @@ virtual void ListVoyagesAsync(
     const ListVoyagesRequest& request,
     std::function<void(grpc::Status, ListVoyagesResponse)> callback) = 0;
 
+virtual void AnnounceVesselAsync(
+    const AnnounceVesselRequest& request,
+    std::function<void(grpc::Status, AnnounceVesselResponse)> callback) = 0;
+
+virtual void AllocateBerthAsync(
+    const AllocateBerthRequest& request,
+    std::function<void(grpc::Status, AllocateBerthResponse)> callback) = 0;
+
 // Async handlers for PilotAssignment
 virtual void CreatePilotAssignmentAsync(
     const CreatePilotAssignmentRequest& request,
@@ -154,14 +162,6 @@ virtual void DeleteTideWindowAsync(
 virtual void ListTideWindowsAsync(
     const ListTideWindowsRequest& request,
     std::function<void(grpc::Status, ListTideWindowsResponse)> callback) = 0;
-
-virtual void AnnounceVesselAsync(
-    const AnnounceVesselRequest& request,
-    std::function<void(grpc::Status, AnnounceVesselResponse)> callback) = 0;
-
-virtual void AllocateBerthAsync(
-    const AllocateBerthRequest& request,
-    std::function<void(grpc::Status, AllocateBerthResponse)> callback) = 0;
 
 };
 

@@ -64,6 +64,21 @@ public:
         return status;
     }
 
+    [[nodiscard]] auto is_available() const -> bool {
+        std::lock_guard lock(mu_);
+        return current_state() != CircuitState::Open;
+    }
+
+    void record_success() {
+        std::lock_guard lock(mu_);
+        on_success();
+    }
+
+    void record_failure() {
+        std::lock_guard lock(mu_);
+        on_failure();
+    }
+
     [[nodiscard]] auto failure_count() const -> int {
         std::lock_guard lock(mu_);
         return failures_;

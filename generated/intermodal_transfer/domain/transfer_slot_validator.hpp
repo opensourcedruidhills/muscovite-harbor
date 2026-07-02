@@ -5,7 +5,7 @@
 
 #include "transfer_slot.hpp"
 #include <string>
-#include <vector>
+#include <muscovite/validation/validation_errors.hpp>
 
 namespace intermodal_transfer {
 
@@ -14,9 +14,10 @@ namespace intermodal_transfer {
 class TransferSlotValidator {
 public:
     /// Validate cross-field invariants. Returns accumulated error messages.
-    [[nodiscard]] static auto validate(const TransferSlot& entity) -> std::vector<std::string> {
+    [[nodiscard]] static auto validate(const TransferSlot& entity) -> muscovite::validation::ValidationErrors {
         (void)entity;
-        return {};
+        auto errors = muscovite::validation::ValidationErrors{};
+        return errors;
     }
 };
 

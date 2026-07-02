@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/gate_grpc_binding.hpp"
 
 namespace muscovite_harbor::passenger_terminal::qml {
 
@@ -27,6 +28,16 @@ class GateViewModel : public QObject {
     Q_PROPERTY(int capacity READ capacity WRITE setCapacity NOTIFY capacityChanged REQUIRED)
     Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged REQUIRED)
     Q_PROPERTY(QString voyageId READ voyageId WRITE setVoyageId NOTIFY voyageIdChanged)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool codeIsValid READ codeIsValid NOTIFY codeIsValidChanged)
+    Q_PROPERTY(bool nameIsValid READ nameIsValid NOTIFY nameIsValidChanged)
+    Q_PROPERTY(bool capacityIsValid READ capacityIsValid NOTIFY capacityIsValidChanged)
+    Q_PROPERTY(bool statusIsValid READ statusIsValid NOTIFY statusIsValidChanged)
+    Q_PROPERTY(bool voyageIdIsValid READ voyageIdIsValid NOTIFY voyageIdIsValidChanged)
 
 public:
     explicit GateViewModel(QObject* parent = nullptr);
@@ -37,6 +48,16 @@ public:
     [[nodiscard]] auto capacity() const -> int { return m_capacity; }
     [[nodiscard]] auto status() const -> QString { return m_status; }
     [[nodiscard]] auto voyageId() const -> QString { return m_voyage_id; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto codeIsValid() const -> bool { return m_code_is_valid; }
+    [[nodiscard]] auto nameIsValid() const -> bool { return m_name_is_valid; }
+    [[nodiscard]] auto capacityIsValid() const -> bool { return m_capacity_is_valid; }
+    [[nodiscard]] auto statusIsValid() const -> bool { return m_status_is_valid; }
+    [[nodiscard]] auto voyageIdIsValid() const -> bool { return m_voyage_id_is_valid; }
 
     void setId(const QString& value);
     void setCode(const QString& value);
@@ -44,6 +65,8 @@ public:
     void setCapacity(const int& value);
     void setStatus(const QString& value);
     void setVoyageId(const QString& value);
+
+    void setBinding(GateGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -57,18 +80,40 @@ Q_SIGNALS:
     void capacityChanged();
     void statusChanged();
     void voyageIdChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void codeIsValidChanged();
+    void nameIsValidChanged();
+    void capacityIsValidChanged();
+    void statusIsValidChanged();
+    void voyageIdIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_code;
     QString m_name;
     int m_capacity = 0;
     QString m_status;
     QString m_voyage_id;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    GateGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_code_is_valid = false;
+    bool m_name_is_valid = false;
+    bool m_capacity_is_valid = true;
+    bool m_status_is_valid = false;
+    bool m_voyage_id_is_valid = true;
 };
 
 } // namespace muscovite_harbor::passenger_terminal::qml

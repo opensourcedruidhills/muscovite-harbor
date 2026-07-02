@@ -1,0 +1,7 @@
+{
+  "context": "PassengerTerminal",
+  "project": "MuscoviteHarbor",
+  "queries": [
+    {"name": "EmbarkationQueryRepository", "aggregate": "Embarkation", "spec_count": 0}
+  ]
+}

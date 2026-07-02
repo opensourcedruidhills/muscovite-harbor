@@ -66,7 +66,7 @@ void BreakBulkItemDetailWidget::setRequiresCrane(const bool& value) {
 }
 
 void BreakBulkItemDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

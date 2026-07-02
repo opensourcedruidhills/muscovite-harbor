@@ -11,12 +11,19 @@
 
 #pragma once
 
-#include <QMainWindow>
+#include "search_helper.hpp"
+
+#include <memory>
 #include <QDockWidget>
+#include <QLabel>
 #include <QListWidget>
+#include <QMainWindow>
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QTabWidget>
+#ifdef MUSCOVITE_OBSERVABILITY_PANEL
+#include "ui/ObservabilityPanel.hpp"
+#endif // MUSCOVITE_OBSERVABILITY_PANEL
 
 namespace muscovite_harbor::widgets {
 
@@ -29,6 +36,7 @@ public:
 
 public Q_SLOTS:
     void setConnectionStatus(const QString& status);
+    void onEntitySelected(const QString& name);
 
 Q_SIGNALS:
     void entitySelected(const QString& entityName);
@@ -42,6 +50,11 @@ private:
     QDockWidget* nav_dock_ = nullptr;
     QListWidget* nav_list_ = nullptr;
     QLabel* status_label_ = nullptr;
+    std::unique_ptr<SearchHelper> search_helper_;
+
+#ifdef MUSCOVITE_OBSERVABILITY_PANEL
+    QDockWidget* obs_dock_{nullptr};
+#endif // MUSCOVITE_OBSERVABILITY_PANEL
 };
 
 } // namespace muscovite_harbor::widgets

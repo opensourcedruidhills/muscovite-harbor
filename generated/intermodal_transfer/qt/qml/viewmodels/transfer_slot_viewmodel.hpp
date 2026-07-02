@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/transfer_slot_grpc_binding.hpp"
 
 namespace muscovite_harbor::intermodal_transfer::qml {
 
@@ -28,6 +29,16 @@ class TransferSlotViewModel : public QObject {
     Q_PROPERTY(QString transportMode READ transportMode WRITE setTransportMode NOTIFY transportModeChanged REQUIRED)
     Q_PROPERTY(QDateTime scheduledAt READ scheduledAt WRITE setScheduledAt NOTIFY scheduledAtChanged REQUIRED)
     Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool referenceIsValid READ referenceIsValid NOTIFY referenceIsValidChanged)
+    Q_PROPERTY(bool containerIdIsValid READ containerIdIsValid NOTIFY containerIdIsValidChanged)
+    Q_PROPERTY(bool transportModeIsValid READ transportModeIsValid NOTIFY transportModeIsValidChanged)
+    Q_PROPERTY(bool scheduledAtIsValid READ scheduledAtIsValid NOTIFY scheduledAtIsValidChanged)
+    Q_PROPERTY(bool statusIsValid READ statusIsValid NOTIFY statusIsValidChanged)
 
 public:
     explicit TransferSlotViewModel(QObject* parent = nullptr);
@@ -38,6 +49,16 @@ public:
     [[nodiscard]] auto transportMode() const -> QString { return m_transport_mode; }
     [[nodiscard]] auto scheduledAt() const -> QDateTime { return m_scheduled_at; }
     [[nodiscard]] auto status() const -> QString { return m_status; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto referenceIsValid() const -> bool { return m_reference_is_valid; }
+    [[nodiscard]] auto containerIdIsValid() const -> bool { return m_container_id_is_valid; }
+    [[nodiscard]] auto transportModeIsValid() const -> bool { return m_transport_mode_is_valid; }
+    [[nodiscard]] auto scheduledAtIsValid() const -> bool { return m_scheduled_at_is_valid; }
+    [[nodiscard]] auto statusIsValid() const -> bool { return m_status_is_valid; }
 
     void setId(const QString& value);
     void setReference(const QString& value);
@@ -45,6 +66,8 @@ public:
     void setTransportMode(const QString& value);
     void setScheduledAt(const QDateTime& value);
     void setStatus(const QString& value);
+
+    void setBinding(TransferSlotGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -58,18 +81,40 @@ Q_SIGNALS:
     void transportModeChanged();
     void scheduledAtChanged();
     void statusChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void referenceIsValidChanged();
+    void containerIdIsValidChanged();
+    void transportModeIsValidChanged();
+    void scheduledAtIsValidChanged();
+    void statusIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_reference;
     QString m_container_id;
     QString m_transport_mode;
     QDateTime m_scheduled_at;
     QString m_status;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    TransferSlotGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_reference_is_valid = false;
+    bool m_container_id_is_valid = false;
+    bool m_transport_mode_is_valid = false;
+    bool m_scheduled_at_is_valid = false;
+    bool m_status_is_valid = false;
 };
 
 } // namespace muscovite_harbor::intermodal_transfer::qml

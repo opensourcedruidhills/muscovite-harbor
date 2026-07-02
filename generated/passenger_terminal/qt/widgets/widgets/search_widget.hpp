@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <memory>
 #include <QWidget>
 #include <QComboBox>
 #include <QLineEdit>
@@ -18,12 +19,14 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
+#include "widgets/connection_helper.hpp"
+
 namespace muscovite_harbor::widgets {
 
 class SearchWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit SearchWidget(QWidget* parent = nullptr);
+    explicit SearchWidget(QWidget* parent = nullptr, ConnectionHelper* connection_helper = nullptr);
 
     [[nodiscard]] auto searchText() const -> QString;
     [[nodiscard]] auto selectedEntityType() const -> QString;
@@ -38,7 +41,11 @@ public Q_SLOTS:
 
 private:
     void setupUi();
+    void emitSearchRequested();
+    void onResultRowChanged(int row);
 
+    std::unique_ptr<ConnectionHelper> owned_connection_helper_;
+    ConnectionHelper* connection_helper_ = nullptr;
     QLineEdit* search_input_ = nullptr;
     QComboBox* entity_filter_ = nullptr;
     QPushButton* search_button_ = nullptr;

@@ -9,16 +9,16 @@ namespace harbour_control {
 
 // SQL constants for table: invoice_lines
 inline constexpr std::string_view kSelectAll =
-    "SELECT id, id, vessel_id, service_type, amount, currency, issued_at FROM invoice_lines";
+    "SELECT id, vessel_id, service_type, amount, currency, issued_at FROM invoice_lines";
 
 inline constexpr std::string_view kSelectById =
-    "SELECT id, id, vessel_id, service_type, amount, currency, issued_at FROM invoice_lines WHERE id = $1";
+    "SELECT id, vessel_id, service_type, amount, currency, issued_at FROM invoice_lines WHERE id = $1";
 
 inline constexpr std::string_view kInsert =
-    "INSERT INTO invoice_lines (id, id, vessel_id, service_type, amount, currency, issued_at) VALUES ($1, $2, $3, $4, $5, $6, $7)";
+    "INSERT INTO invoice_lines (id, vessel_id, service_type, amount, currency, issued_at) VALUES ($1, $2, $3, $4, $5, $6)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE invoice_lines SET id = $2, vessel_id = $3, service_type = $4, amount = $5, currency = $6, issued_at = $7 WHERE id = $8";
+    "UPDATE invoice_lines SET vessel_id = $2, service_type = $3, amount = $4, currency = $5, issued_at = $6 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM invoice_lines WHERE id = $1";

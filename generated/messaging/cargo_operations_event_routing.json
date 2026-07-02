@@ -1,0 +1,15 @@
+{
+  "routes": [
+    {
+      "handlers": [
+        {
+          "class_name": "reefer_temp_alert_handler",
+          "name": "ReeferTempAlert",
+          "start_on_event": false,
+          "type": "policy"
+        }
+      ],
+      "subject": "muscovite.cargo_operations.events.reefer_alarm"
+    }
+  ]
+}

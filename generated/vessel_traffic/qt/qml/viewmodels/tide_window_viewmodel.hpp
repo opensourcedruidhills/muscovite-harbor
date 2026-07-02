@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/tide_window_grpc_binding.hpp"
 
 namespace muscovite_harbor::vessel_traffic::qml {
 
@@ -25,6 +26,14 @@ class TideWindowViewModel : public QObject {
     Q_PROPERTY(QString berthId READ berthId WRITE setBerthId NOTIFY berthIdChanged REQUIRED)
     Q_PROPERTY(QString tideHeightMetres READ tideHeightMetres WRITE setTideHeightMetres NOTIFY tideHeightMetresChanged REQUIRED)
     Q_PROPERTY(QString availableDraft READ availableDraft WRITE setAvailableDraft NOTIFY availableDraftChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool berthIdIsValid READ berthIdIsValid NOTIFY berthIdIsValidChanged)
+    Q_PROPERTY(bool tideHeightMetresIsValid READ tideHeightMetresIsValid NOTIFY tideHeightMetresIsValidChanged)
+    Q_PROPERTY(bool availableDraftIsValid READ availableDraftIsValid NOTIFY availableDraftIsValidChanged)
 
 public:
     explicit TideWindowViewModel(QObject* parent = nullptr);
@@ -33,11 +42,21 @@ public:
     [[nodiscard]] auto berthId() const -> QString { return m_berth_id; }
     [[nodiscard]] auto tideHeightMetres() const -> QString { return m_tide_height_metres; }
     [[nodiscard]] auto availableDraft() const -> QString { return m_available_draft; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto berthIdIsValid() const -> bool { return m_berth_id_is_valid; }
+    [[nodiscard]] auto tideHeightMetresIsValid() const -> bool { return m_tide_height_metres_is_valid; }
+    [[nodiscard]] auto availableDraftIsValid() const -> bool { return m_available_draft_is_valid; }
 
     void setId(const QString& value);
     void setBerthId(const QString& value);
     void setTideHeightMetres(const QString& value);
     void setAvailableDraft(const QString& value);
+
+    void setBinding(TideWindowGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -49,16 +68,34 @@ Q_SIGNALS:
     void berthIdChanged();
     void tideHeightMetresChanged();
     void availableDraftChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void berthIdIsValidChanged();
+    void tideHeightMetresIsValidChanged();
+    void availableDraftIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_berth_id;
     QString m_tide_height_metres;
     QString m_available_draft;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    TideWindowGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_berth_id_is_valid = false;
+    bool m_tide_height_metres_is_valid = false;
+    bool m_available_draft_is_valid = false;
 };
 
 } // namespace muscovite_harbor::vessel_traffic::qml

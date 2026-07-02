@@ -12,6 +12,10 @@
 #pragma once
 
 #include <grpcpp/grpcpp.h>
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "passenger_terminal/passenger_terminal_state_machine_service.grpc.pb.h"
 #include "passenger_terminal/passenger_terminal_state_machine_service.pb.h"
@@ -20,13 +24,79 @@ namespace passenger_terminal {
 
 class PassengerStatusServiceImpl final : public passengerterminal::PassengerStatusService::Service {
 public:
+    class PassengerRecord {
+    public:
+        auto set_id(std::string value) -> void { id_ = std::move(value); }
+        [[nodiscard]] auto id() const -> const std::string& { return id_; }
+        auto set_state(std::string value) -> void { state_ = std::move(value); }
+        [[nodiscard]] auto state() const -> const std::string& { return state_; }
+
+    private:
+        std::string id_{};
+        std::string state_{"CHECKED_IN"};
+    };
+
+    class PassengerRepository {
+    public:
+        virtual ~PassengerRepository() = default;
+        [[nodiscard]] virtual auto find_by_id(const std::string& entity_id) -> std::optional<PassengerRecord> = 0;
+        virtual auto save(const PassengerRecord& entity) -> void = 0;
+    };
+
+    class StateMachineRuntime {
+    public:
+        [[nodiscard]] auto is_valid_transition(const std::string& current_state,
+                                                const std::string& event) const -> bool {
+            if (current_state == "CHECKED_IN" && event == "PassSecurity") { return true; }
+            else if (current_state == "SECURITY_CLEARED" && event == "BoardVessel") { return true; }
+            else if (current_state == "BOARDED" && event == "Disembark") { return true; }
+            return false;
+        }
+
+        [[nodiscard]] auto next_state(const std::string& current_state,
+                                      const std::string& event) const -> std::string {
+            if (current_state == "CHECKED_IN" && event == "PassSecurity") { return "SECURITY_CLEARED"; }
+            else if (current_state == "SECURITY_CLEARED" && event == "BoardVessel") { return "BOARDED"; }
+            else if (current_state == "BOARDED" && event == "Disembark") { return "DISEMBARKED"; }
+            return current_state;
+        }
+
+        [[nodiscard]] auto available_transitions(const std::string& current_state) const -> std::vector<std::string> {
+            auto result = std::vector<std::string>{};
+            if (current_state == "CHECKED_IN") { result.push_back("PassSecurity"); }
+            if (current_state == "SECURITY_CLEARED") { result.push_back("BoardVessel"); }
+            if (current_state == "BOARDED") { result.push_back("Disembark"); }
+            return result;
+        }
+    };
+
+    explicit PassengerStatusServiceImpl(
+            PassengerRepository* entity_repository = nullptr)
+        : entity_repository_{entity_repository} {}
+
     ::grpc::Status Transition(
             ::grpc::ServerContext* context,
             const passengerterminal::PassengerStatusTransitionRequest* request,
             passengerterminal::PassengerStatusTransitionResponse* response) override {
         static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
+        if (entity_repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "entity repository not wired");
+        }
+        auto entity = entity_repository_->find_by_id(request->entity_id());
+        if (!entity) {
+            return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "entity not found");
+        }
+        const auto current_state = entity->state();
+        if (!state_machine_.is_valid_transition(current_state, request->event())) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "invalid transition: " + current_state + " + " + request->event());
+        }
+        response->set_previous_state(to_proto_state(current_state));
+        entity->set_state(state_machine_.next_state(current_state, request->event()));
+        entity_repository_->save(*entity);
+        response->set_current_state(to_proto_state(entity->state()));
+        response->set_accepted(true);
         return ::grpc::Status::OK;
     }
 
@@ -35,10 +105,32 @@ public:
             const passengerterminal::GetPassengerStatusStateRequest* request,
             passengerterminal::GetPassengerStatusStateResponse* response) override {
         static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
+        if (entity_repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "entity repository not wired");
+        }
+        auto entity = entity_repository_->find_by_id(request->entity_id());
+        if (!entity) {
+            return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "entity not found");
+        }
+        response->set_current_state(to_proto_state(entity->state()));
+        for (const auto& transition : state_machine_.available_transitions(entity->state())) {
+            response->add_available_transitions(transition);
+        }
         return ::grpc::Status::OK;
     }
+
+private:
+    [[nodiscard]] static auto to_proto_state(const std::string& state) -> passengerterminal::PassengerStatusState {
+        if (state == "CHECKED_IN") { return passengerterminal::PASSENGER_STATUS_CHECKED_IN; }
+        else if (state == "SECURITY_CLEARED") { return passengerterminal::PASSENGER_STATUS_SECURITY_CLEARED; }
+        else if (state == "BOARDED") { return passengerterminal::PASSENGER_STATUS_BOARDED; }
+        else if (state == "DISEMBARKED") { return passengerterminal::PASSENGER_STATUS_DISEMBARKED; }
+        return passengerterminal::PASSENGER_STATUS_CHECKED_IN;
+    }
+
+    PassengerRepository* entity_repository_{nullptr};
+    StateMachineRuntime state_machine_{};
 };
 
 } // namespace passenger_terminal

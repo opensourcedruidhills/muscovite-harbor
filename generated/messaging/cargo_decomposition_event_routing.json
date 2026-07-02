@@ -1,0 +1,15 @@
+{
+  "routes": [
+    {
+      "handlers": [
+        {
+          "class_name": "track_parcel_dispatch_handler",
+          "name": "TrackParcelDispatch",
+          "start_on_event": false,
+          "type": "policy"
+        }
+      ],
+      "subject": "muscovite.cargo_decomposition.events.parcel_dispatched"
+    }
+  ]
+}

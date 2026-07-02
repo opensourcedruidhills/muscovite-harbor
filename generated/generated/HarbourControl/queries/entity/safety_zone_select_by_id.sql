@@ -1,5 +1,5 @@
 -- MUSCOVITE:SIDECAR:UNMODIFIED
--- MUSCOVITE:QUERY-HASH:edc30a5810e44299
+-- MUSCOVITE:QUERY-HASH:e450ae79d8ee5bbc
 --  context: HarbourControl, entity: SafetyZone, operation: select_by_id
 
-SELECT id, id, zone_code, zone_name, security_level, max_hazmat_class, is_restricted FROM harbour_control.safety_zone WHERE id = $1
+SELECT id, zone_code, zone_name, security_level, max_hazmat_class, is_restricted FROM harbour_control.safety_zone WHERE id = $1

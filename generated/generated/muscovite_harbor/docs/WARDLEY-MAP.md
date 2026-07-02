@@ -1,37 +1,28 @@
 # Wardley Map
 
-## Context Evolution Stages
-
-| Stage | Contexts |
-|-------|----------|
-| CUSTOM | VesselTraffic |
-| PRODUCT | CargoOperations, PassengerTerminal, IntermodalTransfer |
-| COMMODITY | CargoDecomposition, HarbourControl |
-
-## Context Map with Evolution
-
-```mermaid
-graph LR
-    VesselTraffic["VesselTraffic\n(CUSTOM)"]
-    CargoOperations["CargoOperations\n(PRODUCT)"]
-    PassengerTerminal["PassengerTerminal\n(PRODUCT)"]
-    IntermodalTransfer["IntermodalTransfer\n(PRODUCT)"]
-    CargoDecomposition["CargoDecomposition\n(COMMODITY)"]
-    HarbourControl["HarbourControl\n(COMMODITY)"]
-    VesselTraffic -->|customer-supplier| CargoOperations
-    VesselTraffic -->|customer-supplier| PassengerTerminal
-    CargoOperations -->|partnership| IntermodalTransfer
-    CargoOperations -->|customer-supplier| CargoDecomposition
-    IntermodalTransfer -->|open-host-service| CargoDecomposition
-    HarbourControl -->|anticorruption-layer| VesselTraffic
-    HarbourControl -->|conformist| CargoOperations
-    IntermodalTransfer -->|shared-kernel| HarbourControl
-    VesselTraffic -->|customer-supplier| CargoOperations
-    VesselTraffic -->|customer-supplier| PassengerTerminal
-    CargoOperations -->|partnership| IntermodalTransfer
-    CargoOperations -->|customer-supplier| CargoDecomposition
-    IntermodalTransfer -->|open-host-service| CargoDecomposition
-    HarbourControl -->|anticorruption-layer| VesselTraffic
-    HarbourControl -->|conformist| CargoOperations
-    IntermodalTransfer -->|customer-supplier| HarbourControl
+```wardley
+title MuscoviteHarbor Value Chain
+anchor Business [0.95, 0.63]
+component VesselTraffic [0.30, 0.80]
+component CargoOperations [0.60, 0.68]
+component PassengerTerminal [0.60, 0.56]
+component IntermodalTransfer [0.60, 0.44]
+component CargoDecomposition [0.85, 0.32]
+component HarbourControl [0.85, 0.20]
+VesselTraffic -> CargoOperations
+VesselTraffic -> PassengerTerminal
+CargoOperations -> IntermodalTransfer
+CargoOperations -> CargoDecomposition
+IntermodalTransfer -> CargoDecomposition
+HarbourControl -> VesselTraffic
+HarbourControl -> CargoOperations
+IntermodalTransfer -> HarbourControl
+VesselTraffic -> CargoOperations
+VesselTraffic -> PassengerTerminal
+CargoOperations -> IntermodalTransfer
+CargoOperations -> CargoDecomposition
+IntermodalTransfer -> CargoDecomposition
+HarbourControl -> VesselTraffic
+HarbourControl -> CargoOperations
+IntermodalTransfer -> HarbourControl
 ```

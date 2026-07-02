@@ -9,16 +9,16 @@ namespace cargo_decomposition {
 
 // SQL constants for table: break_bulk_items
 inline constexpr std::string_view kSelectAll =
-    "SELECT id, id, container_id, item_type, weight_kg, requires_crane FROM break_bulk_items";
+    "SELECT id, container_id, item_type, weight_kg, requires_crane FROM break_bulk_items";
 
 inline constexpr std::string_view kSelectById =
-    "SELECT id, id, container_id, item_type, weight_kg, requires_crane FROM break_bulk_items WHERE id = $1";
+    "SELECT id, container_id, item_type, weight_kg, requires_crane FROM break_bulk_items WHERE id = $1";
 
 inline constexpr std::string_view kInsert =
-    "INSERT INTO break_bulk_items (id, id, container_id, item_type, weight_kg, requires_crane) VALUES ($1, $2, $3, $4, $5, $6)";
+    "INSERT INTO break_bulk_items (id, container_id, item_type, weight_kg, requires_crane) VALUES ($1, $2, $3, $4, $5)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE break_bulk_items SET id = $2, container_id = $3, item_type = $4, weight_kg = $5, requires_crane = $6 WHERE id = $7";
+    "UPDATE break_bulk_items SET container_id = $2, item_type = $3, weight_kg = $4, requires_crane = $5 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM break_bulk_items WHERE id = $1";

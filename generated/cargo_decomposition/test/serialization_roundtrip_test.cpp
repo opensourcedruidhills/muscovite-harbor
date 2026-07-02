@@ -26,11 +26,11 @@ SCENARIO("Serialization round-trip: Pallet") {
         original.hs_code = {};
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<Pallet>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<Pallet>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -50,11 +50,11 @@ SCENARIO("Serialization round-trip: Parcel") {
         original.description = "test_" + std::to_string(dist(rng));
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<Parcel>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<Parcel>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -73,11 +73,11 @@ SCENARIO("Serialization round-trip: DeliveryUnit") {
         original.dispatched_at = {};
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<DeliveryUnit>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<DeliveryUnit>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -96,11 +96,11 @@ SCENARIO("Serialization round-trip: BreakBulkItem") {
         original.requires_crane = (dist(rng) % 2 == 0);
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<BreakBulkItem>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<BreakBulkItem>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }

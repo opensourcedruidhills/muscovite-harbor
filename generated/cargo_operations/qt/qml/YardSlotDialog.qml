@@ -8,9 +8,9 @@ Dialog {
     id: yardSlotDialog
     title: qsTr("Edit YardSlot")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Code") }
         TextField {
@@ -31,7 +37,14 @@ Dialog {
             text: viewModel.code
             onTextChanged: viewModel.setCode(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.codeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("MaxWeightKg") }
         DoubleSpinBox {
             id: maxWeightKgField
             from: 0.0
@@ -40,13 +53,26 @@ Dialog {
             value: parseFloat(viewModel.maxWeightKg) || 0.0
             onValueChanged: viewModel.setMaxWeightKg(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.maxWeightKgIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("MaxTier") }
         SpinBox {
             id: maxTierField
             from: 0
             to: 999999
             value: viewModel.maxTier
             onValueChanged: viewModel.setMaxTier(value)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.maxTierIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         CheckBox {
@@ -55,6 +81,12 @@ Dialog {
             checked: viewModel.hasPower
             onCheckedChanged: viewModel.setHasPower(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.hasPowerIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         CheckBox {
             id: isOccupiedField
@@ -62,9 +94,27 @@ Dialog {
             checked: viewModel.isOccupied
             onCheckedChanged: viewModel.setIsOccupied(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.isOccupiedIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); yardSlotDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); yardSlotDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

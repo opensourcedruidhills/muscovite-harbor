@@ -8,9 +8,9 @@ Dialog {
     id: railWagonDialog
     title: qsTr("Edit RailWagon")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("WagonNumber") }
         TextField {
@@ -31,7 +37,14 @@ Dialog {
             text: viewModel.wagonNumber
             onTextChanged: viewModel.setWagonNumber(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.wagonNumberIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("MaxWeightKg") }
         DoubleSpinBox {
             id: maxWeightKgField
             from: 0.0
@@ -39,6 +52,12 @@ Dialog {
             stepSize: 0.01
             value: parseFloat(viewModel.maxWeightKg) || 0.0
             onValueChanged: viewModel.setMaxWeightKg(value.toString())
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.maxWeightKgIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("SlotId") }
@@ -48,9 +67,27 @@ Dialog {
             text: viewModel.slotId
             onTextChanged: viewModel.setSlotId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.slotIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); railWagonDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); railWagonDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

@@ -14,6 +14,7 @@ add_library(passenger_terminal-qt-models
 target_link_libraries(passenger_terminal-qt-models PUBLIC
     Qt6::Core
     Qt6::Gui
+    gRPC::grpc++
 )
 
 add_library(passenger_terminal-qt-widgets
@@ -35,6 +36,7 @@ target_link_libraries(passenger_terminal-qt-widgets PUBLIC
     passenger_terminal-qt-models
     Qt6::Core
     Qt6::Gui
+    Qt6::Concurrent
     Qt6::Widgets
 )
 

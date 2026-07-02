@@ -9,8 +9,9 @@ namespace spatial {
 
 /// Value-object struct for GeoPoint.
 struct GeoPoint {
-    muscovite::dba::Decimal latitude{};
-    muscovite::dba::Decimal longitude{};
+    Double lat{};
+    Double lon{};
+    Double alt{};
 
     auto operator==(const GeoPoint&) const -> bool = default;
 };

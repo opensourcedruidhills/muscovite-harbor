@@ -7,12 +7,4 @@
 
 // Enum exhaustiveness tests for spatial
 
-SCENARIO("Enum exhaustiveness: CoordinateSystem lookup values") {
-    GIVEN("the CoordinateSystem lookup table") {
-        WHEN("all values are iterated") {
-            THEN("each value should be handled in switch/match logic") {
-                // CHECK(all_coordinate_system_values_covered());
-            }
-        }
-    }
-}
+// No enum-like constructs found in context spatial

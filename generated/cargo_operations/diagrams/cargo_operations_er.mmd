@@ -50,6 +50,6 @@ erDiagram
         UUID crane_id
     }
     ReeferUnit ||--o| Container : "ReeferUnit"
-    DischargeSequence ||--o| LoadPlan : "DischargeSequence"
-    DischargeSequence ||--o| Container : "DischargeSequence"
-    DischargeSequence ||--o| Crane : "DischargeSequence"
+    DischargeSequence ||--o| LoadPlan : "DSLoadPlan"
+    DischargeSequence ||--o| Container : "DSContainer"
+    DischargeSequence ||--o| Crane : "DSCrane"

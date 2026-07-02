@@ -8,6 +8,24 @@
 |----------|--------|---------|-------|---------|----------|
 | PassengerCheckIn | Ticket Agent | BoardingPass | — | Passenger | PassengerCheckedIn |
 
+### use_case_chains[]
+
+- use_case: PassengerCheckIn
+  flows[]: []
+
+### warnings[]
+
+- use_case: PassengerCheckIn
+  trigger: PassengerCheckedIn
+  warning: No FLOW in context PassengerTerminal references trigger 'PassengerCheckedIn'
+
+### Entity → Use Cases
+
+| Entity | [AR] | Referenced By |
+|--------|------|---------------|
+| BoardingPass |  | PassengerCheckIn |
+| Passenger | ✓ | PassengerCheckIn |
+
 ### User Stories
 
 | Story | As a... | I want to... | So that... |

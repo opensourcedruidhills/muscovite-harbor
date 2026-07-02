@@ -39,6 +39,9 @@ Drawer {
                 ListElement { name: "SafetyZones"; page: "SafetyZoneListView" }
                 ListElement { name: "HazmatPermits"; page: "HazmatPermitListView" }
                 ListElement { name: "InvoiceLines"; page: "InvoiceLineListView" }
+                // BEGIN MUSCOVITE_OBSERVABILITY_PANEL
+                ListElement { name: "Observability"; page: "ObservabilityPanel" }
+                // END MUSCOVITE_OBSERVABILITY_PANEL
             }
 
             delegate: ItemDelegate {

@@ -2,25 +2,24 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "parcel_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace cargo_decomposition {
 
 auto ParcelRepositoryImpl::insert(pqxx::work& tx, const Parcel& entity) -> void {
     tx.exec_params(kInsert,
         entity.id,
-        entity.id,
         entity.tracking_number,
         entity.pallet_id,
         entity.weight_kg,
         entity.hs_code,
-        entity.description,
-    );
+        entity.description);
 }
 
 auto ParcelRepositoryImpl::update(pqxx::work& tx, const Parcel& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
-    params.append(entity.id);
     params.append(entity.id);
     params.append(entity.tracking_number);
     params.append(entity.pallet_id);

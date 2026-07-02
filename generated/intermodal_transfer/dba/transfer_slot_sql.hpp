@@ -9,16 +9,16 @@ namespace intermodal_transfer {
 
 // SQL constants for table: transfer_slots
 inline constexpr std::string_view kSelectAll =
-    "SELECT id, id, reference, container_id, transport_mode, scheduled_at, status FROM transfer_slots";
+    "SELECT id, reference, container_id, transport_mode, scheduled_at, status FROM transfer_slots";
 
 inline constexpr std::string_view kSelectById =
-    "SELECT id, id, reference, container_id, transport_mode, scheduled_at, status FROM transfer_slots WHERE id = $1";
+    "SELECT id, reference, container_id, transport_mode, scheduled_at, status FROM transfer_slots WHERE id = $1";
 
 inline constexpr std::string_view kInsert =
-    "INSERT INTO transfer_slots (id, id, reference, container_id, transport_mode, scheduled_at, status) VALUES ($1, $2, $3, $4, $5, $6, $7)";
+    "INSERT INTO transfer_slots (id, reference, container_id, transport_mode, scheduled_at, status) VALUES ($1, $2, $3, $4, $5, $6)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE transfer_slots SET id = $2, reference = $3, container_id = $4, transport_mode = $5, scheduled_at = $6, status = $7 WHERE id = $8";
+    "UPDATE transfer_slots SET reference = $2, container_id = $3, transport_mode = $4, scheduled_at = $5, status = $6 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM transfer_slots WHERE id = $1";

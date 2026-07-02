@@ -11,6 +11,9 @@
 
 #include "session_manager.hpp"
 
+#include <grpcpp/grpcpp.h>
+#include <security/v1/security.grpc.pb.h>
+
 namespace muscovite_harbor::widgets_app {
 
 SessionManager::SessionManager(QObject* parent)
@@ -25,6 +28,29 @@ auto SessionManager::isAuthenticated() const -> bool {
 
 auto SessionManager::token() const -> const QString& {
     return token_;
+}
+
+auto SessionManager::channel() -> std::shared_ptr<grpc::Channel> {
+    if (!channel_) {
+        channel_ = grpc::CreateChannel(endpoint_.toStdString(), grpc::InsecureChannelCredentials());
+    }
+    return channel_;
+}
+
+void SessionManager::authenticate(const QString& username, const QString& password) {
+    if (username.trimmed().isEmpty() || password.isEmpty()) return;
+    auto stub = ::muscovite::security::v1::AuthService::NewStub(channel());
+    ::muscovite::security::v1::LoginRequest request;
+    request.set_username(username.trimmed().toStdString());
+    request.set_password(password.toStdString());
+    ::muscovite::security::v1::LoginResponse response;
+    grpc::ClientContext context;
+    const auto status = stub->Login(&context, request, &response);
+    if (!status.ok() || !response.success()) {
+        clear();
+        return;
+    }
+    setToken(QString::fromStdString(response.session().access_token()));
 }
 
 void SessionManager::setToken(const QString& token) {

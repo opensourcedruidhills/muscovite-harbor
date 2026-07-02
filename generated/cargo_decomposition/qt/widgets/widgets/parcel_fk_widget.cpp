@@ -12,12 +12,24 @@
 #include "parcel_fk_widget.hpp"
 
 #include <QHBoxLayout>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+#include <spdlog/spdlog.h>
+#include "pallet.grpc.pb.h"
 
 namespace muscovite_harbor::widgets {
 
 ParcelFkWidget::ParcelFkWidget(QWidget* parent)
     : QWidget{parent} {
     setupUi();
+    loadPalletOptions();
+}
+
+void ParcelFkWidget::setServerAddress(const QString& address) {
+    if (m_server_address != address) {
+        m_server_address = address;
+        Q_EMIT serverAddressChanged();
+    }
 }
 
 void ParcelFkWidget::setupUi() {
@@ -34,6 +46,26 @@ void ParcelFkWidget::setupUi() {
 
 auto ParcelFkWidget::selectedPallet() const -> QString {
     return pallet_combo_->currentText();
+}
+
+void ParcelFkWidget::loadPalletOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = PalletService::NewStub(channel_);
+    ListPalletsRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListPalletsResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListPallets(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("ParcelFkWidget::loadPalletOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populatePalletOptions(options);
 }
 
 void ParcelFkWidget::populatePalletOptions(const QStringList& options) {

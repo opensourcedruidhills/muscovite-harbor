@@ -6,6 +6,9 @@ import os
 from conan import ConanFile
 from conan.tools.cmake import cmake_layout
 
+QT_REQUIRED_VERSION = "6.7.0"
+QT_REQUIRED_COMPONENTS = ("Core", "Gui", "Concurrent", "Network", "TaskTree", "Widgets", "Quick", "QuickControls2", "Qml")
+
 
 def _read_version(path):
     with open(os.path.join(os.path.dirname(__file__), path)) as f:
@@ -20,10 +23,13 @@ class MuscoviteHarborConan(ConanFile):
 
     def requirements(self):
         muscovite_version = _read_version("MUSCOMP_VERSION")
-        self.requires(f"muscovite/{muscovite_version}")
+        self.requires("abseil/20240116.2")
         self.requires("doctest/2.4.11")
-        self.requires("spdlog/[>=1.15.0 <2]")
-        self.requires("nlohmann_json/3.11.3")
+        self.requires("grpc/1.67.1")
+        self.requires("nlohmann_json/3.12.0")
+        self.requires("protobuf/5.27.0")
+        self.requires("spdlog/[>=1.17.0 <2]")
+        self.requires(f"muscovite/{muscovite_version}")
 
     def layout(self):
         cmake_layout(self)

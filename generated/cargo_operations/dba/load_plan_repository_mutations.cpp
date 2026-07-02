@@ -2,23 +2,22 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "load_plan_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace cargo_operations {
 
 auto LoadPlanRepositoryImpl::insert(pqxx::work& tx, const LoadPlan& entity) -> void {
     tx.exec_params(kInsert,
         entity.id,
-        entity.id,
         entity.voyage_id,
         entity.created_at,
-        entity.status,
-    );
+        entity.status);
 }
 
 auto LoadPlanRepositoryImpl::update(pqxx::work& tx, const LoadPlan& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
-    params.append(entity.id);
     params.append(entity.id);
     params.append(entity.voyage_id);
     params.append(entity.created_at);

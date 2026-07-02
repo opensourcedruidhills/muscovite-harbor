@@ -12,36 +12,48 @@
 #pragma once
 
 #include <QActionGroup>
-#include <QHash>
+#include <QList>
+#include <QMap>
+#include <QVariant>
 #include <QTableView>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QLineEdit>
+#include <QPushButton>
 #include <QSortFilterProxyModel>
 
 #include "../models/berth_model.hpp"
+#include <grpcpp/grpcpp.h>
 
 namespace muscovite_harbor::widgets {
 
 class BerthListWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit BerthListWidget(QWidget* parent = nullptr);
+    explicit BerthListWidget(QWidget* parent = nullptr, std::shared_ptr<grpc::Channel> channel = nullptr);
 
     [[nodiscard]] auto model() -> BerthModel* { return model_; }
     [[nodiscard]] auto tableView() -> QTableView* { return table_; }
+
+public Q_SLOTS:
+    void cacheSpecificationResult(const QString& cacheKey, const QList<QVariant>& rows);
 
 Q_SIGNALS:
     void createRequested();
     void editRequested(int row);
     void deleteRequested(int row);
-    void refreshRequested();
+    void refreshRequested(int page, int pageSize);
+    void searchRequested(const QString& text);
     void specificationFilterChanged(const QString& specName);
+    void fetchSpecRequested(const QString& cacheKey);
 
 private Q_SLOTS:
+    void onCreateAction();
     void onEditAction();
     void onDeleteAction();
+    void onNextPage();
+    void onPrevPage();
     void onDataChanged();
     void onSelectionChanged();
     void onFilterAvailableBerths(bool checked);
@@ -49,6 +61,7 @@ private Q_SLOTS:
 private:
     void setupUi();
     void setupToolbar();
+    void applyCachedSpecificationFilter(const QString& cacheKey);
 
     BerthModel* model_ = nullptr;
     QSortFilterProxyModel* proxy_model_ = nullptr;
@@ -56,8 +69,11 @@ private:
     QTableView* table_ = nullptr;
     QToolBar* toolbar_ = nullptr;
     QVBoxLayout* layout_ = nullptr;
+    std::shared_ptr<grpc::Channel> channel_;
+    int currentPage_{0};
+    int pageSize_{50};
     QActionGroup* filter_group_ = nullptr;
-    QHash<QString, QVariant> spec_cache_;
+    QMap<QString, QList<QVariant>> spec_cache_;
 };
 
 } // namespace muscovite_harbor::widgets

@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/voyage_grpc_binding.hpp"
 
 namespace muscovite_harbor::vessel_traffic::qml {
 
@@ -32,6 +33,20 @@ class VoyageViewModel : public QObject {
     Q_PROPERTY(QDateTime atd READ atd WRITE setAtd NOTIFY atdChanged)
     Q_PROPERTY(QString cargoCategory READ cargoCategory WRITE setCargoCategory NOTIFY cargoCategoryChanged REQUIRED)
     Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool vesselIdIsValid READ vesselIdIsValid NOTIFY vesselIdIsValidChanged)
+    Q_PROPERTY(bool berthIdIsValid READ berthIdIsValid NOTIFY berthIdIsValidChanged)
+    Q_PROPERTY(bool voyageNumberIsValid READ voyageNumberIsValid NOTIFY voyageNumberIsValidChanged)
+    Q_PROPERTY(bool etaIsValid READ etaIsValid NOTIFY etaIsValidChanged)
+    Q_PROPERTY(bool ataIsValid READ ataIsValid NOTIFY ataIsValidChanged)
+    Q_PROPERTY(bool etdIsValid READ etdIsValid NOTIFY etdIsValidChanged)
+    Q_PROPERTY(bool atdIsValid READ atdIsValid NOTIFY atdIsValidChanged)
+    Q_PROPERTY(bool cargoCategoryIsValid READ cargoCategoryIsValid NOTIFY cargoCategoryIsValidChanged)
+    Q_PROPERTY(bool statusIsValid READ statusIsValid NOTIFY statusIsValidChanged)
 
 public:
     explicit VoyageViewModel(QObject* parent = nullptr);
@@ -46,6 +61,20 @@ public:
     [[nodiscard]] auto atd() const -> QDateTime { return m_atd; }
     [[nodiscard]] auto cargoCategory() const -> QString { return m_cargo_category; }
     [[nodiscard]] auto status() const -> QString { return m_status; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto vesselIdIsValid() const -> bool { return m_vessel_id_is_valid; }
+    [[nodiscard]] auto berthIdIsValid() const -> bool { return m_berth_id_is_valid; }
+    [[nodiscard]] auto voyageNumberIsValid() const -> bool { return m_voyage_number_is_valid; }
+    [[nodiscard]] auto etaIsValid() const -> bool { return m_eta_is_valid; }
+    [[nodiscard]] auto ataIsValid() const -> bool { return m_ata_is_valid; }
+    [[nodiscard]] auto etdIsValid() const -> bool { return m_etd_is_valid; }
+    [[nodiscard]] auto atdIsValid() const -> bool { return m_atd_is_valid; }
+    [[nodiscard]] auto cargoCategoryIsValid() const -> bool { return m_cargo_category_is_valid; }
+    [[nodiscard]] auto statusIsValid() const -> bool { return m_status_is_valid; }
 
     void setId(const QString& value);
     void setVesselId(const QString& value);
@@ -57,6 +86,8 @@ public:
     void setAtd(const QDateTime& value);
     void setCargoCategory(const QString& value);
     void setStatus(const QString& value);
+
+    void setBinding(VoyageGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -74,12 +105,27 @@ Q_SIGNALS:
     void atdChanged();
     void cargoCategoryChanged();
     void statusChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void vesselIdIsValidChanged();
+    void berthIdIsValidChanged();
+    void voyageNumberIsValidChanged();
+    void etaIsValidChanged();
+    void ataIsValidChanged();
+    void etdIsValidChanged();
+    void atdIsValidChanged();
+    void cargoCategoryIsValidChanged();
+    void statusIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_vessel_id;
     QString m_berth_id;
@@ -90,6 +136,21 @@ private:
     QDateTime m_atd;
     QString m_cargo_category;
     QString m_status;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    VoyageGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_vessel_id_is_valid = false;
+    bool m_berth_id_is_valid = true;
+    bool m_voyage_number_is_valid = false;
+    bool m_eta_is_valid = false;
+    bool m_ata_is_valid = true;
+    bool m_etd_is_valid = true;
+    bool m_atd_is_valid = true;
+    bool m_cargo_category_is_valid = false;
+    bool m_status_is_valid = false;
 };
 
 } // namespace muscovite_harbor::vessel_traffic::qml

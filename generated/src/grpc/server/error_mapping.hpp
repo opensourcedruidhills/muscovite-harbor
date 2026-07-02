@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include <exception>
 #include <string>
 #include <string_view>
 
@@ -55,6 +56,11 @@ enum class DomainErrorCode {
         return {grpc::StatusCode::INTERNAL, std::string{message}};
     }
     return {grpc::StatusCode::UNKNOWN, std::string{message}};
+}
+
+[[nodiscard]] inline auto to_grpc_status(
+    const std::exception& error) -> grpc::Status {
+    return {grpc::StatusCode::INTERNAL, error.what()};
 }
 
 } // namespace muscovite_harbor

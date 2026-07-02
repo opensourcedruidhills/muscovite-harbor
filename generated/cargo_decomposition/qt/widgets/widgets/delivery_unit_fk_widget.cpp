@@ -12,12 +12,24 @@
 #include "delivery_unit_fk_widget.hpp"
 
 #include <QHBoxLayout>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+#include <spdlog/spdlog.h>
+#include "parcel.grpc.pb.h"
 
 namespace muscovite_harbor::widgets {
 
 DeliveryUnitFkWidget::DeliveryUnitFkWidget(QWidget* parent)
     : QWidget{parent} {
     setupUi();
+    loadParcelOptions();
+}
+
+void DeliveryUnitFkWidget::setServerAddress(const QString& address) {
+    if (m_server_address != address) {
+        m_server_address = address;
+        Q_EMIT serverAddressChanged();
+    }
 }
 
 void DeliveryUnitFkWidget::setupUi() {
@@ -34,6 +46,26 @@ void DeliveryUnitFkWidget::setupUi() {
 
 auto DeliveryUnitFkWidget::selectedParcel() const -> QString {
     return parcel_combo_->currentText();
+}
+
+void DeliveryUnitFkWidget::loadParcelOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = ParcelService::NewStub(channel_);
+    ListParcelsRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListParcelsResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListParcels(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("DeliveryUnitFkWidget::loadParcelOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populateParcelOptions(options);
 }
 
 void DeliveryUnitFkWidget::populateParcelOptions(const QStringList& options) {

@@ -8,9 +8,9 @@ Dialog {
     id: tugBookingDialog
     title: qsTr("Edit TugBooking")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("VoyageId") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("VoyageId")
             text: viewModel.voyageId
             onTextChanged: viewModel.setVoyageId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.voyageIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("TugName") }
@@ -39,7 +51,14 @@ Dialog {
             text: viewModel.tugName
             onTextChanged: viewModel.setTugName(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.tugNameIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("BollardPullT") }
         DoubleSpinBox {
             id: bollardPullTField
             from: 0.0
@@ -48,6 +67,12 @@ Dialog {
             value: parseFloat(viewModel.bollardPullT) || 0.0
             onValueChanged: viewModel.setBollardPullT(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.bollardPullTIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         CheckBox {
             id: isConfirmedField
@@ -55,9 +80,27 @@ Dialog {
             checked: viewModel.isConfirmed
             onCheckedChanged: viewModel.setIsConfirmed(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.isConfirmedIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); tugBookingDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); tugBookingDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

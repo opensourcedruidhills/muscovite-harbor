@@ -8,9 +8,9 @@ Dialog {
     id: berthDialog
     title: qsTr("Edit Berth")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Code") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("Code")
             text: viewModel.code
             onTextChanged: viewModel.setCode(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.codeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("Name") }
@@ -39,7 +51,14 @@ Dialog {
             text: viewModel.name
             onTextChanged: viewModel.setName(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.nameIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("MaxLoaMetres") }
         DoubleSpinBox {
             id: maxLoaMetresField
             from: 0.0
@@ -48,7 +67,14 @@ Dialog {
             value: parseFloat(viewModel.maxLoaMetres) || 0.0
             onValueChanged: viewModel.setMaxLoaMetres(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.maxLoaMetresIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("MaxDraftMetres") }
         DoubleSpinBox {
             id: maxDraftMetresField
             from: 0.0
@@ -57,7 +83,14 @@ Dialog {
             value: parseFloat(viewModel.maxDraftMetres) || 0.0
             onValueChanged: viewModel.setMaxDraftMetres(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.maxDraftMetresIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("MaxBeamMetres") }
         DoubleSpinBox {
             id: maxBeamMetresField
             from: 0.0
@@ -66,12 +99,24 @@ Dialog {
             value: parseFloat(viewModel.maxBeamMetres) || 0.0
             onValueChanged: viewModel.setMaxBeamMetres(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.maxBeamMetresIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         CheckBox {
             id: hasCraneAccessField
             text: qsTr("HasCraneAccess")
             checked: viewModel.hasCraneAccess
             onCheckedChanged: viewModel.setHasCraneAccess(checked)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.hasCraneAccessIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         CheckBox {
@@ -80,6 +125,12 @@ Dialog {
             checked: viewModel.hasReeferPlugs
             onCheckedChanged: viewModel.setHasReeferPlugs(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.hasReeferPlugsIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         CheckBox {
             id: isActiveField
@@ -87,9 +138,27 @@ Dialog {
             checked: viewModel.isActive
             onCheckedChanged: viewModel.setIsActive(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.isActiveIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); berthDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); berthDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

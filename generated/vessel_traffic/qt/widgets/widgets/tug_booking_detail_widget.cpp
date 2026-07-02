@@ -66,7 +66,7 @@ void TugBookingDetailWidget::setIsConfirmed(const bool& value) {
 }
 
 void TugBookingDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

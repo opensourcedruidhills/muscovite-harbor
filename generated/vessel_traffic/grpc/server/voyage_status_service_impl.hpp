@@ -12,6 +12,10 @@
 #pragma once
 
 #include <grpcpp/grpcpp.h>
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "vessel_traffic/vessel_traffic_state_machine_service.grpc.pb.h"
 #include "vessel_traffic/vessel_traffic_state_machine_service.pb.h"
@@ -20,13 +24,100 @@ namespace vessel_traffic {
 
 class VoyageStatusServiceImpl final : public vesseltraffic::VoyageStatusService::Service {
 public:
+    class VoyageRecord {
+    public:
+        auto set_id(std::string value) -> void { id_ = std::move(value); }
+        [[nodiscard]] auto id() const -> const std::string& { return id_; }
+        auto set_state(std::string value) -> void { state_ = std::move(value); }
+        [[nodiscard]] auto state() const -> const std::string& { return state_; }
+
+    private:
+        std::string id_{};
+        std::string state_{"ANNOUNCED"};
+    };
+
+    class VoyageRepository {
+    public:
+        virtual ~VoyageRepository() = default;
+        [[nodiscard]] virtual auto find_by_id(const std::string& entity_id) -> std::optional<VoyageRecord> = 0;
+        virtual auto save(const VoyageRecord& entity) -> void = 0;
+    };
+
+    class StateMachineRuntime {
+    public:
+        [[nodiscard]] auto is_valid_transition(const std::string& current_state,
+                                                const std::string& event) const -> bool {
+            if (current_state == "ANNOUNCED" && event == "OrderPilot") { return true; }
+            else if (current_state == "PILOT_ORDERED" && event == "VesselApproaching") { return true; }
+            else if (current_state == "APPROACHING" && event == "BeginBerthing") { return true; }
+            else if (current_state == "BERTHING" && event == "VesselMoored") { return true; }
+            else if (current_state == "MOORED" && event == "BeginCargoOps") { return true; }
+            else if (current_state == "CARGO_OPS" && event == "CargoComplete") { return true; }
+            else if (current_state == "DEPARTURE_PREP" && event == "CastOff") { return true; }
+            else if (current_state == "UNMOORED" && event == "VesselDeparted") { return true; }
+            else if (current_state == "APPROACHING" && event == "AbortApproach") { return true; }
+            else if (current_state == "BERTHING" && event == "AbortBerthing") { return true; }
+            return false;
+        }
+
+        [[nodiscard]] auto next_state(const std::string& current_state,
+                                      const std::string& event) const -> std::string {
+            if (current_state == "ANNOUNCED" && event == "OrderPilot") { return "PILOT_ORDERED"; }
+            else if (current_state == "PILOT_ORDERED" && event == "VesselApproaching") { return "APPROACHING"; }
+            else if (current_state == "APPROACHING" && event == "BeginBerthing") { return "BERTHING"; }
+            else if (current_state == "BERTHING" && event == "VesselMoored") { return "MOORED"; }
+            else if (current_state == "MOORED" && event == "BeginCargoOps") { return "CARGO_OPS"; }
+            else if (current_state == "CARGO_OPS" && event == "CargoComplete") { return "DEPARTURE_PREP"; }
+            else if (current_state == "DEPARTURE_PREP" && event == "CastOff") { return "UNMOORED"; }
+            else if (current_state == "UNMOORED" && event == "VesselDeparted") { return "DEPARTED"; }
+            else if (current_state == "APPROACHING" && event == "AbortApproach") { return "ANNOUNCED"; }
+            else if (current_state == "BERTHING" && event == "AbortBerthing") { return "APPROACHING"; }
+            return current_state;
+        }
+
+        [[nodiscard]] auto available_transitions(const std::string& current_state) const -> std::vector<std::string> {
+            auto result = std::vector<std::string>{};
+            if (current_state == "ANNOUNCED") { result.push_back("OrderPilot"); }
+            if (current_state == "PILOT_ORDERED") { result.push_back("VesselApproaching"); }
+            if (current_state == "APPROACHING") { result.push_back("BeginBerthing"); }
+            if (current_state == "BERTHING") { result.push_back("VesselMoored"); }
+            if (current_state == "MOORED") { result.push_back("BeginCargoOps"); }
+            if (current_state == "CARGO_OPS") { result.push_back("CargoComplete"); }
+            if (current_state == "DEPARTURE_PREP") { result.push_back("CastOff"); }
+            if (current_state == "UNMOORED") { result.push_back("VesselDeparted"); }
+            if (current_state == "APPROACHING") { result.push_back("AbortApproach"); }
+            if (current_state == "BERTHING") { result.push_back("AbortBerthing"); }
+            return result;
+        }
+    };
+
+    explicit VoyageStatusServiceImpl(
+            VoyageRepository* entity_repository = nullptr)
+        : entity_repository_{entity_repository} {}
+
     ::grpc::Status Transition(
             ::grpc::ServerContext* context,
             const vesseltraffic::VoyageStatusTransitionRequest* request,
             vesseltraffic::VoyageStatusTransitionResponse* response) override {
         static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
+        if (entity_repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "entity repository not wired");
+        }
+        auto entity = entity_repository_->find_by_id(request->entity_id());
+        if (!entity) {
+            return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "entity not found");
+        }
+        const auto current_state = entity->state();
+        if (!state_machine_.is_valid_transition(current_state, request->event())) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "invalid transition: " + current_state + " + " + request->event());
+        }
+        response->set_previous_state(to_proto_state(current_state));
+        entity->set_state(state_machine_.next_state(current_state, request->event()));
+        entity_repository_->save(*entity);
+        response->set_current_state(to_proto_state(entity->state()));
+        response->set_accepted(true);
         return ::grpc::Status::OK;
     }
 
@@ -35,10 +126,37 @@ public:
             const vesseltraffic::GetVoyageStatusStateRequest* request,
             vesseltraffic::GetVoyageStatusStateResponse* response) override {
         static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
+        if (entity_repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "entity repository not wired");
+        }
+        auto entity = entity_repository_->find_by_id(request->entity_id());
+        if (!entity) {
+            return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "entity not found");
+        }
+        response->set_current_state(to_proto_state(entity->state()));
+        for (const auto& transition : state_machine_.available_transitions(entity->state())) {
+            response->add_available_transitions(transition);
+        }
         return ::grpc::Status::OK;
     }
+
+private:
+    [[nodiscard]] static auto to_proto_state(const std::string& state) -> vesseltraffic::VoyageStatusState {
+        if (state == "ANNOUNCED") { return vesseltraffic::VOYAGE_STATUS_ANNOUNCED; }
+        else if (state == "PILOT_ORDERED") { return vesseltraffic::VOYAGE_STATUS_PILOT_ORDERED; }
+        else if (state == "APPROACHING") { return vesseltraffic::VOYAGE_STATUS_APPROACHING; }
+        else if (state == "BERTHING") { return vesseltraffic::VOYAGE_STATUS_BERTHING; }
+        else if (state == "MOORED") { return vesseltraffic::VOYAGE_STATUS_MOORED; }
+        else if (state == "CARGO_OPS") { return vesseltraffic::VOYAGE_STATUS_CARGO_OPS; }
+        else if (state == "DEPARTURE_PREP") { return vesseltraffic::VOYAGE_STATUS_DEPARTURE_PREP; }
+        else if (state == "UNMOORED") { return vesseltraffic::VOYAGE_STATUS_UNMOORED; }
+        else if (state == "DEPARTED") { return vesseltraffic::VOYAGE_STATUS_DEPARTED; }
+        return vesseltraffic::VOYAGE_STATUS_ANNOUNCED;
+    }
+
+    VoyageRepository* entity_repository_{nullptr};
+    StateMachineRuntime state_machine_{};
 };
 
 } // namespace vessel_traffic

@@ -9,16 +9,16 @@ namespace cargo_operations {
 
 // SQL constants for table: containers
 inline constexpr std::string_view kSelectAll =
-    "SELECT id, id, container_number, size_category, hazmat_class, voyage_id, yard_slot_id, status FROM containers";
+    "SELECT id, container_number, size_category, hazmat_class, voyage_id, yard_slot_id, status FROM containers";
 
 inline constexpr std::string_view kSelectById =
-    "SELECT id, id, container_number, size_category, hazmat_class, voyage_id, yard_slot_id, status FROM containers WHERE id = $1";
+    "SELECT id, container_number, size_category, hazmat_class, voyage_id, yard_slot_id, status FROM containers WHERE id = $1";
 
 inline constexpr std::string_view kInsert =
-    "INSERT INTO containers (id, id, container_number, size_category, hazmat_class, voyage_id, yard_slot_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)";
+    "INSERT INTO containers (id, container_number, size_category, hazmat_class, voyage_id, yard_slot_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE containers SET id = $2, container_number = $3, size_category = $4, hazmat_class = $5, voyage_id = $6, yard_slot_id = $7, status = $8 WHERE id = $9";
+    "UPDATE containers SET container_number = $2, size_category = $3, hazmat_class = $4, voyage_id = $5, yard_slot_id = $6, status = $7 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM containers WHERE id = $1";

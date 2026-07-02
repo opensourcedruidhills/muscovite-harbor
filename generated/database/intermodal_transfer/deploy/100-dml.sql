@@ -8,7 +8,7 @@ SET search_path TO intermodal_transfer, public;
 -- DML: intermodal_transfer.transfer_slots
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.insert_transfer_slots(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_reference slot_reference,
     p_container_id UUID,
     p_transport_mode TEXT,
@@ -62,7 +62,7 @@ $$ LANGUAGE SQL;
 -- DML: intermodal_transfer.truck_visits
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.insert_truck_visits(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_truck_plate truck_plate,
     p_carrier_name TEXT,
     p_slot_id UUID,
@@ -116,7 +116,7 @@ $$ LANGUAGE SQL;
 -- DML: intermodal_transfer.rail_wagons
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.insert_rail_wagons(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_wagon_number TEXT,
     p_max_weight_kg NUMERIC,
     p_slot_id UUID DEFAULT NULL,
@@ -164,7 +164,7 @@ $$ LANGUAGE SQL;
 -- DML: intermodal_transfer.barge_bookings
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.insert_barge_bookings(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_barge_name TEXT,
     p_capacity_teu INTEGER,
     p_departure_at TIMESTAMPTZ,
@@ -215,7 +215,7 @@ $$ LANGUAGE SQL;
 -- DML: intermodal_transfer.chassis_units
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.insert_chassis_units(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_chassis_number TEXT,
     p_chassis_type TEXT,
     p_is_available BOOLEAN,
@@ -263,17 +263,19 @@ $$ LANGUAGE SQL;
 -- DML: intermodal_transfer.outbox
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.insert_outbox(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_aggregate_type TEXT,
     p_aggregate_id UUID,
     p_event_type TEXT,
-    p_payload JSONB,
+    p_payload TEXT,
+    p_occurred_at TIMESTAMPTZ DEFAULT NOW(),
     p_created_at TIMESTAMPTZ DEFAULT NOW(),
     p_retry_count INTEGER DEFAULT 0,
+    p_last_retry_at TIMESTAMPTZ DEFAULT NULL,
     p_processed_at TIMESTAMPTZ DEFAULT NULL
 ) RETURNS intermodal_transfer.outbox AS $$
-    INSERT INTO intermodal_transfer.outbox(id, aggregate_type, aggregate_id, event_type, payload, created_at, retry_count, processed_at)
-    VALUES (p_id, p_aggregate_type, p_aggregate_id, p_event_type, p_payload, p_created_at, p_retry_count, p_processed_at)
+    INSERT INTO intermodal_transfer.outbox(id, aggregate_type, aggregate_id, event_type, payload, occurred_at, created_at, retry_count, last_retry_at, processed_at)
+    VALUES (p_id, p_aggregate_type, p_aggregate_id, p_event_type, p_payload, p_occurred_at, p_created_at, p_retry_count, p_last_retry_at, p_processed_at)
     RETURNING *;
 $$ LANGUAGE SQL;
 
@@ -292,16 +294,20 @@ $$ LANGUAGE SQL;
 -- DML: intermodal_transfer.dead_letter_queue
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.insert_dead_letter_queue(
-    p_id UUID DEFAULT uuidv7(),
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_original_event_id UUID,
+    p_aggregate_id UUID DEFAULT NULL,
     p_event_type TEXT,
-    p_payload JSONB,
+    p_payload TEXT,
     p_error_message TEXT,
     p_retry_count INTEGER DEFAULT 0,
-    p_created_at TIMESTAMPTZ DEFAULT NOW()
+    p_created_at TIMESTAMPTZ DEFAULT NOW(),
+    p_occurred_at TIMESTAMPTZ DEFAULT NOW(),
+    p_failed_at TIMESTAMPTZ DEFAULT NOW(),
+    p_failure_reason TEXT DEFAULT ''
 ) RETURNS intermodal_transfer.dead_letter_queue AS $$
-    INSERT INTO intermodal_transfer.dead_letter_queue(id, original_event_id, event_type, payload, error_message, retry_count, created_at)
-    VALUES (p_id, p_original_event_id, p_event_type, p_payload, p_error_message, p_retry_count, p_created_at)
+    INSERT INTO intermodal_transfer.dead_letter_queue(id, original_event_id, aggregate_id, event_type, payload, error_message, retry_count, created_at, occurred_at, failed_at, failure_reason)
+    VALUES (p_id, p_original_event_id, p_aggregate_id, p_event_type, p_payload, p_error_message, p_retry_count, p_created_at, p_occurred_at, p_failed_at, p_failure_reason)
     RETURNING *;
 $$ LANGUAGE SQL;
 
@@ -320,105 +326,41 @@ $$ LANGUAGE SQL;
 -- DML: intermodal_transfer.idempotency_keys
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.insert_idempotency_keys(
+    p_id UUID DEFAULT uuid_generate_v7(),
     p_key TEXT,
+    p_response JSONB DEFAULT NULL,
     p_created_at TIMESTAMPTZ DEFAULT NOW(),
     p_expires_at TIMESTAMPTZ
 ) RETURNS intermodal_transfer.idempotency_keys AS $$
-    INSERT INTO intermodal_transfer.idempotency_keys(key, created_at, expires_at)
-    VALUES (p_key, p_created_at, p_expires_at)
+    INSERT INTO intermodal_transfer.idempotency_keys(id, key, response, created_at, expires_at)
+    VALUES (p_id, p_key, p_response, p_created_at, p_expires_at)
     RETURNING *;
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.select_idempotency_keys_by_id(
-    p_key TEXT
+    p_id UUID
 ) RETURNS SETOF intermodal_transfer.idempotency_keys AS $$
-    SELECT * FROM intermodal_transfer.idempotency_keys WHERE key = p_key;
+    SELECT * FROM intermodal_transfer.idempotency_keys WHERE id = p_id;
 $$ LANGUAGE SQL STABLE;
 
 CREATE OR REPLACE FUNCTION intermodal_transfer.update_idempotency_keys(
+    p_id UUID,
     p_key TEXT,
+    p_response JSONB DEFAULT NULL,
     p_expires_at TIMESTAMPTZ
 ) RETURNS intermodal_transfer.idempotency_keys AS $$
     UPDATE intermodal_transfer.idempotency_keys
-    SET expires_at = p_expires_at
-    WHERE key = p_key
-    RETURNING *;
-$$ LANGUAGE SQL;
-
-CREATE OR REPLACE FUNCTION intermodal_transfer.delete_idempotency_keys(
-    p_key TEXT
-) RETURNS void AS $$
-    DELETE FROM intermodal_transfer.idempotency_keys WHERE key = p_key;
-$$ LANGUAGE SQL;
-
--- DML: intermodal_transfer.container_handoff_saga
-
-CREATE OR REPLACE FUNCTION intermodal_transfer.insert_container_handoff_saga(
-    p_id UUID DEFAULT uuidv7(),
-    p_status TEXT DEFAULT 'pending',
-    p_current_step TEXT DEFAULT NULL,
-    p_payload JSONB,
-    p_created_at TIMESTAMPTZ DEFAULT NOW(),
-    p_updated_at TIMESTAMPTZ DEFAULT NOW()
-) RETURNS intermodal_transfer.container_handoff_saga AS $$
-    INSERT INTO intermodal_transfer.container_handoff_saga(id, status, current_step, payload, created_at, updated_at)
-    VALUES (p_id, p_status, p_current_step, p_payload, p_created_at, p_updated_at)
-    RETURNING *;
-$$ LANGUAGE SQL;
-
-CREATE OR REPLACE FUNCTION intermodal_transfer.select_container_handoff_saga_by_id(
-    p_id UUID
-) RETURNS SETOF intermodal_transfer.container_handoff_saga AS $$
-    SELECT * FROM intermodal_transfer.container_handoff_saga WHERE id = p_id;
-$$ LANGUAGE SQL STABLE;
-
-CREATE OR REPLACE FUNCTION intermodal_transfer.update_container_handoff_saga(
-    p_id UUID,
-    p_status TEXT,
-    p_current_step TEXT DEFAULT NULL,
-    p_payload JSONB
-) RETURNS intermodal_transfer.container_handoff_saga AS $$
-    UPDATE intermodal_transfer.container_handoff_saga
-    SET status = p_status,
-        current_step = p_current_step,
-        payload = p_payload,
-        updated_at = NOW()
+    SET key = p_key,
+        response = p_response,
+        expires_at = p_expires_at
     WHERE id = p_id
     RETURNING *;
 $$ LANGUAGE SQL;
 
-CREATE OR REPLACE FUNCTION intermodal_transfer.delete_container_handoff_saga(
+CREATE OR REPLACE FUNCTION intermodal_transfer.delete_idempotency_keys(
     p_id UUID
 ) RETURNS void AS $$
-    DELETE FROM intermodal_transfer.container_handoff_saga WHERE id = p_id;
-$$ LANGUAGE SQL;
-
--- DML: intermodal_transfer.container_handoff_step_log
-
-CREATE OR REPLACE FUNCTION intermodal_transfer.insert_container_handoff_step_log(
-    p_id UUID DEFAULT uuidv7(),
-    p_saga_id UUID,
-    p_step_name TEXT,
-    p_status TEXT DEFAULT 'pending',
-    p_result TEXT DEFAULT NULL,
-    p_started_at TIMESTAMPTZ DEFAULT NULL,
-    p_completed_at TIMESTAMPTZ DEFAULT NULL
-) RETURNS intermodal_transfer.container_handoff_step_log AS $$
-    INSERT INTO intermodal_transfer.container_handoff_step_log(id, saga_id, step_name, status, result, started_at, completed_at)
-    VALUES (p_id, p_saga_id, p_step_name, p_status, p_result, p_started_at, p_completed_at)
-    RETURNING *;
-$$ LANGUAGE SQL;
-
-CREATE OR REPLACE FUNCTION intermodal_transfer.select_container_handoff_step_log_by_id(
-    p_id UUID
-) RETURNS SETOF intermodal_transfer.container_handoff_step_log AS $$
-    SELECT * FROM intermodal_transfer.container_handoff_step_log WHERE id = p_id;
-$$ LANGUAGE SQL STABLE;
-
-CREATE OR REPLACE FUNCTION intermodal_transfer.delete_container_handoff_step_log(
-    p_id UUID
-) RETURNS void AS $$
-    DELETE FROM intermodal_transfer.container_handoff_step_log WHERE id = p_id;
+    DELETE FROM intermodal_transfer.idempotency_keys WHERE id = p_id;
 $$ LANGUAGE SQL;
 
 COMMIT;

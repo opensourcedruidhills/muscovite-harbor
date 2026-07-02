@@ -15,9 +15,10 @@
 SCENARIO("Boundary: weight_kg min value") {
     GIVEN("a Parcel with min weight_kg") {
         auto val = std::numeric_limits<double>::lowest();
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.weight_kg == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke ParcelValidator::validate(entity)
+                // CHECK(!ParcelValidator::validate(entity).has_error_for("weight_kg"));
             }
         }
     }
@@ -26,9 +27,10 @@ SCENARIO("Boundary: weight_kg min value") {
 SCENARIO("Boundary: weight_kg max value") {
     GIVEN("a Parcel with max weight_kg") {
         auto val = std::numeric_limits<double>::max();
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.weight_kg == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke ParcelValidator::validate(entity)
+                // CHECK(!ParcelValidator::validate(entity).has_error_for("weight_kg"));
             }
         }
     }
@@ -37,9 +39,10 @@ SCENARIO("Boundary: weight_kg max value") {
 SCENARIO("Boundary: description min value") {
     GIVEN("a Parcel with min description") {
         auto val = "boundary";
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.description == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke ParcelValidator::validate(entity)
+                // CHECK(!ParcelValidator::validate(entity).has_error_for("description"));
             }
         }
     }
@@ -48,9 +51,10 @@ SCENARIO("Boundary: description min value") {
 SCENARIO("Boundary: description max value") {
     GIVEN("a Parcel with max description") {
         auto val = std::string(10000, 'x');
-        WHEN("the entity is created") {
-            THEN("it should handle the boundary value") {
-                // CHECK(entity.description == val);
+        WHEN("the entity is validated") {
+            THEN("the validator should accept or reject the boundary") {
+                // NOTE: construct entity and invoke ParcelValidator::validate(entity)
+                // CHECK(!ParcelValidator::validate(entity).has_error_for("description"));
             }
         }
     }

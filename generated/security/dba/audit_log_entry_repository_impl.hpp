@@ -5,11 +5,23 @@
 
 #include "audit_log_entry.hpp"
 #include "security_queries.hpp"
+#include <algorithm>
+#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace security {
+
+class DbaOperationSpan {
+public:
+    explicit DbaOperationSpan(std::string_view operation) : operation_{operation} {}
+    auto set_status_ok() noexcept -> void {}
+    auto set_error(std::string_view /*message*/) noexcept -> void {}
+private:
+    std::string_view operation_;
+};
 
 /// Concrete CRTP repository implementation for AuditLogEntry.
 /// Satisfies RepositoryBase<AuditLogEntryRepositoryImpl<C>, AuditLogEntry> contract.
@@ -21,48 +33,73 @@ public:
     explicit AuditLogEntryRepositoryImpl(Connection& conn) : conn_{conn} {}
 
     auto save(const AuditLogEntry& entity) -> void {
+        DbaOperationSpan span("AuditLogEntryRepositoryImpl::save");
         auto tx = conn_.begin();
         tx.exec_params(queries::AuditLogEntryInsert, entity.id, entity.timestamp, entity.actor, entity.action, entity.resource, entity.details);
         tx.commit();
+        span.set_status_ok();
     }
 
     auto update(const AuditLogEntry& entity) -> void {
+        DbaOperationSpan span("AuditLogEntryRepositoryImpl::update");
         auto tx = conn_.begin();
         auto result = tx.exec_params(queries::AuditLogEntryUpdate, entity.id, entity.timestamp, entity.actor, entity.action, entity.resource, entity.details);
         if (result.affected_rows() == 0) {
-            throw std::runtime_error(AuditLogEntry not found:  + entity.id);
+            span.set_error("not found");
+            throw std::runtime_error("AuditLogEntry not found: " + entity.id);
         }
         tx.commit();
+        span.set_status_ok();
     }
 
     auto remove(const std::string& id) -> void {
+        DbaOperationSpan span("AuditLogEntryRepositoryImpl::remove");
         auto tx = conn_.begin();
         tx.exec_params(queries::AuditLogEntryDelete, id);
         tx.commit();
+        span.set_status_ok();
     }
 
     [[nodiscard]] auto find_by_id(const std::string& id) -> std::optional<AuditLogEntry> {
+        DbaOperationSpan span("AuditLogEntryRepositoryImpl::find_by_id");
         auto tx = conn_.begin();
         auto result = tx.exec_params(queries::AuditLogEntrySelectById, id);
         tx.commit();
-        if (result.empty()) { return std::nullopt; }
-        return map_row(result[0]);
+        if (result.empty()) {
+            span.set_status_ok();
+            return std::nullopt;
+        }
+        auto mapped = map_row(result[0]);
+        span.set_status_ok();
+        return mapped;
     }
 
     [[nodiscard]] auto find_all() -> std::vector<AuditLogEntry> {
+        DbaOperationSpan span("AuditLogEntryRepositoryImpl::find_all");
         auto tx = conn_.begin();
         auto result = tx.exec(queries::AuditLogEntrySelectAll);
         tx.commit();
-        auto out = std::vector<AuditLogEntry>{};
+        auto out = std::vector<AuditLogEntry>{ };
         out.reserve(result.size());
         for (const auto& row : result) { out.push_back(map_row(row)); }
+        span.set_status_ok();
         return out;
+    }
+
+    /// Filter all entities by a domain specification (in-memory).
+    template<typename Spec>
+    [[nodiscard]] auto filter_by_spec(const Spec& spec) const -> std::vector<AuditLogEntry> {
+        auto all = find_all();
+        auto result = std::vector<AuditLogEntry>{};
+        std::copy_if(all.begin(), all.end(), std::back_inserter(result),
+                     [&spec](const AuditLogEntry& e) { return spec.is_satisfied_by(e); });
+        return result;
     }
 
     [[nodiscard]] auto map_row(const pqxx::row& row) const -> AuditLogEntry {
         return AuditLogEntry{
             .id = row[0].as<std::string>(),
-            .timestamp = row[1].as<std::string>(),
+            .timestamp = row[1].as<muscovite::dba::Timestamp>(),
             .actor = row[2].as<std::string>(),
             .action = row[3].as<std::string>(),
             .resource = row[4].as<std::string>(),

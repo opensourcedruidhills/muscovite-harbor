@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include <string>
+#include <string>
 
 namespace harbour_control {
 
@@ -15,6 +16,16 @@ struct RadarTrack {
     muscovite::dba::Decimal lon{};
     muscovite::dba::Decimal heading{};
     muscovite::dba::Decimal speed{};
+};
+
+/// Translated vessel position from radar data
+/// Foreign type from VTSRadar context.
+struct VesselPosition {
+    std::string mmsi{};
+    muscovite::dba::Decimal latitude{};
+    muscovite::dba::Decimal longitude{};
+    muscovite::dba::Decimal heading_degrees{};
+    muscovite::dba::Decimal speed_knots{};
 };
 
 } // namespace harbour_control

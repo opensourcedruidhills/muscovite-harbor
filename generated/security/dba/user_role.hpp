@@ -3,7 +3,7 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
-#include <string>
+#include <boost/uuid/uuid.hpp>
 
 namespace security {
 
@@ -12,12 +12,12 @@ struct UserRole {
     using Id = boost::uuids::uuid;
 
     Id id{};
-    std::string user_id{};
-    std::string role_id{};
+    boost::uuids::uuid user_id{};
+    boost::uuids::uuid role_id{};
 
     [[nodiscard]] auto get_id() const noexcept -> const Id& { return id; }
-    [[nodiscard]] auto get_user_id() const noexcept -> const std::string& { return user_id; }
-    [[nodiscard]] auto get_role_id() const noexcept -> const std::string& { return role_id; }
+    [[nodiscard]] auto get_user_id() const noexcept -> const boost::uuids::uuid& { return user_id; }
+    [[nodiscard]] auto get_role_id() const noexcept -> const boost::uuids::uuid& { return role_id; }
 };
 
 } // namespace security

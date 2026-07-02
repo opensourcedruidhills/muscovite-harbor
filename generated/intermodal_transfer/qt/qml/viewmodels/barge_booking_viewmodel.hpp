@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/barge_booking_grpc_binding.hpp"
 
 namespace muscovite_harbor::intermodal_transfer::qml {
 
@@ -27,6 +28,15 @@ class BargeBookingViewModel : public QObject {
     Q_PROPERTY(int capacityTeu READ capacityTeu WRITE setCapacityTeu NOTIFY capacityTeuChanged REQUIRED)
     Q_PROPERTY(QDateTime departureAt READ departureAt WRITE setDepartureAt NOTIFY departureAtChanged REQUIRED)
     Q_PROPERTY(QString status READ status WRITE setStatus NOTIFY statusChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool bargeNameIsValid READ bargeNameIsValid NOTIFY bargeNameIsValidChanged)
+    Q_PROPERTY(bool capacityTeuIsValid READ capacityTeuIsValid NOTIFY capacityTeuIsValidChanged)
+    Q_PROPERTY(bool departureAtIsValid READ departureAtIsValid NOTIFY departureAtIsValidChanged)
+    Q_PROPERTY(bool statusIsValid READ statusIsValid NOTIFY statusIsValidChanged)
 
 public:
     explicit BargeBookingViewModel(QObject* parent = nullptr);
@@ -36,12 +46,23 @@ public:
     [[nodiscard]] auto capacityTeu() const -> int { return m_capacity_teu; }
     [[nodiscard]] auto departureAt() const -> QDateTime { return m_departure_at; }
     [[nodiscard]] auto status() const -> QString { return m_status; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto bargeNameIsValid() const -> bool { return m_barge_name_is_valid; }
+    [[nodiscard]] auto capacityTeuIsValid() const -> bool { return m_capacity_teu_is_valid; }
+    [[nodiscard]] auto departureAtIsValid() const -> bool { return m_departure_at_is_valid; }
+    [[nodiscard]] auto statusIsValid() const -> bool { return m_status_is_valid; }
 
     void setId(const QString& value);
     void setBargeName(const QString& value);
     void setCapacityTeu(const int& value);
     void setDepartureAt(const QDateTime& value);
     void setStatus(const QString& value);
+
+    void setBinding(BargeBookingGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -54,17 +75,37 @@ Q_SIGNALS:
     void capacityTeuChanged();
     void departureAtChanged();
     void statusChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void bargeNameIsValidChanged();
+    void capacityTeuIsValidChanged();
+    void departureAtIsValidChanged();
+    void statusIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_barge_name;
     int m_capacity_teu = 0;
     QDateTime m_departure_at;
     QString m_status;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    BargeBookingGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_barge_name_is_valid = false;
+    bool m_capacity_teu_is_valid = true;
+    bool m_departure_at_is_valid = false;
+    bool m_status_is_valid = false;
 };
 
 } // namespace muscovite_harbor::intermodal_transfer::qml

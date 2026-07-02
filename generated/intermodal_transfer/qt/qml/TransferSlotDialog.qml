@@ -8,9 +8,9 @@ Dialog {
     id: transferSlotDialog
     title: qsTr("Edit TransferSlot")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Reference") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("Reference")
             text: viewModel.reference
             onTextChanged: viewModel.setReference(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.referenceIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ContainerId") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.containerId
             onTextChanged: viewModel.setContainerId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.containerIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("TransportMode") }
         TextField {
@@ -46,6 +64,12 @@ Dialog {
             placeholderText: qsTr("TransportMode")
             text: viewModel.transportMode
             onTextChanged: viewModel.setTransportMode(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.transportModeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ScheduledAt") }
@@ -55,6 +79,12 @@ Dialog {
             text: viewModel.scheduledAt
             onTextChanged: viewModel.setScheduledAt(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.scheduledAtIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Status") }
         TextField {
@@ -63,9 +93,27 @@ Dialog {
             text: viewModel.status
             onTextChanged: viewModel.setStatus(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.statusIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); transferSlotDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); transferSlotDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

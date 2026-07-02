@@ -8,9 +8,9 @@ Dialog {
     id: voyageDialog
     title: qsTr("Edit Voyage")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("VesselId") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("VesselId")
             text: viewModel.vesselId
             onTextChanged: viewModel.setVesselId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.vesselIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("BerthId") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.berthId
             onTextChanged: viewModel.setBerthId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.berthIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("VoyageNumber") }
         TextField {
@@ -46,6 +64,12 @@ Dialog {
             placeholderText: qsTr("VoyageNumber")
             text: viewModel.voyageNumber
             onTextChanged: viewModel.setVoyageNumber(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.voyageNumberIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("Eta") }
@@ -55,6 +79,12 @@ Dialog {
             text: viewModel.eta
             onTextChanged: viewModel.setEta(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.etaIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Ata") }
         TextField {
@@ -62,6 +92,12 @@ Dialog {
             placeholderText: qsTr("Ata")
             text: viewModel.ata
             onTextChanged: viewModel.setAta(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.ataIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("Etd") }
@@ -71,6 +107,12 @@ Dialog {
             text: viewModel.etd
             onTextChanged: viewModel.setEtd(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.etdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Atd") }
         TextField {
@@ -78,6 +120,12 @@ Dialog {
             placeholderText: qsTr("Atd")
             text: viewModel.atd
             onTextChanged: viewModel.setAtd(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.atdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("CargoCategory") }
@@ -87,6 +135,12 @@ Dialog {
             text: viewModel.cargoCategory
             onTextChanged: viewModel.setCargoCategory(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.cargoCategoryIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Status") }
         TextField {
@@ -95,9 +149,27 @@ Dialog {
             text: viewModel.status
             onTextChanged: viewModel.setStatus(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.statusIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); voyageDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); voyageDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

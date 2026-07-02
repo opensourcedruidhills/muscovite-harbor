@@ -1,5 +1,5 @@
 -- MUSCOVITE:SIDECAR:UNMODIFIED
--- MUSCOVITE:QUERY-HASH:ccecebf3e383b1ed
+-- MUSCOVITE:QUERY-HASH:e49b19ce334c4ebe
 --  context: HarbourControl, entity: PortCall, operation: update
 
-UPDATE harbour_control.port_call SET id = $2, vessel_name = $3, imo_number = $4, berth_code = $5, arrival_time = $6, departure_time = $7, container_count = $8, hazmat_permits = $9, total_billed = $10 WHERE id = $1
+UPDATE harbour_control.port_call SET vessel_name = $2, imo_number = $3, berth_code = $4, arrival_time = $5, departure_time = $6, container_count = $7, hazmat_permits = $8, total_billed = $9 WHERE id = $1

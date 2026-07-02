@@ -8,9 +8,9 @@ Dialog {
     id: reeferUnitDialog
     title: qsTr("Edit ReeferUnit")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("ContainerId") }
         TextField {
@@ -31,7 +37,14 @@ Dialog {
             text: viewModel.containerId
             onTextChanged: viewModel.setContainerId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.containerIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("TargetTempC") }
         DoubleSpinBox {
             id: targetTempCField
             from: 0.0
@@ -40,7 +53,14 @@ Dialog {
             value: parseFloat(viewModel.targetTempC) || 0.0
             onValueChanged: viewModel.setTargetTempC(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.targetTempCIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("CurrentTempC") }
         DoubleSpinBox {
             id: currentTempCField
             from: 0.0
@@ -49,6 +69,12 @@ Dialog {
             value: parseFloat(viewModel.currentTempC) || 0.0
             onValueChanged: viewModel.setCurrentTempC(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.currentTempCIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         CheckBox {
             id: isPoweredField
@@ -56,9 +82,27 @@ Dialog {
             checked: viewModel.isPowered
             onCheckedChanged: viewModel.setIsPowered(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.isPoweredIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); reeferUnitDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); reeferUnitDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

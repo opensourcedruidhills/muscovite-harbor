@@ -26,7 +26,7 @@ SCENARIO("Relationship integrity: ReeferUnit -> Container via ReeferUnit") {
     }
 }
 
-SCENARIO("Relationship integrity: DischargeSequence -> LoadPlan via DischargeSequence") {
+SCENARIO("Relationship integrity: DischargeSequence -> LoadPlan via DSLoadPlan") {
     GIVEN("a DischargeSequence referencing a LoadPlan") {
         auto rng = std::mt19937{std::random_device{}()};
         auto dist = std::uniform_int_distribution<int>{0, 10000};
@@ -42,7 +42,7 @@ SCENARIO("Relationship integrity: DischargeSequence -> LoadPlan via DischargeSeq
     }
 }
 
-SCENARIO("Relationship integrity: DischargeSequence -> Container via DischargeSequence") {
+SCENARIO("Relationship integrity: DischargeSequence -> Container via DSContainer") {
     GIVEN("a DischargeSequence referencing a Container") {
         auto rng = std::mt19937{std::random_device{}()};
         auto dist = std::uniform_int_distribution<int>{0, 10000};
@@ -58,7 +58,7 @@ SCENARIO("Relationship integrity: DischargeSequence -> Container via DischargeSe
     }
 }
 
-SCENARIO("Relationship integrity: DischargeSequence -> Crane via DischargeSequence") {
+SCENARIO("Relationship integrity: DischargeSequence -> Crane via DSCrane") {
     GIVEN("a DischargeSequence referencing a Crane") {
         auto rng = std::mt19937{std::random_device{}()};
         auto dist = std::uniform_int_distribution<int>{0, 10000};

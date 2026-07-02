@@ -8,9 +8,9 @@ Dialog {
     id: invoiceLineDialog
     title: qsTr("Edit InvoiceLine")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("VesselId") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("VesselId")
             text: viewModel.vesselId
             onTextChanged: viewModel.setVesselId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.vesselIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ServiceType") }
@@ -39,7 +51,14 @@ Dialog {
             text: viewModel.serviceType
             onTextChanged: viewModel.setServiceType(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.serviceTypeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("Amount") }
         DoubleSpinBox {
             id: amountField
             from: 0.0
@@ -47,6 +66,12 @@ Dialog {
             stepSize: 0.01
             value: parseFloat(viewModel.amount) || 0.0
             onValueChanged: viewModel.setAmount(value.toString())
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.amountIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("Currency") }
@@ -56,6 +81,12 @@ Dialog {
             text: viewModel.currency
             onTextChanged: viewModel.setCurrency(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.currencyIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("IssuedAt") }
         TextField {
@@ -64,9 +95,27 @@ Dialog {
             text: viewModel.issuedAt
             onTextChanged: viewModel.setIssuedAt(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.issuedAtIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); invoiceLineDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); invoiceLineDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

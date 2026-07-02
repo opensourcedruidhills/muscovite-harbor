@@ -54,8 +54,8 @@ A single vessel call at the harbour
 
 **Relationships:**
 
-- **Voyage**: to-one → **Vessel** [required]
-- **Voyage**: to-one → **Berth**
+- **VoyageToVessel**: to-one → **Vessel** [required]
+- **VoyageToBerth**: to-one → **Berth**
 
 ### PilotAssignment
 
@@ -202,25 +202,25 @@ Vessel has departed harbour
 
 ### IMONumber
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 IMO vessel identification number (7 digits)
 
 ### MMSI
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Maritime Mobile Service Identity (9 digits)
 
 ### CallSign
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 International radio call sign
 
 ### BerthCode
 
-**Base type:** TEXT 
+**Base type:** TEXT
 
 Berth identifier (e.g. NQ-12, SC-3)
 

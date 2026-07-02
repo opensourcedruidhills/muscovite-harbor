@@ -10,7 +10,7 @@
 
 // Relationship integrity tests for PassengerTerminal
 
-SCENARIO("Relationship integrity: BoardingPass -> Passenger via BoardingPass") {
+SCENARIO("Relationship integrity: BoardingPass -> Passenger via BPPassenger") {
     GIVEN("a BoardingPass referencing a Passenger") {
         auto rng = std::mt19937{std::random_device{}()};
         auto dist = std::uniform_int_distribution<int>{0, 10000};
@@ -26,7 +26,7 @@ SCENARIO("Relationship integrity: BoardingPass -> Passenger via BoardingPass") {
     }
 }
 
-SCENARIO("Relationship integrity: BoardingPass -> Gate via BoardingPass") {
+SCENARIO("Relationship integrity: BoardingPass -> Gate via BPGate") {
     GIVEN("a BoardingPass referencing a Gate") {
         auto rng = std::mt19937{std::random_device{}()};
         auto dist = std::uniform_int_distribution<int>{0, 10000};

@@ -2,24 +2,23 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "tug_booking_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace vessel_traffic {
 
 auto TugBookingRepositoryImpl::insert(pqxx::work& tx, const TugBooking& entity) -> void {
     tx.exec_params(kInsert,
         entity.id,
-        entity.id,
         entity.voyage_id,
         entity.tug_name,
         entity.bollard_pull_t,
-        entity.is_confirmed,
-    );
+        entity.is_confirmed);
 }
 
 auto TugBookingRepositoryImpl::update(pqxx::work& tx, const TugBooking& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
-    params.append(entity.id);
     params.append(entity.id);
     params.append(entity.voyage_id);
     params.append(entity.tug_name);

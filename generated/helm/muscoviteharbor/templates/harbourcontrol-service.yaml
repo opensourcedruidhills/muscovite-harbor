@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: harbourcontrol
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: harbourcontrol
+  type: {{ .Values.harbourcontrol.service.type }}
+  ports:
+    - port: {{ .Values.harbourcontrol.service.port }}
+      targetPort: 50051

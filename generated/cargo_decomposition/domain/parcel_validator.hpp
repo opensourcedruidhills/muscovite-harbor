@@ -5,7 +5,7 @@
 
 #include "parcel.hpp"
 #include <string>
-#include <vector>
+#include <muscovite/validation/validation_errors.hpp>
 
 namespace cargo_decomposition {
 
@@ -14,9 +14,10 @@ namespace cargo_decomposition {
 class ParcelValidator {
 public:
     /// Validate cross-field invariants. Returns accumulated error messages.
-    [[nodiscard]] static auto validate(const Parcel& entity) -> std::vector<std::string> {
+    [[nodiscard]] static auto validate(const Parcel& entity) -> muscovite::validation::ValidationErrors {
         (void)entity;
-        return {};
+        auto errors = muscovite::validation::ValidationErrors{};
+        return errors;
     }
 };
 

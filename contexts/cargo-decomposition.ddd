@@ -130,8 +130,7 @@ CONTEXT CargoDecomposition @uuid "bb000050-0001-4000-8000-000000000001"
     -- ====================================================================
 
     AGGREGATE ContainerUnpack @uuid "bb000050-0050-4000-8000-000000000001" ROOT Pallet
-        (CONTAINS Parcel)
-        DOC "Unpacking a container into pallets and parcels";
+        DOC "Unpacking a container into pallets";
 
     AGGREGATE PalletDispatch @uuid "bb000050-0050-4000-8000-000000000002" ROOT Parcel
         (CONTAINS DeliveryUnit)

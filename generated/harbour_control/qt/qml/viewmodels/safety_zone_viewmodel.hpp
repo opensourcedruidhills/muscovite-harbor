@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/safety_zone_grpc_binding.hpp"
 
 namespace muscovite_harbor::harbour_control::qml {
 
@@ -27,6 +28,16 @@ class SafetyZoneViewModel : public QObject {
     Q_PROPERTY(QString securityLevel READ securityLevel WRITE setSecurityLevel NOTIFY securityLevelChanged REQUIRED)
     Q_PROPERTY(int maxHazmatClass READ maxHazmatClass WRITE setMaxHazmatClass NOTIFY maxHazmatClassChanged REQUIRED)
     Q_PROPERTY(bool isRestricted READ isRestricted WRITE setIsRestricted NOTIFY isRestrictedChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool zoneCodeIsValid READ zoneCodeIsValid NOTIFY zoneCodeIsValidChanged)
+    Q_PROPERTY(bool zoneNameIsValid READ zoneNameIsValid NOTIFY zoneNameIsValidChanged)
+    Q_PROPERTY(bool securityLevelIsValid READ securityLevelIsValid NOTIFY securityLevelIsValidChanged)
+    Q_PROPERTY(bool maxHazmatClassIsValid READ maxHazmatClassIsValid NOTIFY maxHazmatClassIsValidChanged)
+    Q_PROPERTY(bool isRestrictedIsValid READ isRestrictedIsValid NOTIFY isRestrictedIsValidChanged)
 
 public:
     explicit SafetyZoneViewModel(QObject* parent = nullptr);
@@ -37,6 +48,16 @@ public:
     [[nodiscard]] auto securityLevel() const -> QString { return m_security_level; }
     [[nodiscard]] auto maxHazmatClass() const -> int { return m_max_hazmat_class; }
     [[nodiscard]] auto isRestricted() const -> bool { return m_is_restricted; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto zoneCodeIsValid() const -> bool { return m_zone_code_is_valid; }
+    [[nodiscard]] auto zoneNameIsValid() const -> bool { return m_zone_name_is_valid; }
+    [[nodiscard]] auto securityLevelIsValid() const -> bool { return m_security_level_is_valid; }
+    [[nodiscard]] auto maxHazmatClassIsValid() const -> bool { return m_max_hazmat_class_is_valid; }
+    [[nodiscard]] auto isRestrictedIsValid() const -> bool { return m_is_restricted_is_valid; }
 
     void setId(const QString& value);
     void setZoneCode(const QString& value);
@@ -44,6 +65,8 @@ public:
     void setSecurityLevel(const QString& value);
     void setMaxHazmatClass(const int& value);
     void setIsRestricted(const bool& value);
+
+    void setBinding(SafetyZoneGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -57,18 +80,40 @@ Q_SIGNALS:
     void securityLevelChanged();
     void maxHazmatClassChanged();
     void isRestrictedChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void zoneCodeIsValidChanged();
+    void zoneNameIsValidChanged();
+    void securityLevelIsValidChanged();
+    void maxHazmatClassIsValidChanged();
+    void isRestrictedIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_zone_code;
     QString m_zone_name;
     QString m_security_level;
     int m_max_hazmat_class = 0;
     bool m_is_restricted = false;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    SafetyZoneGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_zone_code_is_valid = false;
+    bool m_zone_name_is_valid = false;
+    bool m_security_level_is_valid = false;
+    bool m_max_hazmat_class_is_valid = true;
+    bool m_is_restricted_is_valid = true;
 };
 
 } // namespace muscovite_harbor::harbour_control::qml

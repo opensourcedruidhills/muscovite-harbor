@@ -41,19 +41,19 @@ auto GateStatusStateMachine::transition(const std::string& current_state,
 auto GateStatusStateMachine::allowed_transitions(const std::string& current_state) const -> std::vector<AllowedTransition> {
     auto result = std::vector<AllowedTransition>{};
     if (current_state == "CLOSED") {
-        result.push_back(AllowedTransition{.to_state = "CHECK_IN_OPEN", .event_name = "OpenCheckIn"});
+        result.push_back(AllowedTransition{.to_state = "CHECK_IN_OPEN", .event_name = "OpenCheckIn", .guard_expression = std::nullopt});
     }
     if (current_state == "CHECK_IN_OPEN") {
-        result.push_back(AllowedTransition{.to_state = "BOARDING", .event_name = "StartBoarding"});
+        result.push_back(AllowedTransition{.to_state = "BOARDING", .event_name = "StartBoarding", .guard_expression = std::nullopt});
     }
     if (current_state == "BOARDING") {
-        result.push_back(AllowedTransition{.to_state = "FINAL_CALL", .event_name = "AnnounceFinalCall"});
+        result.push_back(AllowedTransition{.to_state = "FINAL_CALL", .event_name = "AnnounceFinalCall", .guard_expression = std::nullopt});
     }
     if (current_state == "FINAL_CALL") {
-        result.push_back(AllowedTransition{.to_state = "CLOSED", .event_name = "CloseGate"});
+        result.push_back(AllowedTransition{.to_state = "CLOSED", .event_name = "CloseGate", .guard_expression = std::nullopt});
     }
     if (current_state == "CHECK_IN_OPEN") {
-        result.push_back(AllowedTransition{.to_state = "CLOSED", .event_name = "CancelBoarding"});
+        result.push_back(AllowedTransition{.to_state = "CLOSED", .event_name = "CancelBoarding", .guard_expression = std::nullopt});
     }
     return result;
 }

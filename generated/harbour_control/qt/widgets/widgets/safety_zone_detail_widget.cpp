@@ -29,21 +29,28 @@ void SafetyZoneDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     zone_code_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ZoneCode"), zone_code_value_);
+    section_form_1->addRow(QStringLiteral("ZoneCode"), zone_code_value_);
     zone_name_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ZoneName"), zone_name_value_);
+    section_form_1->addRow(QStringLiteral("ZoneName"), zone_name_value_);
     security_level_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("SecurityLevel"), security_level_value_);
+    section_form_1->addRow(QStringLiteral("SecurityLevel"), security_level_value_);
     max_hazmat_class_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("MaxHazmatClass"), max_hazmat_class_value_);
-    is_restricted_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("IsRestricted"), is_restricted_value_);
+    section_form_1->addRow(QStringLiteral("MaxHazmatClass"), max_hazmat_class_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    is_restricted_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("IsRestricted"), is_restricted_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -72,7 +79,7 @@ void SafetyZoneDetailWidget::setIsRestricted(const bool& value) {
 }
 
 void SafetyZoneDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

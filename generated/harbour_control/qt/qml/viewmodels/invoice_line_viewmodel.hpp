@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/invoice_line_grpc_binding.hpp"
 
 namespace muscovite_harbor::harbour_control::qml {
 
@@ -28,6 +29,16 @@ class InvoiceLineViewModel : public QObject {
     Q_PROPERTY(QString amount READ amount WRITE setAmount NOTIFY amountChanged REQUIRED)
     Q_PROPERTY(QString currency READ currency WRITE setCurrency NOTIFY currencyChanged REQUIRED)
     Q_PROPERTY(QDateTime issuedAt READ issuedAt WRITE setIssuedAt NOTIFY issuedAtChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool vesselIdIsValid READ vesselIdIsValid NOTIFY vesselIdIsValidChanged)
+    Q_PROPERTY(bool serviceTypeIsValid READ serviceTypeIsValid NOTIFY serviceTypeIsValidChanged)
+    Q_PROPERTY(bool amountIsValid READ amountIsValid NOTIFY amountIsValidChanged)
+    Q_PROPERTY(bool currencyIsValid READ currencyIsValid NOTIFY currencyIsValidChanged)
+    Q_PROPERTY(bool issuedAtIsValid READ issuedAtIsValid NOTIFY issuedAtIsValidChanged)
 
 public:
     explicit InvoiceLineViewModel(QObject* parent = nullptr);
@@ -38,6 +49,16 @@ public:
     [[nodiscard]] auto amount() const -> QString { return m_amount; }
     [[nodiscard]] auto currency() const -> QString { return m_currency; }
     [[nodiscard]] auto issuedAt() const -> QDateTime { return m_issued_at; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto vesselIdIsValid() const -> bool { return m_vessel_id_is_valid; }
+    [[nodiscard]] auto serviceTypeIsValid() const -> bool { return m_service_type_is_valid; }
+    [[nodiscard]] auto amountIsValid() const -> bool { return m_amount_is_valid; }
+    [[nodiscard]] auto currencyIsValid() const -> bool { return m_currency_is_valid; }
+    [[nodiscard]] auto issuedAtIsValid() const -> bool { return m_issued_at_is_valid; }
 
     void setId(const QString& value);
     void setVesselId(const QString& value);
@@ -45,6 +66,8 @@ public:
     void setAmount(const QString& value);
     void setCurrency(const QString& value);
     void setIssuedAt(const QDateTime& value);
+
+    void setBinding(InvoiceLineGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -58,18 +81,40 @@ Q_SIGNALS:
     void amountChanged();
     void currencyChanged();
     void issuedAtChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void vesselIdIsValidChanged();
+    void serviceTypeIsValidChanged();
+    void amountIsValidChanged();
+    void currencyIsValidChanged();
+    void issuedAtIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_vessel_id;
     QString m_service_type;
     QString m_amount;
     QString m_currency;
     QDateTime m_issued_at;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    InvoiceLineGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_vessel_id_is_valid = false;
+    bool m_service_type_is_valid = false;
+    bool m_amount_is_valid = false;
+    bool m_currency_is_valid = false;
+    bool m_issued_at_is_valid = false;
 };
 
 } // namespace muscovite_harbor::harbour_control::qml

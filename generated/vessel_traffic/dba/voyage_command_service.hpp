@@ -20,6 +20,8 @@ public:
     auto create(const Voyage& entity) -> void;
     auto update(const Voyage& entity) -> void;
     auto remove(const Voyage::Id& id) -> void;
+    auto announce_vessel(const boost::uuids::uuid& vessel_id, const muscovite::dba::Timestamp& eta, const std::string& cargo_category) -> void;
+    auto allocate_berth(const boost::uuids::uuid& berth_id) -> void;
 
 private:
     VoyageCommandRepository& repository_;

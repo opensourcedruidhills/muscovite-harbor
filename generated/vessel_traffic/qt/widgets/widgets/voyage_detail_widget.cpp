@@ -29,29 +29,36 @@ void VoyageDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     vessel_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("VesselId"), vessel_id_value_);
+    section_form_1->addRow(QStringLiteral("VesselId"), vessel_id_value_);
     berth_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("BerthId"), berth_id_value_);
+    section_form_1->addRow(QStringLiteral("BerthId"), berth_id_value_);
     voyage_number_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("VoyageNumber"), voyage_number_value_);
+    section_form_1->addRow(QStringLiteral("VoyageNumber"), voyage_number_value_);
     eta_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Eta"), eta_value_);
-    ata_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Ata"), ata_value_);
-    etd_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Etd"), etd_value_);
-    atd_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Atd"), atd_value_);
-    cargo_category_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("CargoCategory"), cargo_category_value_);
-    status_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Status"), status_value_);
+    section_form_1->addRow(QStringLiteral("Eta"), eta_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    ata_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("Ata"), ata_value_);
+    etd_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("Etd"), etd_value_);
+    atd_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("Atd"), atd_value_);
+    cargo_category_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("CargoCategory"), cargo_category_value_);
+    status_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("Status"), status_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -96,7 +103,7 @@ void VoyageDetailWidget::setStatus(const QString& value) {
 }
 
 void VoyageDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

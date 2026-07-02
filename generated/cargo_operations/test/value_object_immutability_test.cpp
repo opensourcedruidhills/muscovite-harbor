@@ -21,7 +21,7 @@ SCENARIO("Value object immutability: ContainerDimensions") {
         WHEN("equality is checked after copy") {
             auto copy = vo;
             THEN("copy must equal original (value semantics)") {
-                // CHECK(copy == vo);
+                CHECK(copy == vo);
             }
         }
 

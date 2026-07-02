@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/boarding_pass_grpc_binding.hpp"
 
 namespace muscovite_harbor::passenger_terminal::qml {
 
@@ -29,6 +30,17 @@ class BoardingPassViewModel : public QObject {
     Q_PROPERTY(QString seatNumber READ seatNumber WRITE setSeatNumber NOTIFY seatNumberChanged)
     Q_PROPERTY(QDateTime issuedAt READ issuedAt WRITE setIssuedAt NOTIFY issuedAtChanged REQUIRED)
     Q_PROPERTY(QDateTime scannedAt READ scannedAt WRITE setScannedAt NOTIFY scannedAtChanged)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool passengerIdIsValid READ passengerIdIsValid NOTIFY passengerIdIsValidChanged)
+    Q_PROPERTY(bool gateIdIsValid READ gateIdIsValid NOTIFY gateIdIsValidChanged)
+    Q_PROPERTY(bool boardingGroupIsValid READ boardingGroupIsValid NOTIFY boardingGroupIsValidChanged)
+    Q_PROPERTY(bool seatNumberIsValid READ seatNumberIsValid NOTIFY seatNumberIsValidChanged)
+    Q_PROPERTY(bool issuedAtIsValid READ issuedAtIsValid NOTIFY issuedAtIsValidChanged)
+    Q_PROPERTY(bool scannedAtIsValid READ scannedAtIsValid NOTIFY scannedAtIsValidChanged)
 
 public:
     explicit BoardingPassViewModel(QObject* parent = nullptr);
@@ -40,6 +52,17 @@ public:
     [[nodiscard]] auto seatNumber() const -> QString { return m_seat_number; }
     [[nodiscard]] auto issuedAt() const -> QDateTime { return m_issued_at; }
     [[nodiscard]] auto scannedAt() const -> QDateTime { return m_scanned_at; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto passengerIdIsValid() const -> bool { return m_passenger_id_is_valid; }
+    [[nodiscard]] auto gateIdIsValid() const -> bool { return m_gate_id_is_valid; }
+    [[nodiscard]] auto boardingGroupIsValid() const -> bool { return m_boarding_group_is_valid; }
+    [[nodiscard]] auto seatNumberIsValid() const -> bool { return m_seat_number_is_valid; }
+    [[nodiscard]] auto issuedAtIsValid() const -> bool { return m_issued_at_is_valid; }
+    [[nodiscard]] auto scannedAtIsValid() const -> bool { return m_scanned_at_is_valid; }
 
     void setId(const QString& value);
     void setPassengerId(const QString& value);
@@ -48,6 +71,8 @@ public:
     void setSeatNumber(const QString& value);
     void setIssuedAt(const QDateTime& value);
     void setScannedAt(const QDateTime& value);
+
+    void setBinding(BoardingPassGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -62,12 +87,24 @@ Q_SIGNALS:
     void seatNumberChanged();
     void issuedAtChanged();
     void scannedAtChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void passengerIdIsValidChanged();
+    void gateIdIsValidChanged();
+    void boardingGroupIsValidChanged();
+    void seatNumberIsValidChanged();
+    void issuedAtIsValidChanged();
+    void scannedAtIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_passenger_id;
     QString m_gate_id;
@@ -75,6 +112,18 @@ private:
     QString m_seat_number;
     QDateTime m_issued_at;
     QDateTime m_scanned_at;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    BoardingPassGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_passenger_id_is_valid = false;
+    bool m_gate_id_is_valid = true;
+    bool m_boarding_group_is_valid = false;
+    bool m_seat_number_is_valid = true;
+    bool m_issued_at_is_valid = false;
+    bool m_scanned_at_is_valid = true;
 };
 
 } // namespace muscovite_harbor::passenger_terminal::qml

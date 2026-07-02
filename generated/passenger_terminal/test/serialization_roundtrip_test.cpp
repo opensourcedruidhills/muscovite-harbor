@@ -23,11 +23,11 @@ SCENARIO("Serialization round-trip: Passenger") {
         original.status = "test_" + std::to_string(dist(rng));
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<Passenger>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<Passenger>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -47,11 +47,11 @@ SCENARIO("Serialization round-trip: Gate") {
         original.voyage_id = boost::uuids::to_string(uuid_gen());
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<Gate>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<Gate>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -72,11 +72,11 @@ SCENARIO("Serialization round-trip: BoardingPass") {
         original.scanned_at = {};
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<BoardingPass>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<BoardingPass>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }

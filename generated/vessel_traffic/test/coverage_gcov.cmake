@@ -13,13 +13,13 @@ add_custom_target(coverage-gcov-vessel_traffic
     COMMENT "Collecting gcov coverage for context VesselTraffic"
 )
 
-# Coverage target for entity: TideWindow
-add_custom_target(coverage-gcov-tide_window
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage/tide_window
+# Coverage target for entity: Voyage
+add_custom_target(coverage-gcov-voyage
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage/voyage
     COMMAND gcov -b -c ${CMAKE_BINARY_DIR}/CMakeFiles/*.dir/**/*.gcno
-    COMMAND ${CMAKE_COMMAND} -E echo "gcov coverage collected for TideWindow"
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/coverage/tide_window
-    COMMENT "Collecting gcov coverage for TideWindow"
+    COMMAND ${CMAKE_COMMAND} -E echo "gcov coverage collected for Voyage"
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/coverage/voyage
+    COMMENT "Collecting gcov coverage for Voyage"
 )
 
 # Compiler flags required for gcov instrumentation

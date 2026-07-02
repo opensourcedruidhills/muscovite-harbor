@@ -14,12 +14,12 @@ parameters:
     not_null: true
     description: "Entity identifier"
   - name: user_id
-    pg_type: TEXT
-    dsl_type: String
+    pg_type: UUID
+    dsl_type: UUID
     not_null: true
   - name: role_id
-    pg_type: TEXT
-    dsl_type: String
+    pg_type: UUID
+    dsl_type: UUID
     not_null: true
 
 result_columns:

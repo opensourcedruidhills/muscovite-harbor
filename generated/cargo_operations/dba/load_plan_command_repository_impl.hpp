@@ -8,8 +8,18 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace cargo_operations {
+
+class DbaOperationSpan {
+public:
+    explicit DbaOperationSpan(std::string_view operation) : operation_{operation} {}
+    auto set_status_ok() noexcept -> void {}
+    auto set_error(std::string_view /*message*/) noexcept -> void {}
+private:
+    std::string_view operation_;
+};
 
 /// pqxx-based command repository implementation for LoadPlan aggregate.
 /// Uses embedded SQL constants from cargo_operations_queries.hpp (FTR-1507).
@@ -20,31 +30,49 @@ public:
     explicit LoadPlanCommandRepositoryImpl(Connection& conn) : conn_{conn} {}
 
     auto save(const LoadPlan& entity) -> void override {
+        DbaOperationSpan span("LoadPlanCommandRepositoryImpl::save");
         auto tx = conn_.begin();
         tx.exec_params(queries::LoadPlanUpsert,
-            entity.id, entity.id, entity.voyage_id, entity.created_at, entity.status);
+            entity.id, entity.voyage_id, entity.created_at, entity.status);
         tx.commit();
+        span.set_status_ok();
+    }
+
+    auto update(const LoadPlan& entity) -> void override {
+        DbaOperationSpan span("LoadPlanCommandRepositoryImpl::update");
+        auto tx = conn_.begin();
+        tx.exec_params(queries::LoadPlanUpdate,
+            entity.id, entity.voyage_id, entity.created_at, entity.status);
+        tx.commit();
+        span.set_status_ok();
     }
 
     auto remove(const LoadPlan::Id& id) -> void override {
+        DbaOperationSpan span("LoadPlanCommandRepositoryImpl::remove");
         auto tx = conn_.begin();
         tx.exec_params(queries::LoadPlanDelete, id);
         tx.commit();
+        span.set_status_ok();
     }
 
     [[nodiscard]] auto find_by_id(const LoadPlan::Id& id) -> std::optional<LoadPlan> override {
+        DbaOperationSpan span("LoadPlanCommandRepositoryImpl::find_by_id");
         auto tx = conn_.begin();
         auto result = tx.exec_params(queries::LoadPlanSelectById, id);
         tx.commit();
-        if (result.empty()) { return std::nullopt; }
+        if (result.empty()) {
+            span.set_status_ok();
+            return std::nullopt;
+        }
         const auto& row = result[0];
-        return LoadPlan{
+        auto entity = LoadPlan{
             .id = row[0].as<std::string>(),
-            .id = row[1].as<std::string>(),
-            .voyage_id = row[2].as<std::string>(),
-            .created_at = row[3].as<std::string>(),
-            .status = row[4].as<std::string>(),
-        }; 
+            .voyage_id = row[1].as<boost::uuids::uuid>(),
+            .created_at = row[2].as<muscovite::dba::Timestamp>(),
+            .status = row[3].as<std::string>(),
+        };
+        span.set_status_ok();
+        return entity;
     }
 
 private:

@@ -8,9 +8,9 @@ Dialog {
     id: safetyZoneDialog
     title: qsTr("Edit SafetyZone")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("ZoneCode") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("ZoneCode")
             text: viewModel.zoneCode
             onTextChanged: viewModel.setZoneCode(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.zoneCodeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ZoneName") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.zoneName
             onTextChanged: viewModel.setZoneName(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.zoneNameIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("SecurityLevel") }
         TextField {
@@ -47,13 +65,26 @@ Dialog {
             text: viewModel.securityLevel
             onTextChanged: viewModel.setSecurityLevel(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.securityLevelIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("MaxHazmatClass") }
         SpinBox {
             id: maxHazmatClassField
             from: 0
             to: 999999
             value: viewModel.maxHazmatClass
             onValueChanged: viewModel.setMaxHazmatClass(value)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.maxHazmatClassIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         CheckBox {
@@ -62,9 +93,27 @@ Dialog {
             checked: viewModel.isRestricted
             onCheckedChanged: viewModel.setIsRestricted(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.isRestrictedIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); safetyZoneDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); safetyZoneDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

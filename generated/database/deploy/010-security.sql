@@ -5,236 +5,269 @@ BEGIN;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'vessel_traffic_owner') THEN
-    CREATE ROLE vessel_traffic_owner;
+    CREATE ROLE vessel_traffic_owner NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'vessel_traffic_app') THEN
-    CREATE ROLE vessel_traffic_app LOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'vessel_traffic_readwrite') THEN
+    CREATE ROLE vessel_traffic_readwrite NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'vessel_traffic_readonly') THEN
-    CREATE ROLE vessel_traffic_readonly LOGIN;
+    CREATE ROLE vessel_traffic_readonly NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cargo_operations_owner') THEN
-    CREATE ROLE cargo_operations_owner;
+    CREATE ROLE cargo_operations_owner NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cargo_operations_app') THEN
-    CREATE ROLE cargo_operations_app LOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cargo_operations_readwrite') THEN
+    CREATE ROLE cargo_operations_readwrite NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cargo_operations_readonly') THEN
-    CREATE ROLE cargo_operations_readonly LOGIN;
+    CREATE ROLE cargo_operations_readonly NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'passenger_terminal_owner') THEN
-    CREATE ROLE passenger_terminal_owner;
+    CREATE ROLE passenger_terminal_owner NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'passenger_terminal_app') THEN
-    CREATE ROLE passenger_terminal_app LOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'passenger_terminal_readwrite') THEN
+    CREATE ROLE passenger_terminal_readwrite NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'passenger_terminal_readonly') THEN
-    CREATE ROLE passenger_terminal_readonly LOGIN;
+    CREATE ROLE passenger_terminal_readonly NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'intermodal_transfer_owner') THEN
-    CREATE ROLE intermodal_transfer_owner;
+    CREATE ROLE intermodal_transfer_owner NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'intermodal_transfer_app') THEN
-    CREATE ROLE intermodal_transfer_app LOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'intermodal_transfer_readwrite') THEN
+    CREATE ROLE intermodal_transfer_readwrite NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'intermodal_transfer_readonly') THEN
-    CREATE ROLE intermodal_transfer_readonly LOGIN;
+    CREATE ROLE intermodal_transfer_readonly NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cargo_decomposition_owner') THEN
-    CREATE ROLE cargo_decomposition_owner;
+    CREATE ROLE cargo_decomposition_owner NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cargo_decomposition_app') THEN
-    CREATE ROLE cargo_decomposition_app LOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cargo_decomposition_readwrite') THEN
+    CREATE ROLE cargo_decomposition_readwrite NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cargo_decomposition_readonly') THEN
-    CREATE ROLE cargo_decomposition_readonly LOGIN;
+    CREATE ROLE cargo_decomposition_readonly NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'harbour_control_owner') THEN
-    CREATE ROLE harbour_control_owner;
+    CREATE ROLE harbour_control_owner NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'harbour_control_app') THEN
-    CREATE ROLE harbour_control_app LOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'harbour_control_readwrite') THEN
+    CREATE ROLE harbour_control_readwrite NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'harbour_control_readonly') THEN
-    CREATE ROLE harbour_control_readonly LOGIN;
+    CREATE ROLE harbour_control_readonly NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'security_owner') THEN
-    CREATE ROLE security_owner;
+    CREATE ROLE security_owner NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'security_app') THEN
-    CREATE ROLE security_app LOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'security_readwrite') THEN
+    CREATE ROLE security_readwrite NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'security_readonly') THEN
-    CREATE ROLE security_readonly LOGIN;
+    CREATE ROLE security_readonly NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'spatial_owner') THEN
-    CREATE ROLE spatial_owner;
+    CREATE ROLE spatial_owner NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'spatial_app') THEN
-    CREATE ROLE spatial_app LOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'spatial_readwrite') THEN
+    CREATE ROLE spatial_readwrite NOLOGIN;
   END IF;
 END $$;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'spatial_readonly') THEN
-    CREATE ROLE spatial_readonly LOGIN;
+    CREATE ROLE spatial_readonly NOLOGIN;
   END IF;
 END $$;
 
+GRANT vessel_traffic_owner TO vessel_traffic_readwrite;
+GRANT vessel_traffic_owner TO vessel_traffic_readonly;
+GRANT cargo_operations_owner TO cargo_operations_readwrite;
+GRANT cargo_operations_owner TO cargo_operations_readonly;
+GRANT passenger_terminal_owner TO passenger_terminal_readwrite;
+GRANT passenger_terminal_owner TO passenger_terminal_readonly;
+GRANT intermodal_transfer_owner TO intermodal_transfer_readwrite;
+GRANT intermodal_transfer_owner TO intermodal_transfer_readonly;
+GRANT cargo_decomposition_owner TO cargo_decomposition_readwrite;
+GRANT cargo_decomposition_owner TO cargo_decomposition_readonly;
+GRANT harbour_control_owner TO harbour_control_readwrite;
+GRANT harbour_control_owner TO harbour_control_readonly;
+GRANT security_owner TO security_readwrite;
+GRANT security_owner TO security_readonly;
+GRANT spatial_owner TO spatial_readwrite;
+GRANT spatial_owner TO spatial_readonly;
+
 GRANT ALL ON SCHEMA vessel_traffic TO vessel_traffic_owner;
-GRANT USAGE ON SCHEMA vessel_traffic TO vessel_traffic_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA vessel_traffic TO vessel_traffic_app;
+GRANT USAGE ON SCHEMA vessel_traffic TO vessel_traffic_readwrite;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA vessel_traffic TO vessel_traffic_readwrite;
 GRANT USAGE ON SCHEMA vessel_traffic TO vessel_traffic_readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA vessel_traffic TO vessel_traffic_readonly;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA vessel_traffic TO vessel_traffic_readwrite;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA vessel_traffic TO vessel_traffic_readonly;
 GRANT ALL ON SCHEMA cargo_operations TO cargo_operations_owner;
-GRANT USAGE ON SCHEMA cargo_operations TO cargo_operations_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cargo_operations TO cargo_operations_app;
+GRANT USAGE ON SCHEMA cargo_operations TO cargo_operations_readwrite;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cargo_operations TO cargo_operations_readwrite;
 GRANT USAGE ON SCHEMA cargo_operations TO cargo_operations_readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA cargo_operations TO cargo_operations_readonly;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA cargo_operations TO cargo_operations_readwrite;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA cargo_operations TO cargo_operations_readonly;
 GRANT ALL ON SCHEMA passenger_terminal TO passenger_terminal_owner;
-GRANT USAGE ON SCHEMA passenger_terminal TO passenger_terminal_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA passenger_terminal TO passenger_terminal_app;
+GRANT USAGE ON SCHEMA passenger_terminal TO passenger_terminal_readwrite;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA passenger_terminal TO passenger_terminal_readwrite;
 GRANT USAGE ON SCHEMA passenger_terminal TO passenger_terminal_readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA passenger_terminal TO passenger_terminal_readonly;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA passenger_terminal TO passenger_terminal_readwrite;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA passenger_terminal TO passenger_terminal_readonly;
 GRANT ALL ON SCHEMA intermodal_transfer TO intermodal_transfer_owner;
-GRANT USAGE ON SCHEMA intermodal_transfer TO intermodal_transfer_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA intermodal_transfer TO intermodal_transfer_app;
+GRANT USAGE ON SCHEMA intermodal_transfer TO intermodal_transfer_readwrite;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA intermodal_transfer TO intermodal_transfer_readwrite;
 GRANT USAGE ON SCHEMA intermodal_transfer TO intermodal_transfer_readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA intermodal_transfer TO intermodal_transfer_readonly;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA intermodal_transfer TO intermodal_transfer_readwrite;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA intermodal_transfer TO intermodal_transfer_readonly;
 GRANT ALL ON SCHEMA cargo_decomposition TO cargo_decomposition_owner;
-GRANT USAGE ON SCHEMA cargo_decomposition TO cargo_decomposition_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cargo_decomposition TO cargo_decomposition_app;
+GRANT USAGE ON SCHEMA cargo_decomposition TO cargo_decomposition_readwrite;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA cargo_decomposition TO cargo_decomposition_readwrite;
 GRANT USAGE ON SCHEMA cargo_decomposition TO cargo_decomposition_readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA cargo_decomposition TO cargo_decomposition_readonly;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA cargo_decomposition TO cargo_decomposition_readwrite;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA cargo_decomposition TO cargo_decomposition_readonly;
 GRANT ALL ON SCHEMA harbour_control TO harbour_control_owner;
-GRANT USAGE ON SCHEMA harbour_control TO harbour_control_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA harbour_control TO harbour_control_app;
+GRANT USAGE ON SCHEMA harbour_control TO harbour_control_readwrite;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA harbour_control TO harbour_control_readwrite;
 GRANT USAGE ON SCHEMA harbour_control TO harbour_control_readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA harbour_control TO harbour_control_readonly;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA harbour_control TO harbour_control_readwrite;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA harbour_control TO harbour_control_readonly;
 GRANT ALL ON SCHEMA security TO security_owner;
-GRANT USAGE ON SCHEMA security TO security_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA security TO security_app;
+GRANT USAGE ON SCHEMA security TO security_readwrite;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA security TO security_readwrite;
 GRANT USAGE ON SCHEMA security TO security_readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA security TO security_readonly;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA security TO security_readwrite;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA security TO security_readonly;
 GRANT ALL ON SCHEMA spatial TO spatial_owner;
-GRANT USAGE ON SCHEMA spatial TO spatial_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA spatial TO spatial_app;
+GRANT USAGE ON SCHEMA spatial TO spatial_readwrite;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA spatial TO spatial_readwrite;
 GRANT USAGE ON SCHEMA spatial TO spatial_readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA spatial TO spatial_readonly;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA spatial TO spatial_readwrite;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA spatial TO spatial_readonly;
 
 ALTER DEFAULT PRIVILEGES FOR ROLE vessel_traffic_owner IN SCHEMA vessel_traffic
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO vessel_traffic_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO vessel_traffic_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE vessel_traffic_owner IN SCHEMA vessel_traffic
     GRANT SELECT ON TABLES TO vessel_traffic_readonly;
 ALTER DEFAULT PRIVILEGES FOR ROLE vessel_traffic_owner IN SCHEMA vessel_traffic
-    GRANT USAGE ON SEQUENCES TO vessel_traffic_app;
+    GRANT USAGE ON SEQUENCES TO vessel_traffic_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE cargo_operations_owner IN SCHEMA cargo_operations
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO cargo_operations_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO cargo_operations_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE cargo_operations_owner IN SCHEMA cargo_operations
     GRANT SELECT ON TABLES TO cargo_operations_readonly;
 ALTER DEFAULT PRIVILEGES FOR ROLE cargo_operations_owner IN SCHEMA cargo_operations
-    GRANT USAGE ON SEQUENCES TO cargo_operations_app;
+    GRANT USAGE ON SEQUENCES TO cargo_operations_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE passenger_terminal_owner IN SCHEMA passenger_terminal
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO passenger_terminal_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO passenger_terminal_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE passenger_terminal_owner IN SCHEMA passenger_terminal
     GRANT SELECT ON TABLES TO passenger_terminal_readonly;
 ALTER DEFAULT PRIVILEGES FOR ROLE passenger_terminal_owner IN SCHEMA passenger_terminal
-    GRANT USAGE ON SEQUENCES TO passenger_terminal_app;
+    GRANT USAGE ON SEQUENCES TO passenger_terminal_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE intermodal_transfer_owner IN SCHEMA intermodal_transfer
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO intermodal_transfer_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO intermodal_transfer_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE intermodal_transfer_owner IN SCHEMA intermodal_transfer
     GRANT SELECT ON TABLES TO intermodal_transfer_readonly;
 ALTER DEFAULT PRIVILEGES FOR ROLE intermodal_transfer_owner IN SCHEMA intermodal_transfer
-    GRANT USAGE ON SEQUENCES TO intermodal_transfer_app;
+    GRANT USAGE ON SEQUENCES TO intermodal_transfer_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE cargo_decomposition_owner IN SCHEMA cargo_decomposition
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO cargo_decomposition_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO cargo_decomposition_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE cargo_decomposition_owner IN SCHEMA cargo_decomposition
     GRANT SELECT ON TABLES TO cargo_decomposition_readonly;
 ALTER DEFAULT PRIVILEGES FOR ROLE cargo_decomposition_owner IN SCHEMA cargo_decomposition
-    GRANT USAGE ON SEQUENCES TO cargo_decomposition_app;
+    GRANT USAGE ON SEQUENCES TO cargo_decomposition_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE harbour_control_owner IN SCHEMA harbour_control
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO harbour_control_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO harbour_control_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE harbour_control_owner IN SCHEMA harbour_control
     GRANT SELECT ON TABLES TO harbour_control_readonly;
 ALTER DEFAULT PRIVILEGES FOR ROLE harbour_control_owner IN SCHEMA harbour_control
-    GRANT USAGE ON SEQUENCES TO harbour_control_app;
+    GRANT USAGE ON SEQUENCES TO harbour_control_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE security_owner IN SCHEMA security
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO security_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO security_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE security_owner IN SCHEMA security
     GRANT SELECT ON TABLES TO security_readonly;
 ALTER DEFAULT PRIVILEGES FOR ROLE security_owner IN SCHEMA security
-    GRANT USAGE ON SEQUENCES TO security_app;
+    GRANT USAGE ON SEQUENCES TO security_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE spatial_owner IN SCHEMA spatial
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO spatial_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO spatial_readwrite;
 ALTER DEFAULT PRIVILEGES FOR ROLE spatial_owner IN SCHEMA spatial
     GRANT SELECT ON TABLES TO spatial_readonly;
 ALTER DEFAULT PRIVILEGES FOR ROLE spatial_owner IN SCHEMA spatial
-    GRANT USAGE ON SEQUENCES TO spatial_app;
+    GRANT USAGE ON SEQUENCES TO spatial_readwrite;
 
 COMMIT;

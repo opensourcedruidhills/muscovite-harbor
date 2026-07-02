@@ -3,7 +3,7 @@ BEGIN;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'spatial_owner') THEN
-    CREATE ROLE spatial_owner;
+    CREATE ROLE spatial_owner NOLOGIN;
   END IF;
 END $$;
 
@@ -11,53 +11,27 @@ CREATE SCHEMA IF NOT EXISTS spatial;
 ALTER SCHEMA spatial OWNER TO spatial_owner;
 SET search_path TO spatial, public;
 
-CREATE TYPE spatial.bounding_box AS (
-    min_lat NUMERIC,
-    min_lon NUMERIC,
-    max_lat NUMERIC,
-    max_lon NUMERIC
-);
-
 CREATE TYPE spatial.geo_point AS (
-    latitude NUMERIC,
-    longitude NUMERIC
+    lat double,
+    lon double,
+    alt double
 );
 
-CREATE TABLE spatial.coordinates (
-    id UUID NOT NULL DEFAULT uuidv7(),
-    latitude NUMERIC NOT NULL,
-    longitude NUMERIC NOT NULL,
-    altitude NUMERIC,
-    srid INTEGER,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_by UUID,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_by UUID,
-    CONSTRAINT pk_coordinates PRIMARY KEY (id)
+CREATE TYPE spatial.geo_polygon AS (
+    points TEXT
 );
 
-CREATE TABLE spatial.regions (
-    id UUID NOT NULL DEFAULT uuidv7(),
-    name TEXT NOT NULL,
-    boundary TEXT NOT NULL,
-    center TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_by UUID,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_by UUID,
-    CONSTRAINT pk_regions PRIMARY KEY (id)
+CREATE TYPE spatial.geo_line_string AS (
+    points TEXT
 );
 
-CREATE TABLE spatial.spatial_projections (
-    id UUID NOT NULL DEFAULT uuidv7(),
-    name TEXT NOT NULL,
-    srid INTEGER NOT NULL,
-    definition TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_by UUID,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_by UUID,
-    CONSTRAINT pk_spatial_projections PRIMARY KEY (id)
+CREATE TYPE spatial.geo_region AS (
+    ne TEXT,
+    sw TEXT
+);
+
+CREATE TYPE spatial.geo_crs AS (
+    identifier TEXT
 );
 
 CREATE OR REPLACE FUNCTION spatial.set_updated_at()
@@ -69,23 +43,14 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER trg_coordinates_updated_at
-    BEFORE UPDATE ON spatial.coordinates
-    FOR EACH ROW
-    EXECUTE FUNCTION spatial.set_updated_at();
-
-CREATE TRIGGER trg_regions_updated_at
-    BEFORE UPDATE ON spatial.regions
-    FOR EACH ROW
-    EXECUTE FUNCTION spatial.set_updated_at();
-
-CREATE TRIGGER trg_spatial_projections_updated_at
-    BEFORE UPDATE ON spatial.spatial_projections
-    FOR EACH ROW
-    EXECUTE FUNCTION spatial.set_updated_at();
-
-COMMENT ON TABLE spatial.coordinates IS 'Geographic coordinate with optional altitude and spatial reference.';
-COMMENT ON TABLE spatial.regions IS 'Named geographic region with boundary geometry and optional center point.';
-COMMENT ON TABLE spatial.spatial_projections IS 'Spatial reference system projection definition.';
+COMMENT ON ROLE spatial_owner IS 'Owns schema spatial and manages DDL for generated objects.';
+COMMENT ON ROLE spatial_app IS 'Application runtime role for spatial with generated CRUD and EXECUTE grants.';
+COMMENT ON ROLE spatial_readonly IS 'Read-only access role for spatial with generated SELECT and EXECUTE grants.';
+COMMENT ON FUNCTION spatial.set_updated_at() IS 'Audit trigger function: stamps updated_at on every row modification.';
+COMMENT ON TYPE spatial.geo_point IS 'ISO-6709 geographic point: latitude, longitude, and optional altitude.';
+COMMENT ON TYPE spatial.geo_polygon IS 'Closed polygon encoded as a JSON-encoded list of GeoPoints.';
+COMMENT ON TYPE spatial.geo_line_string IS 'Ordered sequence of GeoPoints forming a line string.';
+COMMENT ON TYPE spatial.geo_region IS 'Axis-aligned bounding region defined by northeast and southwest corners.';
+COMMENT ON TYPE spatial.geo_crs IS 'Coordinate reference system descriptor (ISO-6709 / EPSG registry).';
 
 COMMIT;

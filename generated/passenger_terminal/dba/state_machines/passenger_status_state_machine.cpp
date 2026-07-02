@@ -33,13 +33,13 @@ auto PassengerStatusStateMachine::transition(const std::string& current_state,
 auto PassengerStatusStateMachine::allowed_transitions(const std::string& current_state) const -> std::vector<AllowedTransition> {
     auto result = std::vector<AllowedTransition>{};
     if (current_state == "CHECKED_IN") {
-        result.push_back(AllowedTransition{.to_state = "SECURITY_CLEARED", .event_name = "PassSecurity"});
+        result.push_back(AllowedTransition{.to_state = "SECURITY_CLEARED", .event_name = "PassSecurity", .guard_expression = std::nullopt});
     }
     if (current_state == "SECURITY_CLEARED") {
-        result.push_back(AllowedTransition{.to_state = "BOARDED", .event_name = "BoardVessel"});
+        result.push_back(AllowedTransition{.to_state = "BOARDED", .event_name = "BoardVessel", .guard_expression = std::nullopt});
     }
     if (current_state == "BOARDED") {
-        result.push_back(AllowedTransition{.to_state = "DISEMBARKED", .event_name = "Disembark"});
+        result.push_back(AllowedTransition{.to_state = "DISEMBARKED", .event_name = "Disembark", .guard_expression = std::nullopt});
     }
     return result;
 }

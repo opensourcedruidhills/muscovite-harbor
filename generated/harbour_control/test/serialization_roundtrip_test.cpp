@@ -24,11 +24,11 @@ SCENARIO("Serialization round-trip: SafetyZone") {
         original.is_restricted = (dist(rng) % 2 == 0);
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<SafetyZone>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<SafetyZone>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -50,11 +50,11 @@ SCENARIO("Serialization round-trip: HazmatPermit") {
         original.valid_until = {};
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<HazmatPermit>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<HazmatPermit>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -74,11 +74,11 @@ SCENARIO("Serialization round-trip: InvoiceLine") {
         original.issued_at = {};
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<InvoiceLine>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<InvoiceLine>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }
@@ -101,11 +101,11 @@ SCENARIO("Serialization round-trip: PortCall") {
         original.total_billed = static_cast<double>(dist(rng)) / 100.0;
 
         WHEN("serialized and deserialized") {
-            // auto serialized = serialize(original);
-            // auto deserialized = deserialize<PortCall>(serialized);
+            auto serialized = serialize(original);
+            auto deserialized = deserialize<PortCall>(serialized);
 
             THEN("the deserialized object equals the original") {
-                // CHECK(deserialized == original);
+                CHECK(deserialized == original);
             }
         }
     }

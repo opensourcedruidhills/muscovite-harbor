@@ -20,7 +20,7 @@ message BreakBulkItem {
   string id = 1;
   string container_id = 2;
   string item_type = 3;
-  string weight_kg = 4;
+  string weight_kg = 4; // unit: KILOGRAM
   bool requires_crane = 5;
   google.protobuf.Timestamp created_at = 6;
   optional string created_by = 7;
@@ -33,7 +33,7 @@ message BreakBulkItem {
 message CreateBreakBulkItemRequest {
   string container_id = 1;
   string item_type = 2;
-  string weight_kg = 3;
+  string weight_kg = 3; // unit: KILOGRAM
   bool requires_crane = 4;
   optional string idempotency_key = 5;
 }
@@ -54,7 +54,7 @@ message UpdateBreakBulkItemRequest {
   string id = 1;
   string container_id = 2;
   string item_type = 3;
-  string weight_kg = 4;
+  string weight_kg = 4; // unit: KILOGRAM
   bool requires_crane = 5;
   optional string idempotency_key = 6;
 }

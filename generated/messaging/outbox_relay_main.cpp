@@ -6,15 +6,26 @@
 #include <chrono>
 #include <csignal>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
+#include <optional>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <vector>
 
+#include <sys/select.h>
+
 #include <pqxx/pqxx>
+#include <libpq-fe.h>
 #include <nats/nats.h>
+#include "dlq_router.hpp"
 
 namespace {
+
+using DlqRouter = muscovite_harbor::DlqRouter;
+constexpr std::string_view kOutboxChannel{"muscovite_outbox_inserted"};
 
 std::atomic<bool> running{true};
 
@@ -46,17 +57,39 @@ void signal_handler(int /*signum*/) {
     return result;
 }
 
+[[nodiscard]] auto notification_matches_context(const std::string& payload,
+                                               const std::string& context_name) -> bool {
+    if (payload.empty()) return true;
+    auto key = std::string{"\"schema\":\""} + context_name + "\"";
+    return payload.find(key) != std::string::npos;
+}
+
 struct OutboxRelay {
     std::string context_name;
     std::string nats_subject_prefix;
     std::string db_url;
     std::string nats_url;
-    int poll_interval_ms{100};
+    int poll_interval_ms{30000};
     int batch_size{100};
     int max_retries{5};
     natsConnection* nats_conn_{nullptr};
 
-    void connect_nats() {
+    ~OutboxRelay() { disconnect_nats(); }
+
+    void disconnect_nats() {
+        if (nats_conn_ != nullptr) {
+            natsConnection_Destroy(nats_conn_);
+            nats_conn_ = nullptr;
+        }
+    }
+
+    [[nodiscard]] auto is_nats_connected() const -> bool {
+        return nats_conn_ != nullptr &&
+               natsConnection_Status(nats_conn_) == NATS_CONN_STATUS_CONNECTED;
+    }
+
+    void reconnect_nats() {
+        disconnect_nats();
         natsOptions* opts{nullptr};
         natsOptions_Create(&opts);
         natsOptions_SetURL(opts, nats_url.c_str());
@@ -67,60 +100,161 @@ struct OutboxRelay {
         }
     }
 
-    void poll_and_publish() {
+    void ensure_nats_connection() {
+        if (!is_nats_connected()) {
+            reconnect_nats();
+        }
+    }
+
+    void publish_raw(std::string_view subject, std::string_view payload) {
+        ensure_nats_connection();
+        if (nats_conn_ == nullptr) {
+            throw std::runtime_error("NATS connection handle is null");
+        }
+        auto status = natsConnection_Publish(
+            nats_conn_,
+            std::string{subject}.c_str(),
+            reinterpret_cast<const void*>(payload.data()),
+            static_cast<int>(payload.size()));
+        if (status != NATS_OK) {
+            reconnect_nats();
+            status = natsConnection_Publish(
+                nats_conn_,
+                std::string{subject}.c_str(),
+                reinterpret_cast<const void*>(payload.data()),
+                static_cast<int>(payload.size()));
+            if (status != NATS_OK) {
+                throw std::runtime_error("NATS publish failed after reconnect: " +
+                                         std::string(natsStatus_GetText(status)));
+            }
+        }
+    }
+
+    [[nodiscard]] auto process_batch() -> int {
+        ensure_nats_connection();
         pqxx::connection conn{db_url};
         pqxx::work tx{conn};
 
         auto result = tx.exec_params(
-            "SELECT id, aggregate_type, aggregate_id, event_type, payload, retry_count "
+            "SELECT id, event_type, payload "
             "FROM " + quote_ident(context_name) + ".\"outbox\" "
-            "WHERE processed_at IS NULL ORDER BY created_at LIMIT $1 FOR UPDATE SKIP LOCKED",
+            "WHERE processed_at IS NULL ORDER BY occurred_at LIMIT $1 FOR UPDATE SKIP LOCKED",
             batch_size);
 
+        DlqRouter dlq_router{
+            [this](std::string_view subject, std::string_view payload) {
+                publish_raw(subject, payload);
+            },
+            static_cast<std::uint32_t>(max_retries)
+        };
+
+        auto processed_rows = 0;
+
         for (const auto& row : result) {
-            auto message_id      = row[0].as<std::string>();
-            auto aggregate_type = row[1].as<std::string>();
-            auto aggregate_id   = row[2].as<std::string>();
-            auto event_type     = row[3].as<std::string>();
-            auto payload        = row[4].as<std::string>();
+            auto message_id = row[0].as<std::string>();
+            auto event_type = row[1].as<std::string>();
+            auto payload    = row[2].as<std::string>();
 
-            // Publish to NATS
             auto full_subject = nats_subject_prefix + "." + event_type;
-            auto status = natsConnection_Publish(nats_conn_,
-                full_subject.c_str(),
-                reinterpret_cast<const void*>(payload.data()),
-                static_cast<int>(payload.size()));
-            if (status != NATS_OK) {
-                throw std::runtime_error("NATS publish failed: " + std::string(natsStatus_GetText(status)));
-            }
+            auto delivered = dlq_router.process_with_retry(
+                full_subject, payload,
+                [this, &full_subject](std::string_view candidate_payload) {
+                    publish_raw(full_subject, candidate_payload);
+                });
 
-            // Mark as processed
-            tx.exec_params(
-                "UPDATE " + quote_ident(context_name) + ".\"outbox\" SET processed_at = NOW() WHERE id = $1",
-                message_id);
+            if (delivered) {
+                tx.exec_params(
+                    "UPDATE " + quote_ident(context_name) +
+                    ".\"outbox\" SET processed_at = NOW() WHERE id = $1",
+                    message_id);
+            } else {
+                tx.exec_params(
+                    "UPDATE " + quote_ident(context_name) +
+                    ".\"outbox\" SET processed_at = NOW(), retry_count = retry_count + 1 WHERE id = $1",
+                    message_id);
+            }
+            ++processed_rows;
         }
 
         tx.commit();
+        return processed_rows;
+    }
+
+    void drain_backlog() {
+        while (running.load(std::memory_order_relaxed)) {
+            if (process_batch() == 0) {
+                return;
+            }
+        }
     }
 
     void run() {
-        int consecutive_failures = 0;
+        reconnect_nats();
+        pqxx::connection listen_conn{db_url};
+        pqxx::nontransaction listen_tx{listen_conn};
+        listen_tx.exec(std::string{"LISTEN "} + std::string{kOutboxChannel});
+        drain_backlog();
+
+        auto last_safety_poll = std::chrono::steady_clock::now();
+        auto consecutive_failures = 0;
         while (running.load(std::memory_order_relaxed)) {
+            auto should_drain = false;
             try {
-                poll_and_publish();
+                auto* raw = listen_conn.native_handle();
+                if (raw == nullptr) {
+                    throw std::runtime_error("LISTEN connection handle is null");
+                }
+                auto fd = PQsocket(raw);
+                if (fd >= 0) {
+                    fd_set input_mask;
+                    FD_ZERO(&input_mask);
+                    FD_SET(fd, &input_mask);
+                    timeval timeout{1, 0};
+                    auto ready = select(fd + 1, &input_mask, nullptr, nullptr, &timeout);
+                    if (ready > 0 && FD_ISSET(fd, &input_mask)) {
+                        if (PQconsumeInput(raw) == 0) {
+                            throw std::runtime_error(std::string{"PQconsumeInput failed: "} + PQerrorMessage(raw));
+                        }
+                        while (auto* notify = PQnotifies(raw)) {
+                            auto payload = std::string{};
+                            if (notify->extra != nullptr) {
+                                payload = notify->extra;
+                            }
+                            should_drain = should_drain ||
+                                notification_matches_context(payload, context_name);
+                            PQfreemem(notify);
+                        }
+                    }
+                }
+
+                auto now = std::chrono::steady_clock::now();
+                if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_safety_poll).count() >= poll_interval_ms) {
+                    should_drain = true;
+                    last_safety_poll = now;
+                }
+                if (should_drain) {
+                    drain_backlog();
+                }
                 consecutive_failures = 0;
-            } catch (...) {
+            } catch (const std::exception& ex) {
                 ++consecutive_failures;
                 if (consecutive_failures > max_retries) {
-                    std::cerr << "[" << context_name << "] max retries exceeded, stopping\n";
+                    std::cerr << "[" << context_name
+                              << "] max retries exceeded: " << ex.what() << "\n";
                     return;
                 }
+                reconnect_nats();
                 auto delay = backoff_delay(consecutive_failures, 100, 30000);
                 std::cerr << "[" << context_name << "] retry " << consecutive_failures
-                          << ", backoff " << delay.count() << "ms\n";
+                          << ", backoff " << delay.count() << "ms: " << ex.what() << "\n";
                 std::this_thread::sleep_for(delay);
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds{poll_interval_ms});
+        }
+        if (auto* raw = listen_conn.native_handle(); raw != nullptr) {
+            auto* result = PQexec(raw, "UNLISTEN *");
+            if (result != nullptr) {
+                PQclear(result);
+            }
         }
     }
 };
@@ -133,14 +267,15 @@ auto main() -> int {
 
     auto const db_url   = env_or("DB_URL", "postgresql://localhost:5432/muscovite_harbor");
     auto const nats_url  = env_or("NATS_URL", "nats://localhost:4222");
-    auto const poll_ms   = std::stoi(env_or("POLL_INTERVAL", "100"));
+    auto const poll_ms   = std::stoi(env_or("POLL_INTERVAL", "30000"));
     auto const batch     = std::stoi(env_or("BATCH_SIZE", "100"));
 
     std::cout << "muscovite_harbor outbox relay starting\n";
     std::cout << "  DB_URL:        " << db_url << "\n";
     std::cout << "  NATS_URL:      " << nats_url << "\n";
-    std::cout << "  POLL_INTERVAL: " << poll_ms << "ms\n";
+    std::cout << "  SAFETY_POLL:   " << poll_ms << "ms\n";
     std::cout << "  BATCH_SIZE:    " << batch << "\n";
+    std::cout << "  LISTEN_CHANNEL:" << kOutboxChannel << "\n";
 
     auto relays = std::vector<OutboxRelay>{};
     relays.push_back(OutboxRelay{

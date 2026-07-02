@@ -59,8 +59,8 @@ erDiagram
         Decimal tide_height_metres NOT_NULL
         Decimal available_draft NOT_NULL
     }
-    Voyage ||--o| Vessel : "Voyage"
-    Voyage ||--o| Berth : "Voyage"
+    Voyage ||--o| Vessel : "VoyageToVessel"
+    Voyage ||--o| Berth : "VoyageToBerth"
     PilotAssignment ||--o| Voyage : "PilotAssignment"
     TugBooking ||--o| Voyage : "TugBooking"
     TideWindow ||--o| Berth : "TideWindow"

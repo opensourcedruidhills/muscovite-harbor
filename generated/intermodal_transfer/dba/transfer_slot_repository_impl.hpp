@@ -5,11 +5,23 @@
 
 #include "transfer_slot.hpp"
 #include "intermodal_transfer_queries.hpp"
+#include <algorithm>
+#include <iterator>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace intermodal_transfer {
+
+class DbaOperationSpan {
+public:
+    explicit DbaOperationSpan(std::string_view operation) : operation_{operation} {}
+    auto set_status_ok() noexcept -> void {}
+    auto set_error(std::string_view /*message*/) noexcept -> void {}
+private:
+    std::string_view operation_;
+};
 
 /// Concrete CRTP repository implementation for TransferSlot.
 /// Satisfies RepositoryBase<TransferSlotRepositoryImpl<C>, TransferSlot> contract.
@@ -21,53 +33,77 @@ public:
     explicit TransferSlotRepositoryImpl(Connection& conn) : conn_{conn} {}
 
     auto save(const TransferSlot& entity) -> void {
+        DbaOperationSpan span("TransferSlotRepositoryImpl::save");
         auto tx = conn_.begin();
-        tx.exec_params(queries::TransferSlotInsert, entity.id, entity.id, entity.reference, entity.container_id, entity.transport_mode, entity.scheduled_at, entity.status);
+        tx.exec_params(queries::TransferSlotInsert, entity.id, entity.reference, entity.container_id, entity.transport_mode, entity.scheduled_at, entity.status);
         tx.commit();
+        span.set_status_ok();
     }
 
     auto update(const TransferSlot& entity) -> void {
+        DbaOperationSpan span("TransferSlotRepositoryImpl::update");
         auto tx = conn_.begin();
-        auto result = tx.exec_params(queries::TransferSlotUpdate, entity.id, entity.id, entity.reference, entity.container_id, entity.transport_mode, entity.scheduled_at, entity.status);
+        auto result = tx.exec_params(queries::TransferSlotUpdate, entity.id, entity.reference, entity.container_id, entity.transport_mode, entity.scheduled_at, entity.status);
         if (result.affected_rows() == 0) {
-            throw std::runtime_error(TransferSlot not found:  + entity.id);
+            span.set_error("not found");
+            throw std::runtime_error("TransferSlot not found: " + entity.id);
         }
         tx.commit();
+        span.set_status_ok();
     }
 
     auto remove(const std::string& id) -> void {
+        DbaOperationSpan span("TransferSlotRepositoryImpl::remove");
         auto tx = conn_.begin();
         tx.exec_params(queries::TransferSlotDelete, id);
         tx.commit();
+        span.set_status_ok();
     }
 
     [[nodiscard]] auto find_by_id(const std::string& id) -> std::optional<TransferSlot> {
+        DbaOperationSpan span("TransferSlotRepositoryImpl::find_by_id");
         auto tx = conn_.begin();
         auto result = tx.exec_params(queries::TransferSlotSelectById, id);
         tx.commit();
-        if (result.empty()) { return std::nullopt; }
-        return map_row(result[0]);
+        if (result.empty()) {
+            span.set_status_ok();
+            return std::nullopt;
+        }
+        auto mapped = map_row(result[0]);
+        span.set_status_ok();
+        return mapped;
     }
 
     [[nodiscard]] auto find_all() -> std::vector<TransferSlot> {
+        DbaOperationSpan span("TransferSlotRepositoryImpl::find_all");
         auto tx = conn_.begin();
         auto result = tx.exec(queries::TransferSlotSelectAll);
         tx.commit();
-        auto out = std::vector<TransferSlot>{};
+        auto out = std::vector<TransferSlot>{ };
         out.reserve(result.size());
         for (const auto& row : result) { out.push_back(map_row(row)); }
+        span.set_status_ok();
         return out;
+    }
+
+    /// Filter all entities by a domain specification (in-memory).
+    template<typename Spec>
+    [[nodiscard]] auto filter_by_spec(const Spec& spec) const -> std::vector<TransferSlot> {
+        auto all = find_all();
+        auto result = std::vector<TransferSlot>{};
+        std::copy_if(all.begin(), all.end(), std::back_inserter(result),
+                     [&spec](const TransferSlot& e) { return spec.is_satisfied_by(e); });
+        return result;
     }
 
     [[nodiscard]] auto map_row(const pqxx::row& row) const -> TransferSlot {
         return TransferSlot{
             .id = row[0].as<std::string>(),
-            .id = row[1].as<std::string>(),
-            .reference = row[2].as<std::string>(),
-            .container_id = row[3].as<std::string>(),
-            .transport_mode = row[4].as<std::string>(),
-            .scheduled_at = row[5].as<std::string>(),
-            .status = row[6].as<std::string>(),
+            .reference = row[1].as<std::string>(),
+            .container_id = row[2].as<boost::uuids::uuid>(),
+            .transport_mode = row[3].as<std::string>(),
+            .scheduled_at = row[4].as<muscovite::dba::Timestamp>(),
+            .status = row[5].as<std::string>(),
         };
     }
 

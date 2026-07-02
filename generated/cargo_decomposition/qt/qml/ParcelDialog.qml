@@ -8,9 +8,9 @@ Dialog {
     id: parcelDialog
     title: qsTr("Edit Parcel")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("TrackingNumber") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("TrackingNumber")
             text: viewModel.trackingNumber
             onTextChanged: viewModel.setTrackingNumber(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.trackingNumberIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("PalletId") }
@@ -39,7 +51,14 @@ Dialog {
             text: viewModel.palletId
             onTextChanged: viewModel.setPalletId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.palletIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("WeightKg") }
         DoubleSpinBox {
             id: weightKgField
             from: 0.0
@@ -47,6 +66,12 @@ Dialog {
             stepSize: 0.01
             value: parseFloat(viewModel.weightKg) || 0.0
             onValueChanged: viewModel.setWeightKg(value.toString())
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.weightKgIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("HsCode") }
@@ -56,6 +81,12 @@ Dialog {
             text: viewModel.hsCode
             onTextChanged: viewModel.setHsCode(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.hsCodeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Description") }
         TextField {
@@ -64,9 +95,27 @@ Dialog {
             text: viewModel.description
             onTextChanged: viewModel.setDescription(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.descriptionIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); parcelDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); parcelDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

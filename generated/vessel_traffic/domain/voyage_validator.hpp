@@ -5,7 +5,7 @@
 
 #include "voyage.hpp"
 #include <string>
-#include <vector>
+#include <muscovite/validation/validation_errors.hpp>
 
 namespace vessel_traffic {
 
@@ -14,10 +14,18 @@ namespace vessel_traffic {
 class VoyageValidator {
 public:
     /// Validate cross-field invariants. Returns accumulated error messages.
-    [[nodiscard]] static auto validate(const Voyage& entity) -> std::vector<std::string> {
+    [[nodiscard]] static auto validate(const Voyage& entity) -> muscovite::validation::ValidationErrors {
         (void)entity;
-        return {};
+        auto errors = muscovite::validation::ValidationErrors{};
+        return errors;
     }
+
+    /// REQUIRES: vessel_exists
+    [[nodiscard]] static auto check_vessel_exists(const Voyage& entity) -> bool;
+    /// REQUIRES: voyage_announced
+    [[nodiscard]] static auto check_voyage_announced(const Voyage& entity) -> bool;
+    /// REQUIRES: berth_available
+    [[nodiscard]] static auto check_berth_available(const Voyage& entity) -> bool;
 };
 
 } // namespace vessel_traffic

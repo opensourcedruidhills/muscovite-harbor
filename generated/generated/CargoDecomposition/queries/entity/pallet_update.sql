@@ -1,5 +1,5 @@
 -- MUSCOVITE:SIDECAR:UNMODIFIED
--- MUSCOVITE:QUERY-HASH:d443151ee81e0d66
+-- MUSCOVITE:QUERY-HASH:1351d23ad778eea1
 --  context: CargoDecomposition, entity: Pallet, operation: update
 
-UPDATE cargo_decomposition.pallet SET id = $2, pallet_id = $3, container_id = $4, weight_kg = $5, length_cm = $6, width_cm = $7, height_cm = $8, hs_code = $9 WHERE id = $1
+UPDATE cargo_decomposition.pallet SET pallet_id = $2, container_id = $3, weight_kg = $4, length_cm = $5, width_cm = $6, height_cm = $7, hs_code = $8 WHERE id = $1

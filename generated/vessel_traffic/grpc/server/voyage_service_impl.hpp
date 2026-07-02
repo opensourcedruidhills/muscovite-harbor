@@ -11,251 +11,882 @@
 
 #pragma once
 
+#include <exception>
 #include <grpcpp/grpcpp.h>
 #include <google/protobuf/empty.pb.h>
+#include <string>
+
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+#include <memory>
+#include "grpc/server/auth_interceptor.hpp"
+#include "grpc/server/auth_permission_matrix.hpp"
 
 #include "vessel_traffic/vessel_call_service.grpc.pb.h"
 #include "vessel_traffic/vessel_call_service.pb.h"
-
+#include "vessel_traffic/dba/voyage_repository.hpp"
 #include "vessel_traffic/dba/voyage_command_service.hpp"
 #include "vessel_traffic/dba/voyage_query_service.hpp"
+#include "grpc/client/circuit_breaker.hpp"
+#include "grpc/server/error_mapping.hpp"
+#include "grpc/server/rate_limiter.hpp"
+#include "otel_tracing.hpp"
+
+#include <chrono>
+#include <google/protobuf/timestamp.pb.h>
 
 namespace vessel_traffic {
+
+namespace muscovite_svc_helpers {
+
+[[nodiscard]] inline auto parse_uuid_or_nil(const std::string& s) -> boost::uuids::uuid {
+    if (s.empty()) { return boost::uuids::nil_generator{}(); }
+    try { return boost::uuids::string_generator{}(s); }
+    catch (...) { return boost::uuids::nil_generator{}(); }
+}
+
+[[nodiscard]] inline auto safe_decimal(const std::string& s) -> muscovite::dba::Decimal {
+    return s.empty() ? muscovite::dba::Decimal{0} : muscovite::dba::Decimal{s};
+}
+
+[[nodiscard]] inline auto proto_ts_to_dba(const google::protobuf::Timestamp& ts) -> muscovite::dba::Timestamp {
+    return std::chrono::system_clock::time_point{}
+        + std::chrono::seconds{ts.seconds()}
+        + std::chrono::nanoseconds{ts.nanos()};
+}
+
+inline auto dba_ts_to_proto(google::protobuf::Timestamp* out, const muscovite::dba::Timestamp& ts) -> void {
+    auto epoch = ts.time_since_epoch();
+    auto secs = std::chrono::duration_cast<std::chrono::seconds>(epoch);
+    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(epoch - secs);
+    out->set_seconds(secs.count());
+    out->set_nanos(static_cast<int32_t>(ns.count()));
+}
+
+} // namespace muscovite_svc_helpers
 
 class VoyageServiceImpl final : public vesseltraffic::VoyageService::Service {
 public:
     explicit VoyageServiceImpl(
+            VoyageRepository* repository = nullptr,
             VoyageCommandService* cmd = nullptr,
-            VoyageQueryService* qry = nullptr)
-        : cmd_{cmd}, qry_{qry} {}
+            VoyageQueryService* qry = nullptr,
+            std::shared_ptr<::muscovite_harbor::AuthProvider> auth_provider = nullptr)
+        : repository_{repository}, cmd_{cmd}, qry_{qry}, auth_provider_{auth_provider} {}
 
     ::grpc::Status CreateVoyage(
             ::grpc::ServerContext* context,
             const vesseltraffic::CreateVoyageRequest* request,
             vesseltraffic::CreateVoyageResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("CreateVoyage", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Voyage", ::muscovite_harbor::PermissionAction::Create)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->vessel_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "vessel_id is required");
+        }
+        if (request->voyage_number().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "voyage_number is required");
+        }
+        if (request->cargo_category().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "cargo_category is required");
+        }
+        if (request->status().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "status is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto entity = Voyage{};
+            entity.id = boost::uuids::string_generator{}(generate_uuid());
+            entity.vessel_id = muscovite_svc_helpers::parse_uuid_or_nil(request->vessel_id());
+            entity.berth_id = muscovite_svc_helpers::parse_uuid_or_nil(request->berth_id());
+            entity.voyage_number = request->voyage_number();
+            entity.eta = muscovite_svc_helpers::proto_ts_to_dba(request->eta());
+            entity.ata = muscovite_svc_helpers::proto_ts_to_dba(request->ata());
+            entity.etd = muscovite_svc_helpers::proto_ts_to_dba(request->etd());
+            entity.atd = muscovite_svc_helpers::proto_ts_to_dba(request->atd());
+            entity.cargo_category = request->cargo_category();
+            entity.status = request->status();
+            repository_->save(entity);
+            auto* grpc_entity = response->mutable_voyage();
+            grpc_entity->set_id(boost::uuids::to_string(entity.id));
+            grpc_entity->set_vessel_id(boost::uuids::to_string(entity.vessel_id));
+            grpc_entity->set_berth_id(boost::uuids::to_string(entity.berth_id));
+            grpc_entity->set_voyage_number(entity.voyage_number);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_eta(), entity.eta);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_ata(), entity.ata);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_etd(), entity.etd);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_atd(), entity.atd);
+            grpc_entity->set_cargo_category(entity.cargo_category);
+            grpc_entity->set_status(entity.status);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status GetVoyage(
             ::grpc::ServerContext* context,
             const vesseltraffic::GetVoyageRequest* request,
             vesseltraffic::GetVoyageResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("GetVoyage", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Voyage", ::muscovite_harbor::PermissionAction::Read)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "id is required");
+        }
+        if (request->vessel_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "vessel_id is required");
+        }
+        if (request->voyage_number().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "voyage_number is required");
+        }
+        if (request->cargo_category().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "cargo_category is required");
+        }
+        if (request->status().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "status is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto result = repository_->find_by_id(boost::uuids::string_generator{}(request->id()));
+            if (!result) {
+                circuit_breaker_.record_success();
+                return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "not found");
+            }
+            const auto& entity = *result;
+            auto* grpc_entity = response->mutable_voyage();
+            grpc_entity->set_id(boost::uuids::to_string(entity.id));
+            grpc_entity->set_vessel_id(boost::uuids::to_string(entity.vessel_id));
+            grpc_entity->set_berth_id(boost::uuids::to_string(entity.berth_id));
+            grpc_entity->set_voyage_number(entity.voyage_number);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_eta(), entity.eta);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_ata(), entity.ata);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_etd(), entity.etd);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_atd(), entity.atd);
+            grpc_entity->set_cargo_category(entity.cargo_category);
+            grpc_entity->set_status(entity.status);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status UpdateVoyage(
             ::grpc::ServerContext* context,
             const vesseltraffic::UpdateVoyageRequest* request,
             vesseltraffic::UpdateVoyageResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("UpdateVoyage", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Voyage", ::muscovite_harbor::PermissionAction::Update)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "id is required");
+        }
+        if (request->vessel_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "vessel_id is required");
+        }
+        if (request->voyage_number().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "voyage_number is required");
+        }
+        if (request->cargo_category().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "cargo_category is required");
+        }
+        if (request->status().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "status is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto existing = repository_->find_by_id(boost::uuids::string_generator{}(request->id()));
+            if (!existing) {
+                circuit_breaker_.record_success();
+                return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "not found");
+            }
+            auto entity = *existing;
+            entity.vessel_id = muscovite_svc_helpers::parse_uuid_or_nil(request->vessel_id());
+            entity.berth_id = muscovite_svc_helpers::parse_uuid_or_nil(request->berth_id());
+            entity.voyage_number = request->voyage_number();
+            entity.eta = muscovite_svc_helpers::proto_ts_to_dba(request->eta());
+            entity.ata = muscovite_svc_helpers::proto_ts_to_dba(request->ata());
+            entity.etd = muscovite_svc_helpers::proto_ts_to_dba(request->etd());
+            entity.atd = muscovite_svc_helpers::proto_ts_to_dba(request->atd());
+            entity.cargo_category = request->cargo_category();
+            entity.status = request->status();
+            repository_->update(entity);
+            auto* grpc_entity = response->mutable_voyage();
+            grpc_entity->set_id(boost::uuids::to_string(entity.id));
+            grpc_entity->set_vessel_id(boost::uuids::to_string(entity.vessel_id));
+            grpc_entity->set_berth_id(boost::uuids::to_string(entity.berth_id));
+            grpc_entity->set_voyage_number(entity.voyage_number);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_eta(), entity.eta);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_ata(), entity.ata);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_etd(), entity.etd);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_atd(), entity.atd);
+            grpc_entity->set_cargo_category(entity.cargo_category);
+            grpc_entity->set_status(entity.status);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status DeleteVoyage(
             ::grpc::ServerContext* context,
             const vesseltraffic::DeleteVoyageRequest* request,
             vesseltraffic::DeleteVoyageResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("DeleteVoyage", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Voyage", ::muscovite_harbor::PermissionAction::Delete)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "id is required");
+        }
+        if (request->vessel_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "vessel_id is required");
+        }
+        if (request->voyage_number().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "voyage_number is required");
+        }
+        if (request->cargo_category().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "cargo_category is required");
+        }
+        if (request->status().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "status is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto existing = repository_->find_by_id(boost::uuids::string_generator{}(request->id()));
+            if (!existing) {
+                circuit_breaker_.record_success();
+                return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "not found");
+            }
+            repository_->remove(boost::uuids::string_generator{}(request->id()));
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status ListVoyages(
             ::grpc::ServerContext* context,
             const vesseltraffic::ListVoyagesRequest* request,
             vesseltraffic::ListVoyagesResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("ListVoyages", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Voyage", ::muscovite_harbor::PermissionAction::Read)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            const auto page_size = request->page_size() > 0
+                ? static_cast<std::size_t>(request->page_size()) : std::size_t{50};
+            std::size_t offset = 0;
+            if (!request->page_token().empty()) {
+                try { offset = std::stoull(request->page_token()); } catch (...) {}
+            }
+            const auto all_results = repository_->find_all();
+            const auto total = all_results.size();
+            response->set_total_count(static_cast<int>(total));
+            if (offset > total) offset = 0;
+            const auto end = std::min(offset + page_size, total);
+            for (std::size_t i = offset; i < end; ++i) {
+                const auto& entity = all_results[i];
+                auto* grpc_entity = response->add_items();
+                grpc_entity->set_id(boost::uuids::to_string(entity.id));
+                grpc_entity->set_vessel_id(boost::uuids::to_string(entity.vessel_id));
+                grpc_entity->set_berth_id(boost::uuids::to_string(entity.berth_id));
+                grpc_entity->set_voyage_number(entity.voyage_number);
+                muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_eta(), entity.eta);
+                muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_ata(), entity.ata);
+                muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_etd(), entity.etd);
+                muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_atd(), entity.atd);
+                grpc_entity->set_cargo_category(entity.cargo_category);
+                grpc_entity->set_status(entity.status);
+            }
+            if (end < total) {
+                response->set_next_page_token(std::to_string(end));
+            }
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
+    }
+
+    ::grpc::Status AnnounceVessel(
+            ::grpc::ServerContext* context,
+            const vesseltraffic::AnnounceVesselRequest* request,
+            vesseltraffic::AnnounceVesselResponse* response) override {
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("AnnounceVessel", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
+        }
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Voyage", ::muscovite_harbor::PermissionAction::Update)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "CommandService unavailable");
+        }
+        if (!request->requires_vessel_exists()) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "REQUIRES failed: vessel_exists");
+        }
+
+        const auto id = request->id();
+        const auto vessel_id = request->vessel_id();
+        const auto eta = request->eta();
+        const auto cargo_category = request->cargo_category();
+
+        try {
+            cmd_->announce_vessel(id, vessel_id, eta, cargo_category);
+            response->set_success(true);
+            response->add_emitted_events("VesselAnnounced");
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
+    }
+
+    ::grpc::Status AllocateBerth(
+            ::grpc::ServerContext* context,
+            const vesseltraffic::AllocateBerthRequest* request,
+            vesseltraffic::AllocateBerthResponse* response) override {
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("AllocateBerth", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
+        }
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "Voyage", ::muscovite_harbor::PermissionAction::Update)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "CommandService unavailable");
+        }
+        if (!request->requires_voyage_announced()) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "REQUIRES failed: voyage_announced");
+        }
+        if (!request->requires_berth_available()) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "REQUIRES failed: berth_available");
+        }
+
+        const auto id = request->id();
+        const auto berth_id = request->berth_id();
+
+        try {
+            cmd_->allocate_berth(id, berth_id);
+            response->set_success(true);
+            response->add_emitted_events("BerthAllocated");
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status AddPilotAssignment(
             ::grpc::ServerContext* context,
             const vesseltraffic::AddPilotAssignmentRequest* request,
             vesseltraffic::AddPilotAssignmentResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("AddPilotAssignment", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            auto child_obj = PilotAssignment{};
+            child_obj.id = boost::uuids::string_generator{}(request->id());
+            child_obj.voyage_id = muscovite_svc_helpers::parse_uuid_or_nil(request->voyage_id());
+            child_obj.pilot_name = request->pilot_name();
+            child_obj.pilot_zone = request->pilot_zone();
+            child_obj.boarding_time = muscovite_svc_helpers::proto_ts_to_dba(request->boarding_time());
+            child_obj.disembark_time = muscovite_svc_helpers::proto_ts_to_dba(request->disembark_time());
+            cmd_->add_pilot_assignment(parent_id, child_obj);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status GetPilotAssignment(
             ::grpc::ServerContext* context,
             const vesseltraffic::GetPilotAssignmentRequest* request,
             vesseltraffic::GetPilotAssignmentResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("GetPilotAssignment", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (qry_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            const auto child_id = boost::uuids::string_generator{}(request->id());
+            qry_->find_pilot_assignment_by_id(parent_id, child_id);
+            auto* grpc_entity = response->mutable_pilot_assignment();
+            grpc_entity->set_id(boost::uuids::to_string(result.id));
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status UpdatePilotAssignment(
             ::grpc::ServerContext* context,
             const vesseltraffic::UpdatePilotAssignmentRequest* request,
             vesseltraffic::UpdatePilotAssignmentResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("UpdatePilotAssignment", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            auto child_obj = PilotAssignment{};
+            child_obj.id = boost::uuids::string_generator{}(request->id());
+            child_obj.voyage_id = muscovite_svc_helpers::parse_uuid_or_nil(request->voyage_id());
+            child_obj.pilot_name = request->pilot_name();
+            child_obj.pilot_zone = request->pilot_zone();
+            child_obj.boarding_time = muscovite_svc_helpers::proto_ts_to_dba(request->boarding_time());
+            child_obj.disembark_time = muscovite_svc_helpers::proto_ts_to_dba(request->disembark_time());
+            cmd_->update_pilot_assignment(parent_id, child_obj);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status RemovePilotAssignment(
             ::grpc::ServerContext* context,
             const vesseltraffic::RemovePilotAssignmentRequest* request,
             vesseltraffic::RemovePilotAssignmentResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("RemovePilotAssignment", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            const auto child_id = boost::uuids::string_generator{}(request->id());
+            cmd_->remove_pilot_assignment(parent_id, child_id);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status ListPilotAssignments(
             ::grpc::ServerContext* context,
             const vesseltraffic::ListPilotAssignmentsRequest* request,
             vesseltraffic::ListPilotAssignmentsResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("ListPilotAssignments", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (qry_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            qry_->list_pilot_assignments(parent_id);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status AddTugBooking(
             ::grpc::ServerContext* context,
             const vesseltraffic::AddTugBookingRequest* request,
             vesseltraffic::AddTugBookingResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("AddTugBooking", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            auto child_obj = TugBooking{};
+            child_obj.id = boost::uuids::string_generator{}(request->id());
+            child_obj.voyage_id = muscovite_svc_helpers::parse_uuid_or_nil(request->voyage_id());
+            child_obj.tug_name = request->tug_name();
+            child_obj.bollard_pull_t = muscovite_svc_helpers::safe_decimal(request->bollard_pull_t());
+            child_obj.is_confirmed = request->is_confirmed();
+            cmd_->add_tug_booking(parent_id, child_obj);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status GetTugBooking(
             ::grpc::ServerContext* context,
             const vesseltraffic::GetTugBookingRequest* request,
             vesseltraffic::GetTugBookingResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("GetTugBooking", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (qry_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            const auto child_id = boost::uuids::string_generator{}(request->id());
+            qry_->find_tug_booking_by_id(parent_id, child_id);
+            auto* grpc_entity = response->mutable_tug_booking();
+            grpc_entity->set_id(boost::uuids::to_string(result.id));
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status UpdateTugBooking(
             ::grpc::ServerContext* context,
             const vesseltraffic::UpdateTugBookingRequest* request,
             vesseltraffic::UpdateTugBookingResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("UpdateTugBooking", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            auto child_obj = TugBooking{};
+            child_obj.id = boost::uuids::string_generator{}(request->id());
+            child_obj.voyage_id = muscovite_svc_helpers::parse_uuid_or_nil(request->voyage_id());
+            child_obj.tug_name = request->tug_name();
+            child_obj.bollard_pull_t = muscovite_svc_helpers::safe_decimal(request->bollard_pull_t());
+            child_obj.is_confirmed = request->is_confirmed();
+            cmd_->update_tug_booking(parent_id, child_obj);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status RemoveTugBooking(
             ::grpc::ServerContext* context,
             const vesseltraffic::RemoveTugBookingRequest* request,
             vesseltraffic::RemoveTugBookingResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("RemoveTugBooking", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            const auto child_id = boost::uuids::string_generator{}(request->id());
+            cmd_->remove_tug_booking(parent_id, child_id);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status ListTugBookings(
             ::grpc::ServerContext* context,
             const vesseltraffic::ListTugBookingsRequest* request,
             vesseltraffic::ListTugBookingsResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("ListTugBookings", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (qry_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            qry_->list_tug_bookings(parent_id);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status VesselsByETA(
             ::grpc::ServerContext* context,
             const vesseltraffic::VesselsByETARequest* request,
             vesseltraffic::VesselsByETAResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("VesselsByETA", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
+        if (qry_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+        span.set_status_ok();
         return ::grpc::Status::OK;
     }
 
 private:
+    [[nodiscard]] static auto generate_uuid() -> std::string {
+        boost::uuids::random_generator gen;
+        return boost::uuids::to_string(gen());
+    }
+
+    VoyageRepository* repository_ = nullptr;
     VoyageCommandService* cmd_ = nullptr;
     VoyageQueryService* qry_ = nullptr;
+    std::shared_ptr<::muscovite_harbor::AuthProvider> auth_provider_;
+    ::muscovite_harbor::CircuitBreaker circuit_breaker_;
+    ::muscovite_harbor::PerClientRateLimiter rate_limiter_;
 
 };
 

@@ -12,12 +12,26 @@
 #include "voyage_fk_widget.hpp"
 
 #include <QHBoxLayout>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+#include <spdlog/spdlog.h>
+#include "vessel.grpc.pb.h"
+#include "berth.grpc.pb.h"
 
 namespace muscovite_harbor::widgets {
 
 VoyageFkWidget::VoyageFkWidget(QWidget* parent)
     : QWidget{parent} {
     setupUi();
+    loadVesselOptions();
+    loadBerthOptions();
+}
+
+void VoyageFkWidget::setServerAddress(const QString& address) {
+    if (m_server_address != address) {
+        m_server_address = address;
+        Q_EMIT serverAddressChanged();
+    }
 }
 
 void VoyageFkWidget::setupUi() {
@@ -45,6 +59,46 @@ auto VoyageFkWidget::selectedVessel() const -> QString {
 
 auto VoyageFkWidget::selectedBerth() const -> QString {
     return berth_combo_->currentText();
+}
+
+void VoyageFkWidget::loadVesselOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = VesselService::NewStub(channel_);
+    ListVesselsRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListVesselsResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListVessels(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("VoyageFkWidget::loadVesselOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populateVesselOptions(options);
+}
+
+void VoyageFkWidget::loadBerthOptions() {
+    auto channel_ = grpc::CreateChannel(m_server_address.toStdString(), grpc::InsecureChannelCredentials());
+    auto stub_ = BerthService::NewStub(channel_);
+    ListBerthsRequest request;
+        request.set_page(1);
+        request.set_page_size(100);
+    ListBerthsResponse response;
+    grpc::ClientContext ctx;
+    const auto status = stub_->ListBerths(&ctx, request, &response);
+    if (!status.ok()) {
+        spdlog::warn("VoyageFkWidget::loadBerthOptions failed: {}", status.error_message());
+        return;
+    }
+    QStringList options;
+    for (const auto& item : response.items()) {
+        options.append(QString::fromStdString(item.id()));
+    }
+    populateBerthOptions(options);
 }
 
 void VoyageFkWidget::populateVesselOptions(const QStringList& options) {

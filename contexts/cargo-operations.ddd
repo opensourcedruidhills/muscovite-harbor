@@ -148,9 +148,9 @@ CONTEXT CargoOperations @uuid "bb000020-0001-4000-8000-000000000001"
         crane_id        UUID             @uuid "bb000020-0040-4000-8000-000000000064"
     )
     RELATIONSHIPS {
-        DischargeSequence -> LoadPlan REQUIRED ONE VIA load_plan_id;
-        DischargeSequence -> Container REQUIRED ONE VIA container_id;
-        DischargeSequence -> Crane OPTIONAL ONE VIA crane_id;
+        DSLoadPlan -> LoadPlan REQUIRED ONE VIA load_plan_id;
+        DSContainer -> Container REQUIRED ONE VIA container_id;
+        DSCrane -> Crane OPTIONAL ONE VIA crane_id;
     }
     DOC "Ordered sequence for container discharge";
 

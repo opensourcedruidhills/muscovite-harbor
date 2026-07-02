@@ -7,13 +7,13 @@
 namespace vessel_traffic {
 
 auto AvailableBerthsSpec::is_satisfied_by(const Berth& entity) const -> bool {
-    (void)entity;
-    return false; // No expression defined in DSL
+    // expression: (entity.get_max_draft_metres() >= entity.get_min_draft())
+    return (entity.get_max_draft_metres() >= entity.get_min_draft());
 }
 
 auto VesselsByETASpec::is_satisfied_by(const Voyage& entity) const -> bool {
-    (void)entity;
-    return false; // No expression defined in DSL
+    // expression: entity.get_eta()
+    return entity.get_eta();
 }
 
 } // namespace vessel_traffic

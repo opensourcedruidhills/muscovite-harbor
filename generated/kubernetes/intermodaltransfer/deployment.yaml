@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intermodaltransfer
+  namespace: muscoviteharbor
+  labels:
+    app: intermodaltransfer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: intermodaltransfer
+  template:
+    metadata:
+      labels:
+        app: intermodaltransfer
+    spec:
+      serviceAccountName: intermodaltransfer
+      containers:
+        - name: intermodaltransfer
+          image: intermodaltransfer:latest
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          envFrom:
+            - configMapRef:
+                name: intermodaltransfer-config

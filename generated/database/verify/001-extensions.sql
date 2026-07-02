@@ -3,3 +3,4 @@
 
 DO $$ BEGIN ASSERT (SELECT COUNT(*) FROM pg_extension WHERE extname = 'pgcrypto') = 1, 'Extension pgcrypto not found'; END $$;
 DO $$ BEGIN ASSERT (SELECT COUNT(*) FROM pg_extension WHERE extname = 'pg_uuidv7') = 1, 'Extension pg_uuidv7 not found'; END $$;
+DO $$ BEGIN ASSERT (SELECT COUNT(*) FROM pg_extension WHERE extname = 'uuid-ossp') = 1, 'Extension uuid-ossp not found'; END $$;

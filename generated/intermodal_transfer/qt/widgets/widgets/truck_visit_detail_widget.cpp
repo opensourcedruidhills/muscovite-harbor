@@ -29,21 +29,28 @@ void TruckVisitDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     truck_plate_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("TruckPlate"), truck_plate_value_);
+    section_form_1->addRow(QStringLiteral("TruckPlate"), truck_plate_value_);
     carrier_name_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("CarrierName"), carrier_name_value_);
+    section_form_1->addRow(QStringLiteral("CarrierName"), carrier_name_value_);
     slot_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("SlotId"), slot_id_value_);
+    section_form_1->addRow(QStringLiteral("SlotId"), slot_id_value_);
     arrived_at_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ArrivedAt"), arrived_at_value_);
-    departed_at_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("DepartedAt"), departed_at_value_);
+    section_form_1->addRow(QStringLiteral("ArrivedAt"), arrived_at_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    departed_at_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("DepartedAt"), departed_at_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -72,7 +79,7 @@ void TruckVisitDetailWidget::setDepartedAt(const QDateTime& value) {
 }
 
 void TruckVisitDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

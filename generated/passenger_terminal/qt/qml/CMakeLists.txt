@@ -37,6 +37,7 @@ target_include_directories(passenger_terminal_qml_viewmodels PRIVATE
 
 target_link_libraries(passenger_terminal_qml_viewmodels PUBLIC
     Qt6::Core
+    Qt6::Concurrent
     Qt6::Qml
     Qt6::Quick
     spdlog::spdlog

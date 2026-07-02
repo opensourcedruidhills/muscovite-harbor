@@ -6,7 +6,7 @@
 | Entities | 28 |
 | Domain Events | 18 |
 | Value Objects | 7 |
-| Sagas | 1 |
+| Sagas | 0 |
 | State Machines | 3 |
 
 ## Overview

@@ -24,5 +24,9 @@ service ContainerService {
   rpc UpdateContainer(UpdateContainerRequest) returns (UpdateContainerResponse);
   rpc DeleteContainer(DeleteContainerRequest) returns (DeleteContainerResponse);
   rpc ListContainers(ListContainersRequest) returns (ListContainersResponse);
+
+  // Commands
+  rpc PlaceContainer(PlaceContainerRequest) returns (PlaceContainerResponse);
+  rpc PickContainer(PickContainerRequest) returns (PickContainerResponse);
 }
 

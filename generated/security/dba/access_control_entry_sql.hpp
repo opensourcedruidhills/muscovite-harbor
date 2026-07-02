@@ -18,7 +18,7 @@ inline constexpr std::string_view kInsert =
     "INSERT INTO access_control_entrys (id, principal, resource, permission, effect) VALUES ($1, $2, $3, $4, $5)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE access_control_entrys SET principal = $2, resource = $3, permission = $4, effect = $5 WHERE id = $6";
+    "UPDATE access_control_entrys SET principal = $2, resource = $3, permission = $4, effect = $5 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM access_control_entrys WHERE id = $1";

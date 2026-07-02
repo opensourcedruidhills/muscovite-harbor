@@ -2,24 +2,23 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "passenger_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace passenger_terminal {
 
 auto PassengerRepositoryImpl::insert(pqxx::work& tx, const Passenger& entity) -> void {
     tx.exec_params(kInsert,
         entity.id,
-        entity.id,
         entity.booking_ref,
         entity.passenger_type,
         entity.voyage_id,
-        entity.status,
-    );
+        entity.status);
 }
 
 auto PassengerRepositoryImpl::update(pqxx::work& tx, const Passenger& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
-    params.append(entity.id);
     params.append(entity.id);
     params.append(entity.booking_ref);
     params.append(entity.passenger_type);

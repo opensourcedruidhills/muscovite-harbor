@@ -3,7 +3,7 @@ BEGIN;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'cargo_decomposition_owner') THEN
-    CREATE ROLE cargo_decomposition_owner;
+    CREATE ROLE cargo_decomposition_owner NOLOGIN;
   END IF;
 END $$;
 
@@ -11,9 +11,9 @@ CREATE SCHEMA IF NOT EXISTS cargo_decomposition;
 ALTER SCHEMA cargo_decomposition OWNER TO cargo_decomposition_owner;
 SET search_path TO cargo_decomposition, public;
 
-CREATE DOMAIN cargo_decomposition.pallet_id AS text;
-CREATE DOMAIN cargo_decomposition.tracking_number AS text;
-CREATE DOMAIN cargo_decomposition.hs_code AS text;
+CREATE DOMAIN cargo_decomposition.pallet_id AS TEXT;
+CREATE DOMAIN cargo_decomposition.tracking_number AS TEXT;
+CREATE DOMAIN cargo_decomposition.hs_code AS TEXT;
 
 CREATE TYPE cargo_decomposition.dimensions AS (
     length_cm NUMERIC,
@@ -26,7 +26,7 @@ CREATE TYPE cargo_decomposition.weight AS (
 );
 
 CREATE TABLE cargo_decomposition.pallets (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     pallet_id pallet_id NOT NULL,
     container_id UUID NOT NULL,
     weight_kg NUMERIC NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE cargo_decomposition.pallets (
 );
 
 CREATE TABLE cargo_decomposition.parcels (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     tracking_number tracking_number NOT NULL,
     pallet_id UUID NOT NULL,
     weight_kg NUMERIC NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE cargo_decomposition.parcels (
 );
 
 CREATE TABLE cargo_decomposition.delivery_units (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     tracking_number tracking_number NOT NULL,
     destination TEXT NOT NULL,
     carrier TEXT NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE cargo_decomposition.delivery_units (
 );
 
 CREATE TABLE cargo_decomposition.break_bulk_items (
-    id UUID NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     container_id UUID NOT NULL,
     item_type TEXT NOT NULL,
     weight_kg NUMERIC NOT NULL,
@@ -82,42 +82,71 @@ CREATE TABLE cargo_decomposition.break_bulk_items (
 );
 
 CREATE TABLE cargo_decomposition.outbox (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     aggregate_type TEXT NOT NULL,
     aggregate_id UUID NOT NULL,
     event_type TEXT NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     retry_count INTEGER NOT NULL DEFAULT 0,
+    last_retry_at TIMESTAMPTZ,
     processed_at TIMESTAMPTZ,
     CONSTRAINT pk_outbox PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
-CREATE TABLE outbox_default PARTITION OF outbox DEFAULT;
 
 CREATE TABLE cargo_decomposition.dead_letter_queue (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     original_event_id UUID NOT NULL,
+    aggregate_id UUID,
     event_type TEXT NOT NULL,
-    payload JSONB NOT NULL,
+    payload TEXT NOT NULL,
     error_message TEXT NOT NULL,
     retry_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    failure_reason TEXT NOT NULL DEFAULT '',
     CONSTRAINT pk_dead_letter_queue PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
-CREATE TABLE dead_letter_queue_default PARTITION OF dead_letter_queue DEFAULT;
 
 CREATE TABLE cargo_decomposition.idempotency_keys (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     key TEXT NOT NULL,
+    response JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMPTZ NOT NULL,
-    CONSTRAINT pk_idempotency_keys PRIMARY KEY (key)
+    CONSTRAINT pk_idempotency_keys PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS cargo_decomposition.outbox_y2026_q1 PARTITION OF cargo_decomposition.outbox
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS cargo_decomposition.outbox_y2026_q2 PARTITION OF cargo_decomposition.outbox
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS cargo_decomposition.outbox_y2026_q3 PARTITION OF cargo_decomposition.outbox
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS cargo_decomposition.outbox_y2026_q4 PARTITION OF cargo_decomposition.outbox
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS cargo_decomposition.outbox_default PARTITION OF cargo_decomposition.outbox DEFAULT;
+CREATE TABLE IF NOT EXISTS cargo_decomposition.dead_letter_queue_y2026_q1 PARTITION OF cargo_decomposition.dead_letter_queue
+    FOR VALUES FROM ('2026-01-01') TO ('2026-04-01');
+CREATE TABLE IF NOT EXISTS cargo_decomposition.dead_letter_queue_y2026_q2 PARTITION OF cargo_decomposition.dead_letter_queue
+    FOR VALUES FROM ('2026-04-01') TO ('2026-07-01');
+CREATE TABLE IF NOT EXISTS cargo_decomposition.dead_letter_queue_y2026_q3 PARTITION OF cargo_decomposition.dead_letter_queue
+    FOR VALUES FROM ('2026-07-01') TO ('2026-10-01');
+CREATE TABLE IF NOT EXISTS cargo_decomposition.dead_letter_queue_y2026_q4 PARTITION OF cargo_decomposition.dead_letter_queue
+    FOR VALUES FROM ('2026-10-01') TO ('2027-01-01');
+CREATE TABLE IF NOT EXISTS cargo_decomposition.dead_letter_queue_default PARTITION OF cargo_decomposition.dead_letter_queue DEFAULT;
 
 ALTER TABLE cargo_decomposition.pallets ADD CONSTRAINT uq_pallets_pallet_id UNIQUE (pallet_id);
 ALTER TABLE cargo_decomposition.parcels ADD CONSTRAINT uq_parcels_tracking_number UNIQUE (tracking_number);
+ALTER TABLE cargo_decomposition.idempotency_keys ADD CONSTRAINT uq_idempotency_keys_key UNIQUE (key);
 CREATE INDEX idx_parcels_pallet_id ON cargo_decomposition.parcels USING btree (pallet_id);
 CREATE INDEX idx_delivery_units_tracking_number ON cargo_decomposition.delivery_units USING btree (tracking_number);
-CREATE INDEX idx_outbox_unprocessed ON cargo_decomposition.outbox USING btree (created_at) WHERE processed_at IS NULL;
+CREATE INDEX idx_outbox_created_at ON cargo_decomposition.outbox USING btree (created_at);
+CREATE INDEX idx_dead_letter_queue_created_at ON cargo_decomposition.dead_letter_queue USING btree (created_at);
+CREATE INDEX idx_idempotency_keys_expires_at ON cargo_decomposition.idempotency_keys USING btree (expires_at);
+CREATE INDEX idx_outbox_unprocessed ON cargo_decomposition.outbox USING btree (occurred_at) WHERE processed_at IS NULL;
 
 CREATE OR REPLACE FUNCTION cargo_decomposition.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
@@ -140,7 +169,14 @@ CREATE OR REPLACE FUNCTION cargo_decomposition.notify_outbox_inserted()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
 AS $$
 BEGIN
-  PERFORM pg_notify('outbox_inserted', NEW.aggregate_type);
+  PERFORM pg_notify(
+    'muscovite_outbox_inserted',
+    json_build_object(
+      'schema', TG_TABLE_SCHEMA,
+      'table', TG_TABLE_NAME,
+      'aggregate_type', NEW.aggregate_type
+    )::text
+  );
   RETURN NEW;
 END;
 $$;
@@ -170,15 +206,55 @@ CREATE TRIGGER trg_cargo_decomposition_outbox_notify
     FOR EACH ROW
     EXECUTE FUNCTION cargo_decomposition.notify_outbox_inserted();
 
+CREATE OR REPLACE VIEW cargo_decomposition.domain_events AS
+SELECT id,
+       aggregate_type,
+       aggregate_id,
+       event_type,
+       payload,
+       occurred_at,
+       processed_at,
+       retry_count,
+       last_retry_at,
+       NULL::UUID AS actor_id,
+       NULL::TEXT AS actor_name,
+       created_at
+FROM cargo_decomposition.outbox
+;
+
+CREATE OR REPLACE VIEW cargo_decomposition.domain_events_dlq AS
+SELECT original_event_id AS id,
+       event_type,
+       aggregate_id,
+       payload,
+       occurred_at,
+       retry_count,
+       failed_at,
+       failure_reason
+FROM cargo_decomposition.dead_letter_queue
+;
+
+COMMENT ON ROLE cargo_decomposition_owner IS 'Owns schema cargo_decomposition and manages DDL for generated objects.';
+COMMENT ON ROLE cargo_decomposition_app IS 'Application runtime role for cargo_decomposition with generated CRUD and EXECUTE grants.';
+COMMENT ON ROLE cargo_decomposition_readonly IS 'Read-only access role for cargo_decomposition with generated SELECT and EXECUTE grants.';
+COMMENT ON FUNCTION cargo_decomposition.set_updated_at() IS 'Audit trigger function: stamps updated_at on every row modification.';
+COMMENT ON TRIGGER trg_pallets_updated_at ON cargo_decomposition.pallets IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE cargo_decomposition.pallets IS 'A pallet extracted from a container';
 COMMENT ON COLUMN cargo_decomposition.pallets.weight_kg IS 'unit:KILOGRAM';
 COMMENT ON COLUMN cargo_decomposition.pallets.length_cm IS 'unit:CENTIMETER';
 COMMENT ON COLUMN cargo_decomposition.pallets.width_cm IS 'unit:CENTIMETER';
 COMMENT ON COLUMN cargo_decomposition.pallets.height_cm IS 'unit:CENTIMETER';
+COMMENT ON TRIGGER trg_parcels_updated_at ON cargo_decomposition.parcels IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE cargo_decomposition.parcels IS 'An individual parcel within a pallet';
 COMMENT ON COLUMN cargo_decomposition.parcels.weight_kg IS 'unit:KILOGRAM';
+COMMENT ON TRIGGER trg_delivery_units_updated_at ON cargo_decomposition.delivery_units IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE cargo_decomposition.delivery_units IS 'Last-mile delivery unit dispatched from terminal';
+COMMENT ON TRIGGER trg_break_bulk_items_updated_at ON cargo_decomposition.break_bulk_items IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE cargo_decomposition.break_bulk_items IS 'Non-containerised cargo item requiring special handling';
 COMMENT ON COLUMN cargo_decomposition.break_bulk_items.weight_kg IS 'unit:KILOGRAM';
+COMMENT ON DOMAIN cargo_decomposition.pallet_id IS 'Pallet identifier (e.g. PLT-ABC12345)';
+COMMENT ON DOMAIN cargo_decomposition.tracking_number IS 'Parcel tracking number';
+COMMENT ON DOMAIN cargo_decomposition.hs_code IS 'Harmonised System tariff classification code';
+COMMENT ON TABLE cargo_decomposition.idempotency_keys IS 'Idempotency key store. Expired rows are removed nightly by pg_cron via cleanup_expired_idempotency_keys().';
 
 COMMIT;

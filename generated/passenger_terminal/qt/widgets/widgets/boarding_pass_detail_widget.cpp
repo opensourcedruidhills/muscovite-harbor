@@ -29,23 +29,30 @@ void BoardingPassDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     passenger_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("PassengerId"), passenger_id_value_);
+    section_form_1->addRow(QStringLiteral("PassengerId"), passenger_id_value_);
     gate_id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("GateId"), gate_id_value_);
+    section_form_1->addRow(QStringLiteral("GateId"), gate_id_value_);
     boarding_group_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("BoardingGroup"), boarding_group_value_);
+    section_form_1->addRow(QStringLiteral("BoardingGroup"), boarding_group_value_);
     seat_number_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("SeatNumber"), seat_number_value_);
-    issued_at_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("IssuedAt"), issued_at_value_);
-    scanned_at_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("ScannedAt"), scanned_at_value_);
+    section_form_1->addRow(QStringLiteral("SeatNumber"), seat_number_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("Section 1"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    issued_at_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("IssuedAt"), issued_at_value_);
+    scanned_at_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("ScannedAt"), scanned_at_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Section 2"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -78,7 +85,7 @@ void BoardingPassDetailWidget::setScannedAt(const QDateTime& value) {
 }
 
 void BoardingPassDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

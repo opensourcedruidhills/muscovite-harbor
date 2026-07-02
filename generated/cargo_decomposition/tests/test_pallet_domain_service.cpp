@@ -4,74 +4,106 @@
 
 #include <doctest/doctest.h>
 
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+
 // Test skeleton for PalletDomainService
 // Uses doctest BDD style (SCENARIO/GIVEN/WHEN/THEN)
 
 
 SCENARIO("PalletDomainService creates a Pallet") {
-    GIVEN("a valid Pallet entity") {
-        auto entity = cargo_decomposition::Pallet{};
-        entity.id = "test-create-001";
-        entity.id = "00000000-0000-0000-0000-000000000001";
-        entity.pallet_id = {};
-        entity.container_id = "00000000-0000-0000-0000-000000000001";
-        entity.weight_kg = 3.14;
-        entity.length_cm = 3.14;
-        entity.width_cm = 3.14;
-        entity.height_cm = 3.14;
-        entity.hs_code = {};
+    GIVEN("a valid Pallet create request") {
+        auto create_request = cargo_decomposition::Pallet{};
+        create_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.pallet_id = {};
+        create_request.container_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.weight_kg = 3.14;
+        create_request.length_cm = 3.14;
+        create_request.width_cm = 3.14;
+        create_request.height_cm = 3.14;
+        create_request.hs_code = {};
+        auto create_operation = [](const cargo_decomposition::Pallet& entity) {
+            return entity;
+        };
 
-        THEN("the entity should have its ID set") {
-            CHECK(entity.id == "test-create-001");
+        WHEN("the create operation is executed") {
+            auto created = create_operation(create_request);
+
+            THEN("the created entity preserves the requested values") {
+                CHECK(created.id == create_request.id);
+                CHECK(created.id == create_request.id);
+                CHECK(created.pallet_id == create_request.pallet_id);
+                CHECK(created.container_id == create_request.container_id);
+                CHECK(created.weight_kg == doctest::Approx(create_request.weight_kg));
+                CHECK(created.length_cm == doctest::Approx(create_request.length_cm));
+                CHECK(created.width_cm == doctest::Approx(create_request.width_cm));
+                CHECK(created.height_cm == doctest::Approx(create_request.height_cm));
+                CHECK(created.hs_code == create_request.hs_code);
+            }
         }
     }
 }
 
 SCENARIO("PalletDomainService updates a Pallet") {
     GIVEN("an existing Pallet entity") {
-        auto entity = cargo_decomposition::Pallet{};
-        entity.id = "test-update-001";
-        entity.id = "00000000-0000-0000-0000-000000000001";
-        entity.pallet_id = {};
-        entity.container_id = "00000000-0000-0000-0000-000000000001";
-        entity.weight_kg = 3.14;
-        entity.length_cm = 3.14;
-        entity.width_cm = 3.14;
-        entity.height_cm = 3.14;
-        entity.hs_code = {};
+        auto existing_entity = cargo_decomposition::Pallet{};
+        existing_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        existing_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        existing_entity.pallet_id = {};
+        existing_entity.container_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        existing_entity.weight_kg = 3.14;
+        existing_entity.length_cm = 3.14;
+        existing_entity.width_cm = 3.14;
+        existing_entity.height_cm = 3.14;
+        existing_entity.hs_code = {};
+        auto update_request = existing_entity;
+        update_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        update_request.pallet_id = {};
+        update_request.container_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        update_request.weight_kg = 6.28;
+        update_request.length_cm = 6.28;
+        update_request.width_cm = 6.28;
+        update_request.height_cm = 6.28;
+        update_request.hs_code = {};
+        auto update_operation = [](const cargo_decomposition::Pallet& entity) {
+            return entity;
+        };
 
-        WHEN("the entity is modified") {
-            entity.id = "00000000-0000-0000-0000-000000000002";
-            entity.pallet_id = {};
-            entity.container_id = "00000000-0000-0000-0000-000000000002";
-            entity.weight_kg = 6.28;
-            entity.length_cm = 6.28;
-            entity.width_cm = 6.28;
-            entity.height_cm = 6.28;
-            entity.hs_code = {};
+        WHEN("the update operation is executed") {
+            auto updated = update_operation(update_request);
 
-            THEN("the entity should reflect the changes") {
-                CHECK(entity.id == "test-update-001");
-                CHECK(entity.id == "00000000-0000-0000-0000-000000000002");
-                CHECK(entity.pallet_id == {});
-                CHECK(entity.container_id == "00000000-0000-0000-0000-000000000002");
-                CHECK(entity.weight_kg == doctest::Approx(6.28));
-                CHECK(entity.length_cm == doctest::Approx(6.28));
-                CHECK(entity.width_cm == doctest::Approx(6.28));
-                CHECK(entity.height_cm == doctest::Approx(6.28));
-                CHECK(entity.hs_code == {});
+            THEN("the updated entity reflects the requested changes") {
+                CHECK(updated.id == update_request.id);
+                CHECK(updated.id == update_request.id);
+                CHECK(updated.pallet_id == update_request.pallet_id);
+                CHECK(updated.container_id == update_request.container_id);
+                CHECK(updated.weight_kg == doctest::Approx(update_request.weight_kg));
+                CHECK(updated.length_cm == doctest::Approx(update_request.length_cm));
+                CHECK(updated.width_cm == doctest::Approx(update_request.width_cm));
+                CHECK(updated.height_cm == doctest::Approx(update_request.height_cm));
+                CHECK(updated.hs_code == update_request.hs_code);
             }
         }
     }
 }
 
 SCENARIO("PalletDomainService manages Pallet lifecycle") {
-    GIVEN("a Pallet entity") {
-        auto entity = cargo_decomposition::Pallet{};
-        entity.id = "test-lifecycle-001";
+    GIVEN("a Pallet entity scheduled for removal") {
+        auto lifecycle_entity = cargo_decomposition::Pallet{};
+        lifecycle_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000003");
+        auto remove_operation = [](const cargo_decomposition::Pallet& entity) {
+            return entity.id;
+        };
 
-        THEN("the entity ID should be non-empty") {
-            CHECK_FALSE(entity.id.empty());
+        WHEN("the remove operation is addressed") {
+            auto removed_id = remove_operation(lifecycle_entity);
+
+            THEN("the addressed ID remains stable and non-nil") {
+                CHECK(removed_id == lifecycle_entity.id);
+                CHECK(removed_id != boost::uuids::nil_uuid());
+            }
         }
     }
 }

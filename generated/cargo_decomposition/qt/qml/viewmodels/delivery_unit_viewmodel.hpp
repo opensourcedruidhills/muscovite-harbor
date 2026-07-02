@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/delivery_unit_grpc_binding.hpp"
 
 namespace muscovite_harbor::cargo_decomposition::qml {
 
@@ -27,6 +28,15 @@ class DeliveryUnitViewModel : public QObject {
     Q_PROPERTY(QString destination READ destination WRITE setDestination NOTIFY destinationChanged REQUIRED)
     Q_PROPERTY(QString carrier READ carrier WRITE setCarrier NOTIFY carrierChanged REQUIRED)
     Q_PROPERTY(QDateTime dispatchedAt READ dispatchedAt WRITE setDispatchedAt NOTIFY dispatchedAtChanged)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool trackingNumberIsValid READ trackingNumberIsValid NOTIFY trackingNumberIsValidChanged)
+    Q_PROPERTY(bool destinationIsValid READ destinationIsValid NOTIFY destinationIsValidChanged)
+    Q_PROPERTY(bool carrierIsValid READ carrierIsValid NOTIFY carrierIsValidChanged)
+    Q_PROPERTY(bool dispatchedAtIsValid READ dispatchedAtIsValid NOTIFY dispatchedAtIsValidChanged)
 
 public:
     explicit DeliveryUnitViewModel(QObject* parent = nullptr);
@@ -36,12 +46,23 @@ public:
     [[nodiscard]] auto destination() const -> QString { return m_destination; }
     [[nodiscard]] auto carrier() const -> QString { return m_carrier; }
     [[nodiscard]] auto dispatchedAt() const -> QDateTime { return m_dispatched_at; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto trackingNumberIsValid() const -> bool { return m_tracking_number_is_valid; }
+    [[nodiscard]] auto destinationIsValid() const -> bool { return m_destination_is_valid; }
+    [[nodiscard]] auto carrierIsValid() const -> bool { return m_carrier_is_valid; }
+    [[nodiscard]] auto dispatchedAtIsValid() const -> bool { return m_dispatched_at_is_valid; }
 
     void setId(const QString& value);
     void setTrackingNumber(const QString& value);
     void setDestination(const QString& value);
     void setCarrier(const QString& value);
     void setDispatchedAt(const QDateTime& value);
+
+    void setBinding(DeliveryUnitGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -54,17 +75,37 @@ Q_SIGNALS:
     void destinationChanged();
     void carrierChanged();
     void dispatchedAtChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void trackingNumberIsValidChanged();
+    void destinationIsValidChanged();
+    void carrierIsValidChanged();
+    void dispatchedAtIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_tracking_number;
     QString m_destination;
     QString m_carrier;
     QDateTime m_dispatched_at;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    DeliveryUnitGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_tracking_number_is_valid = false;
+    bool m_destination_is_valid = false;
+    bool m_carrier_is_valid = false;
+    bool m_dispatched_at_is_valid = true;
 };
 
 } // namespace muscovite_harbor::cargo_decomposition::qml

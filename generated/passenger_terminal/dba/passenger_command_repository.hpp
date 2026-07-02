@@ -17,6 +17,7 @@ public:
     virtual ~PassengerCommandRepository() = default;
 
     virtual auto save(const Passenger& entity) -> void = 0;
+    virtual auto update(const Passenger& entity) -> void = 0;
     virtual auto remove(const Passenger::Id& id) -> void = 0;
     [[nodiscard]] virtual auto find_by_id(const Passenger::Id& id) -> std::optional<Passenger> = 0;
 };

@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/chassis_unit_grpc_binding.hpp"
 
 namespace muscovite_harbor::intermodal_transfer::qml {
 
@@ -25,6 +26,14 @@ class ChassisUnitViewModel : public QObject {
     Q_PROPERTY(QString chassisNumber READ chassisNumber WRITE setChassisNumber NOTIFY chassisNumberChanged REQUIRED)
     Q_PROPERTY(QString chassisType READ chassisType WRITE setChassisType NOTIFY chassisTypeChanged REQUIRED)
     Q_PROPERTY(bool isAvailable READ isAvailable WRITE setIsAvailable NOTIFY isAvailableChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool chassisNumberIsValid READ chassisNumberIsValid NOTIFY chassisNumberIsValidChanged)
+    Q_PROPERTY(bool chassisTypeIsValid READ chassisTypeIsValid NOTIFY chassisTypeIsValidChanged)
+    Q_PROPERTY(bool isAvailableIsValid READ isAvailableIsValid NOTIFY isAvailableIsValidChanged)
 
 public:
     explicit ChassisUnitViewModel(QObject* parent = nullptr);
@@ -33,11 +42,21 @@ public:
     [[nodiscard]] auto chassisNumber() const -> QString { return m_chassis_number; }
     [[nodiscard]] auto chassisType() const -> QString { return m_chassis_type; }
     [[nodiscard]] auto isAvailable() const -> bool { return m_is_available; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto chassisNumberIsValid() const -> bool { return m_chassis_number_is_valid; }
+    [[nodiscard]] auto chassisTypeIsValid() const -> bool { return m_chassis_type_is_valid; }
+    [[nodiscard]] auto isAvailableIsValid() const -> bool { return m_is_available_is_valid; }
 
     void setId(const QString& value);
     void setChassisNumber(const QString& value);
     void setChassisType(const QString& value);
     void setIsAvailable(const bool& value);
+
+    void setBinding(ChassisUnitGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -49,16 +68,34 @@ Q_SIGNALS:
     void chassisNumberChanged();
     void chassisTypeChanged();
     void isAvailableChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void chassisNumberIsValidChanged();
+    void chassisTypeIsValidChanged();
+    void isAvailableIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_chassis_number;
     QString m_chassis_type;
     bool m_is_available = false;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    ChassisUnitGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_chassis_number_is_valid = false;
+    bool m_chassis_type_is_valid = false;
+    bool m_is_available_is_valid = true;
 };
 
 } // namespace muscovite_harbor::intermodal_transfer::qml

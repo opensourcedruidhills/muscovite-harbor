@@ -7,7 +7,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Starting infrastructure services..."
 docker compose -f "$SCRIPT_DIR/docker-compose.yml" up -d
 
-echo "Waiting for PostgreSQL..."
-until docker compose -f "$SCRIPT_DIR/docker-compose.yml" exec -T postgres pg_isready -U "${POSTGRES_USER:-muscovite_harbor}" 2>/dev/null; do sleep 1; done
-
 echo "Infrastructure ready."
+
+echo "Starting observability stack..."
+docker compose -f "$SCRIPT_DIR/docker-compose.observability.yml" up -d
+
+# WHY: Wait for Grafana to be ready before Qt WebView connects (#2771)
+_grafana_retries=0
+until curl -sf http://localhost:3000/api/health >/dev/null 2>&1 || [ $_grafana_retries -ge 60 ]; do
+    sleep 2
+    _grafana_retries=$((_grafana_retries + 1))
+done
+echo "Observability stack ready (Grafana: http://localhost:3000)"

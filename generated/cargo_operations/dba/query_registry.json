@@ -1,0 +1,8 @@
+{
+  "context": "CargoOperations",
+  "project": "MuscoviteHarbor",
+  "queries": [
+    {"name": "ContainerStackQueryRepository", "aggregate": "ContainerStack", "spec_count": 0},
+    {"name": "LoadPlanExecutionQueryRepository", "aggregate": "LoadPlanExecution", "spec_count": 0}
+  ]
+}

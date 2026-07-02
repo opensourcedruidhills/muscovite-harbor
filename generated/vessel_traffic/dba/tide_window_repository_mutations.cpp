@@ -2,23 +2,22 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "tide_window_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace vessel_traffic {
 
 auto TideWindowRepositoryImpl::insert(pqxx::work& tx, const TideWindow& entity) -> void {
     tx.exec_params(kInsert,
         entity.id,
-        entity.id,
         entity.berth_id,
         entity.tide_height_metres,
-        entity.available_draft,
-    );
+        entity.available_draft);
 }
 
 auto TideWindowRepositoryImpl::update(pqxx::work& tx, const TideWindow& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
-    params.append(entity.id);
     params.append(entity.id);
     params.append(entity.berth_id);
     params.append(entity.tide_height_metres);

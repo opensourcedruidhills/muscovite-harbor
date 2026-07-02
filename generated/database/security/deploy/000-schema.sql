@@ -3,13 +3,16 @@ BEGIN;
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'security_owner') THEN
-    CREATE ROLE security_owner;
+    CREATE ROLE security_owner NOLOGIN;
   END IF;
 END $$;
 
 CREATE SCHEMA IF NOT EXISTS security;
 ALTER SCHEMA security OWNER TO security_owner;
 SET search_path TO security, public;
+
+CREATE TYPE security.effect AS ENUM ();
+CREATE TYPE security.audit_action AS ENUM ();
 
 CREATE TYPE security.principal AS (
     identifier TEXT
@@ -21,7 +24,7 @@ CREATE TYPE security.resource_identifier AS (
 );
 
 CREATE TABLE security.users (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     username TEXT NOT NULL,
     email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
@@ -34,9 +37,9 @@ CREATE TABLE security.users (
 );
 
 CREATE TABLE security.user_roles (
-    id UUID NOT NULL DEFAULT uuidv7(),
-    user_id TEXT NOT NULL,
-    role_id TEXT NOT NULL,
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
+    user_id UUID NOT NULL,
+    role_id UUID NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by UUID,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -44,8 +47,42 @@ CREATE TABLE security.user_roles (
     CONSTRAINT pk_user_roles PRIMARY KEY (id)
 );
 
+CREATE TABLE security.groups (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by UUID,
+    CONSTRAINT pk_groups PRIMARY KEY (id)
+);
+
+CREATE TABLE security.group_members (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
+    group_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by UUID,
+    CONSTRAINT pk_group_members PRIMARY KEY (id)
+);
+
+CREATE TABLE security.context_privileges (
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
+    context_name TEXT NOT NULL,
+    group_id UUID NOT NULL,
+    privilege TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by UUID,
+    CONSTRAINT pk_context_privileges PRIMARY KEY (id)
+);
+
 CREATE TABLE security.roles (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     name TEXT NOT NULL,
     description TEXT,
     permissions TEXT NOT NULL,
@@ -57,7 +94,7 @@ CREATE TABLE security.roles (
 );
 
 CREATE TABLE security.permissions (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     name TEXT NOT NULL,
     resource TEXT NOT NULL,
     action TEXT NOT NULL,
@@ -69,7 +106,7 @@ CREATE TABLE security.permissions (
 );
 
 CREATE TABLE security.access_control_entries (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     principal TEXT NOT NULL,
     resource TEXT NOT NULL,
     permission TEXT NOT NULL,
@@ -82,7 +119,7 @@ CREATE TABLE security.access_control_entries (
 );
 
 CREATE TABLE security.audit_log_entries (
-    id UUID NOT NULL DEFAULT uuidv7(),
+    id UUID NOT NULL DEFAULT uuid_generate_v7(),
     timestamp TIMESTAMPTZ NOT NULL,
     actor TEXT NOT NULL,
     action TEXT NOT NULL,
@@ -94,6 +131,10 @@ CREATE TABLE security.audit_log_entries (
     updated_by UUID,
     CONSTRAINT pk_audit_log_entries PRIMARY KEY (id)
 );
+
+CREATE INDEX idx_group_members_group_id ON security.group_members USING btree (group_id);
+CREATE INDEX idx_group_members_user_id ON security.group_members USING btree (user_id);
+CREATE INDEX idx_context_privileges_group_id ON security.context_privileges USING btree (group_id);
 
 CREATE OR REPLACE FUNCTION security.set_updated_at()
 RETURNS trigger LANGUAGE plpgsql VOLATILE 
@@ -111,6 +152,21 @@ CREATE TRIGGER trg_users_updated_at
 
 CREATE TRIGGER trg_user_roles_updated_at
     BEFORE UPDATE ON security.user_roles
+    FOR EACH ROW
+    EXECUTE FUNCTION security.set_updated_at();
+
+CREATE TRIGGER trg_groups_updated_at
+    BEFORE UPDATE ON security.groups
+    FOR EACH ROW
+    EXECUTE FUNCTION security.set_updated_at();
+
+CREATE TRIGGER trg_group_members_updated_at
+    BEFORE UPDATE ON security.group_members
+    FOR EACH ROW
+    EXECUTE FUNCTION security.set_updated_at();
+
+CREATE TRIGGER trg_context_privileges_updated_at
+    BEFORE UPDATE ON security.context_privileges
     FOR EACH ROW
     EXECUTE FUNCTION security.set_updated_at();
 
@@ -134,11 +190,37 @@ CREATE TRIGGER trg_audit_log_entries_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION security.set_updated_at();
 
+COMMENT ON ROLE security_owner IS 'Owns schema security and manages DDL for generated objects.';
+COMMENT ON ROLE security_app IS 'Application runtime role for security with generated CRUD and EXECUTE grants.';
+COMMENT ON ROLE security_readonly IS 'Read-only access role for security with generated SELECT and EXECUTE grants.';
+COMMENT ON FUNCTION security.set_updated_at() IS 'Audit trigger function: stamps updated_at on every row modification.';
+COMMENT ON TRIGGER trg_users_updated_at ON security.users IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE security.users IS 'Authenticated user with credential storage.';
+COMMENT ON TRIGGER trg_user_roles_updated_at ON security.user_roles IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE security.user_roles IS 'Join table linking Users to Roles (many-to-many).';
+COMMENT ON TRIGGER trg_groups_updated_at ON security.groups IS 'Audit trigger: stamps updated_at on every row modification.';
+COMMENT ON TABLE security.groups IS 'Named authorization group for role-based access control.';
+COMMENT ON TRIGGER trg_group_members_updated_at ON security.group_members IS 'Audit trigger: stamps updated_at on every row modification.';
+COMMENT ON TABLE security.group_members IS 'Join table linking Users to Groups (many-to-many).';
+COMMENT ON TRIGGER trg_context_privileges_updated_at ON security.context_privileges IS 'Audit trigger: stamps updated_at on every row modification.';
+COMMENT ON TABLE security.context_privileges IS 'Context-scoped privilege granted to a Group.';
+COMMENT ON TRIGGER trg_roles_updated_at ON security.roles IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE security.roles IS 'Named role aggregating a set of permissions.';
+COMMENT ON TRIGGER trg_permissions_updated_at ON security.permissions IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE security.permissions IS 'Fine-grained permission binding a resource to an allowed action.';
+COMMENT ON TRIGGER trg_access_control_entries_updated_at ON security.access_control_entries IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE security.access_control_entries IS 'Single ACL entry: principal + resource + permission + allow/deny effect.';
+COMMENT ON TRIGGER trg_audit_log_entries_updated_at ON security.audit_log_entries IS 'Audit trigger: stamps updated_at on every row modification.';
 COMMENT ON TABLE security.audit_log_entries IS 'Immutable audit trail entry recording who did what to which resource.';
+COMMENT ON TYPE security.principal IS 'Identity of an actor (user, service account, or system).';
+COMMENT ON TYPE security.resource_identifier IS 'Typed reference to a protected resource.';
+
+-- Bootstrap admin principal uses a placeholder Argon2id hash. Rotate it immediately via the generated password-reset flow before first production use.
+INSERT INTO security.users (id, username, email, password_hash, is_active) VALUES (uuid_generate_v5(uuid_ns_dns, 'security.users.bootstrap-admin'), 'bootstrap-admin', 'bootstrap-admin@invalid.local', '$argon2id$v=19$m=65536,t=3,p=4$0123456789abcdef0123456789abcdef$0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', true) ON CONFLICT DO NOTHING;
+INSERT INTO security.groups (id, name, description) VALUES (uuid_generate_v5(uuid_ns_dns, 'security.groups.security.admin'), 'security.admin', 'Bootstrap administrator group for first-login authorization') ON CONFLICT DO NOTHING;
+INSERT INTO security.group_members (id, group_id, user_id) VALUES (uuid_generate_v5(uuid_ns_dns, 'security.group_members.bootstrap-admin.security.admin'), uuid_generate_v5(uuid_ns_dns, 'security.groups.security.admin'), uuid_generate_v5(uuid_ns_dns, 'security.users.bootstrap-admin')) ON CONFLICT DO NOTHING;
+INSERT INTO security.context_privileges (id, context_name, group_id, privilege) VALUES (uuid_generate_v5(uuid_ns_dns, 'security.context_privileges.any.security.admin'), '*', uuid_generate_v5(uuid_ns_dns, 'security.groups.security.admin'), 'admin') ON CONFLICT DO NOTHING;
+INSERT INTO security.roles (id, name, description, permissions) VALUES (uuid_generate_v5(uuid_ns_dns, 'security.roles.security.admin'), 'security.admin', 'Bootstrap administrator role', 'admin:*') ON CONFLICT DO NOTHING;
+INSERT INTO security.user_roles (id, user_id, role_id) VALUES (uuid_generate_v5(uuid_ns_dns, 'security.user_roles.bootstrap-admin.security.admin'), uuid_generate_v5(uuid_ns_dns, 'security.users.bootstrap-admin'), uuid_generate_v5(uuid_ns_dns, 'security.roles.security.admin')) ON CONFLICT DO NOTHING;
 
 COMMIT;

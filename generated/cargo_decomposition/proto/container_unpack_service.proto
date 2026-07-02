@@ -15,30 +15,7 @@ syntax = "proto3";
 package cargodecomposition;
 
 import "pallet.proto";
-import "parcel.proto";
 import "google/protobuf/timestamp.proto";
-
-message AddParcelRequest {
-  string parent_id = 1;
-  string tracking_number = 2;
-  string pallet_id = 3;
-  string weight_kg = 4;
-  string hs_code = 5;
-  string description = 6;
-}
-
-message AddParcelResponse {
-  string id = 1;
-}
-
-message RemoveParcelRequest {
-  string parent_id = 1;
-  string parcel_id = 2;
-}
-
-message RemoveParcelResponse {
-}
-
 
 service PalletService {
   // Root entity operations
@@ -47,12 +24,5 @@ service PalletService {
   rpc UpdatePallet(UpdatePalletRequest) returns (UpdatePalletResponse);
   rpc DeletePallet(DeletePalletRequest) returns (DeletePalletResponse);
   rpc ListPallets(ListPalletsRequest) returns (ListPalletsResponse);
-
-  // Parcel operations
-  rpc AddParcel(AddParcelRequest) returns (AddParcelResponse);
-  rpc GetParcel(GetParcelRequest) returns (GetParcelResponse);
-  rpc UpdateParcel(UpdateParcelRequest) returns (UpdateParcelResponse);
-  rpc RemoveParcel(RemoveParcelRequest) returns (RemoveParcelResponse);
-  rpc ListParcels(ListParcelsRequest) returns (ListParcelsResponse);
 }
 

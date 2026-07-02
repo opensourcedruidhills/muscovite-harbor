@@ -11,167 +11,573 @@
 
 #pragma once
 
+#include <exception>
 #include <grpcpp/grpcpp.h>
 #include <google/protobuf/empty.pb.h>
+#include <string>
+
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+#include <memory>
+#include "grpc/server/auth_interceptor.hpp"
+#include "grpc/server/auth_permission_matrix.hpp"
 
 #include "intermodal_transfer/intermodal_handoff_service.grpc.pb.h"
 #include "intermodal_transfer/intermodal_handoff_service.pb.h"
-
+#include "intermodal_transfer/dba/transfer_slot_repository.hpp"
 #include "intermodal_transfer/dba/transfer_slot_command_service.hpp"
 #include "intermodal_transfer/dba/transfer_slot_query_service.hpp"
+#include "grpc/client/circuit_breaker.hpp"
+#include "grpc/server/error_mapping.hpp"
+#include "grpc/server/rate_limiter.hpp"
+#include "otel_tracing.hpp"
+
+#include <chrono>
+#include <google/protobuf/timestamp.pb.h>
 
 namespace intermodal_transfer {
+
+namespace muscovite_svc_helpers {
+
+[[nodiscard]] inline auto parse_uuid_or_nil(const std::string& s) -> boost::uuids::uuid {
+    if (s.empty()) { return boost::uuids::nil_generator{}(); }
+    try { return boost::uuids::string_generator{}(s); }
+    catch (...) { return boost::uuids::nil_generator{}(); }
+}
+
+[[nodiscard]] inline auto safe_decimal(const std::string& s) -> muscovite::dba::Decimal {
+    return s.empty() ? muscovite::dba::Decimal{0} : muscovite::dba::Decimal{s};
+}
+
+[[nodiscard]] inline auto proto_ts_to_dba(const google::protobuf::Timestamp& ts) -> muscovite::dba::Timestamp {
+    return std::chrono::system_clock::time_point{}
+        + std::chrono::seconds{ts.seconds()}
+        + std::chrono::nanoseconds{ts.nanos()};
+}
+
+inline auto dba_ts_to_proto(google::protobuf::Timestamp* out, const muscovite::dba::Timestamp& ts) -> void {
+    auto epoch = ts.time_since_epoch();
+    auto secs = std::chrono::duration_cast<std::chrono::seconds>(epoch);
+    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(epoch - secs);
+    out->set_seconds(secs.count());
+    out->set_nanos(static_cast<int32_t>(ns.count()));
+}
+
+} // namespace muscovite_svc_helpers
 
 class TransferSlotServiceImpl final : public intermodaltransfer::TransferSlotService::Service {
 public:
     explicit TransferSlotServiceImpl(
+            TransferSlotRepository* repository = nullptr,
             TransferSlotCommandService* cmd = nullptr,
-            TransferSlotQueryService* qry = nullptr)
-        : cmd_{cmd}, qry_{qry} {}
+            TransferSlotQueryService* qry = nullptr,
+            std::shared_ptr<::muscovite_harbor::AuthProvider> auth_provider = nullptr)
+        : repository_{repository}, cmd_{cmd}, qry_{qry}, auth_provider_{auth_provider} {}
 
     ::grpc::Status CreateTransferSlot(
             ::grpc::ServerContext* context,
             const intermodaltransfer::CreateTransferSlotRequest* request,
             intermodaltransfer::CreateTransferSlotResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("CreateTransferSlot", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "TransferSlot", ::muscovite_harbor::PermissionAction::Create)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->container_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "container_id is required");
+        }
+        if (request->transport_mode().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "transport_mode is required");
+        }
+        if (request->status().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "status is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto entity = TransferSlot{};
+            entity.id = boost::uuids::string_generator{}(generate_uuid());
+            entity.reference = SlotReference{request->reference()};
+            entity.container_id = muscovite_svc_helpers::parse_uuid_or_nil(request->container_id());
+            entity.transport_mode = request->transport_mode();
+            entity.scheduled_at = muscovite_svc_helpers::proto_ts_to_dba(request->scheduled_at());
+            entity.status = request->status();
+            repository_->save(entity);
+            auto* grpc_entity = response->mutable_transfer_slot();
+            grpc_entity->set_id(boost::uuids::to_string(entity.id));
+            grpc_entity->set_reference(entity.reference.get());
+            grpc_entity->set_container_id(boost::uuids::to_string(entity.container_id));
+            grpc_entity->set_transport_mode(entity.transport_mode);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_scheduled_at(), entity.scheduled_at);
+            grpc_entity->set_status(entity.status);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status GetTransferSlot(
             ::grpc::ServerContext* context,
             const intermodaltransfer::GetTransferSlotRequest* request,
             intermodaltransfer::GetTransferSlotResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("GetTransferSlot", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "TransferSlot", ::muscovite_harbor::PermissionAction::Read)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "id is required");
+        }
+        if (request->container_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "container_id is required");
+        }
+        if (request->transport_mode().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "transport_mode is required");
+        }
+        if (request->status().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "status is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto result = repository_->find_by_id(boost::uuids::string_generator{}(request->id()));
+            if (!result) {
+                circuit_breaker_.record_success();
+                return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "not found");
+            }
+            const auto& entity = *result;
+            auto* grpc_entity = response->mutable_transfer_slot();
+            grpc_entity->set_id(boost::uuids::to_string(entity.id));
+            grpc_entity->set_reference(entity.reference.get());
+            grpc_entity->set_container_id(boost::uuids::to_string(entity.container_id));
+            grpc_entity->set_transport_mode(entity.transport_mode);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_scheduled_at(), entity.scheduled_at);
+            grpc_entity->set_status(entity.status);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status UpdateTransferSlot(
             ::grpc::ServerContext* context,
             const intermodaltransfer::UpdateTransferSlotRequest* request,
             intermodaltransfer::UpdateTransferSlotResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("UpdateTransferSlot", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "TransferSlot", ::muscovite_harbor::PermissionAction::Update)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "id is required");
+        }
+        if (request->container_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "container_id is required");
+        }
+        if (request->transport_mode().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "transport_mode is required");
+        }
+        if (request->status().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "status is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto existing = repository_->find_by_id(boost::uuids::string_generator{}(request->id()));
+            if (!existing) {
+                circuit_breaker_.record_success();
+                return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "not found");
+            }
+            auto entity = *existing;
+            entity.reference = SlotReference{request->reference()};
+            entity.container_id = muscovite_svc_helpers::parse_uuid_or_nil(request->container_id());
+            entity.transport_mode = request->transport_mode();
+            entity.scheduled_at = muscovite_svc_helpers::proto_ts_to_dba(request->scheduled_at());
+            entity.status = request->status();
+            repository_->update(entity);
+            auto* grpc_entity = response->mutable_transfer_slot();
+            grpc_entity->set_id(boost::uuids::to_string(entity.id));
+            grpc_entity->set_reference(entity.reference.get());
+            grpc_entity->set_container_id(boost::uuids::to_string(entity.container_id));
+            grpc_entity->set_transport_mode(entity.transport_mode);
+            muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_scheduled_at(), entity.scheduled_at);
+            grpc_entity->set_status(entity.status);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status DeleteTransferSlot(
             ::grpc::ServerContext* context,
             const intermodaltransfer::DeleteTransferSlotRequest* request,
             intermodaltransfer::DeleteTransferSlotResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("DeleteTransferSlot", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "TransferSlot", ::muscovite_harbor::PermissionAction::Delete)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (request->id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "id is required");
+        }
+        if (request->container_id().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "container_id is required");
+        }
+        if (request->transport_mode().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "transport_mode is required");
+        }
+        if (request->status().empty()) {
+            return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT, "status is required");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            auto existing = repository_->find_by_id(boost::uuids::string_generator{}(request->id()));
+            if (!existing) {
+                circuit_breaker_.record_success();
+                return ::grpc::Status(::grpc::StatusCode::NOT_FOUND, "not found");
+            }
+            repository_->remove(boost::uuids::string_generator{}(request->id()));
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status ListTransferSlots(
             ::grpc::ServerContext* context,
             const intermodaltransfer::ListTransferSlotsRequest* request,
             intermodaltransfer::ListTransferSlotsResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("ListTransferSlots", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (auth_provider_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "auth provider unavailable");
+        }
+        const auto identity = auth_provider_->verify(*context);
+        if (!identity.has_value()) {
+            return ::grpc::Status(::grpc::StatusCode::UNAUTHENTICATED,
+                                  "invalid or missing token");
+        }
+        if (!::muscovite_harbor::PermissionMatrix::allows_any(identity->roles, "TransferSlot", ::muscovite_harbor::PermissionAction::Read)) {
+            return ::grpc::Status(::grpc::StatusCode::PERMISSION_DENIED,
+                                  "permission denied");
+        }
+        if (repository_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Repository unavailable");
+        }
+        if (!circuit_breaker_.is_available()) {
+            span.set_error("circuit breaker open");
+            return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE, "circuit breaker open");
+        }
+
+        try {
+            const auto page_size = request->page_size() > 0
+                ? static_cast<std::size_t>(request->page_size()) : std::size_t{50};
+            std::size_t offset = 0;
+            if (!request->page_token().empty()) {
+                try { offset = std::stoull(request->page_token()); } catch (...) {}
+            }
+            const auto all_results = repository_->find_all();
+            const auto total = all_results.size();
+            response->set_total_count(static_cast<int>(total));
+            if (offset > total) offset = 0;
+            const auto end = std::min(offset + page_size, total);
+            for (std::size_t i = offset; i < end; ++i) {
+                const auto& entity = all_results[i];
+                auto* grpc_entity = response->add_items();
+                grpc_entity->set_id(boost::uuids::to_string(entity.id));
+                grpc_entity->set_reference(entity.reference.get());
+                grpc_entity->set_container_id(boost::uuids::to_string(entity.container_id));
+                grpc_entity->set_transport_mode(entity.transport_mode);
+                muscovite_svc_helpers::dba_ts_to_proto(grpc_entity->mutable_scheduled_at(), entity.scheduled_at);
+                grpc_entity->set_status(entity.status);
+            }
+            if (end < total) {
+                response->set_next_page_token(std::to_string(end));
+            }
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status AddTruckVisit(
             ::grpc::ServerContext* context,
             const intermodaltransfer::AddTruckVisitRequest* request,
             intermodaltransfer::AddTruckVisitResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("AddTruckVisit", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            auto child_obj = TruckVisit{};
+            child_obj.id = boost::uuids::string_generator{}(request->id());
+            child_obj.truck_plate = TruckPlate{request->truck_plate()};
+            child_obj.carrier_name = request->carrier_name();
+            child_obj.slot_id = muscovite_svc_helpers::parse_uuid_or_nil(request->slot_id());
+            child_obj.arrived_at = muscovite_svc_helpers::proto_ts_to_dba(request->arrived_at());
+            child_obj.departed_at = muscovite_svc_helpers::proto_ts_to_dba(request->departed_at());
+            cmd_->add_truck_visit(parent_id, child_obj);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status GetTruckVisit(
             ::grpc::ServerContext* context,
             const intermodaltransfer::GetTruckVisitRequest* request,
             intermodaltransfer::GetTruckVisitResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("GetTruckVisit", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (qry_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            const auto child_id = boost::uuids::string_generator{}(request->id());
+            qry_->find_truck_visit_by_id(parent_id, child_id);
+            auto* grpc_entity = response->mutable_truck_visit();
+            grpc_entity->set_id(boost::uuids::to_string(result.id));
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status UpdateTruckVisit(
             ::grpc::ServerContext* context,
             const intermodaltransfer::UpdateTruckVisitRequest* request,
             intermodaltransfer::UpdateTruckVisitResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("UpdateTruckVisit", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            auto child_obj = TruckVisit{};
+            child_obj.id = boost::uuids::string_generator{}(request->id());
+            child_obj.truck_plate = TruckPlate{request->truck_plate()};
+            child_obj.carrier_name = request->carrier_name();
+            child_obj.slot_id = muscovite_svc_helpers::parse_uuid_or_nil(request->slot_id());
+            child_obj.arrived_at = muscovite_svc_helpers::proto_ts_to_dba(request->arrived_at());
+            child_obj.departed_at = muscovite_svc_helpers::proto_ts_to_dba(request->departed_at());
+            cmd_->update_truck_visit(parent_id, child_obj);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status RemoveTruckVisit(
             ::grpc::ServerContext* context,
             const intermodaltransfer::RemoveTruckVisitRequest* request,
             intermodaltransfer::RemoveTruckVisitResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (cmd_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(cmd_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("RemoveTruckVisit", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (cmd_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            const auto child_id = boost::uuids::string_generator{}(request->id());
+            cmd_->remove_truck_visit(parent_id, child_id);
+            response->set_success(true);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
     ::grpc::Status ListTruckVisits(
             ::grpc::ServerContext* context,
             const intermodaltransfer::ListTruckVisitsRequest* request,
             intermodaltransfer::ListTruckVisitsResponse* response) override {
-        static_cast<void>(context);
-        static_cast<void>(request);
-        static_cast<void>(response);
-        if (qry_ != nullptr) {
-            // TODO(#1593): map proto payload to domain DTOs before delegation.
-            static_cast<void>(qry_);
+        auto span = ::muscovite_harbor::GrpcMethodSpan::create("ListTruckVisits", context);
+        if (!rate_limiter_.allow_request(context->peer())) {
+            span.set_error("rate limit exceeded");
+            return ::grpc::Status(::grpc::StatusCode::RESOURCE_EXHAUSTED, "rate limit exceeded");
         }
-        return ::grpc::Status::OK;
+        if (qry_ == nullptr) {
+            return ::grpc::Status(::grpc::StatusCode::FAILED_PRECONDITION,
+                                  "Service unavailable");
+        }
+
+        try {
+            const auto parent_id = request->parent_id();
+            qry_->list_truck_visits(parent_id);
+            circuit_breaker_.record_success();
+            span.set_status_ok();
+            return ::grpc::Status::OK;
+        } catch (const std::exception& e) {
+            circuit_breaker_.record_failure();
+            span.set_error(e.what());
+            return ::muscovite_harbor::to_grpc_status(e);
+        }
     }
 
 private:
+    [[nodiscard]] static auto generate_uuid() -> std::string {
+        boost::uuids::random_generator gen;
+        return boost::uuids::to_string(gen());
+    }
+
+    TransferSlotRepository* repository_ = nullptr;
     TransferSlotCommandService* cmd_ = nullptr;
     TransferSlotQueryService* qry_ = nullptr;
+    std::shared_ptr<::muscovite_harbor::AuthProvider> auth_provider_;
+    ::muscovite_harbor::CircuitBreaker circuit_breaker_;
+    ::muscovite_harbor::PerClientRateLimiter rate_limiter_;
 
 };
 

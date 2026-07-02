@@ -29,27 +29,38 @@ void BerthDetailWidget::setupUi() {
     id_label_->setStyleSheet(QStringLiteral("color: gray;"));
     layout->addWidget(id_label_);
 
-    form_ = new QFormLayout;
+    tab_widget_ = new QTabWidget{this};
+    auto* section_widget_1 = new QWidget{tab_widget_};
+    auto* section_form_1 = new QFormLayout{section_widget_1};
     id_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Id"), id_value_);
+    section_form_1->addRow(QStringLiteral("Id"), id_value_);
     code_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Code"), code_value_);
+    section_form_1->addRow(QStringLiteral("Code"), code_value_);
     name_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("Name"), name_value_);
-    max_loa_metres_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("MaxLoaMetres"), max_loa_metres_value_);
-    max_draft_metres_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("MaxDraftMetres"), max_draft_metres_value_);
-    max_beam_metres_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("MaxBeamMetres"), max_beam_metres_value_);
-    has_crane_access_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("HasCraneAccess"), has_crane_access_value_);
-    has_reefer_plugs_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("HasReeferPlugs"), has_reefer_plugs_value_);
+    section_form_1->addRow(QStringLiteral("Name"), name_value_);
     is_active_value_ = new QLabel{this};
-    form_->addRow(QStringLiteral("IsActive"), is_active_value_);
+    section_form_1->addRow(QStringLiteral("IsActive"), is_active_value_);
+    tab_widget_->addTab(section_widget_1, QStringLiteral("General"));
 
-    layout->addLayout(form_);
+    auto* section_widget_2 = new QWidget{tab_widget_};
+    auto* section_form_2 = new QFormLayout{section_widget_2};
+    max_loa_metres_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("MaxLoaMetres"), max_loa_metres_value_);
+    max_draft_metres_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("MaxDraftMetres"), max_draft_metres_value_);
+    max_beam_metres_value_ = new QLabel{this};
+    section_form_2->addRow(QStringLiteral("MaxBeamMetres"), max_beam_metres_value_);
+    tab_widget_->addTab(section_widget_2, QStringLiteral("Max"));
+
+    auto* section_widget_3 = new QWidget{tab_widget_};
+    auto* section_form_3 = new QFormLayout{section_widget_3};
+    has_crane_access_value_ = new QLabel{this};
+    section_form_3->addRow(QStringLiteral("HasCraneAccess"), has_crane_access_value_);
+    has_reefer_plugs_value_ = new QLabel{this};
+    section_form_3->addRow(QStringLiteral("HasReeferPlugs"), has_reefer_plugs_value_);
+    tab_widget_->addTab(section_widget_3, QStringLiteral("Has"));
+
+    layout->addWidget(tab_widget_);
     layout->addStretch();
 }
 
@@ -90,7 +101,7 @@ void BerthDetailWidget::setIsActive(const bool& value) {
 }
 
 void BerthDetailWidget::setEntityId(const QString& id) {
-    id_label_->setText(QStringLiteral("ID: ") + id);
+    id_label_->setText(QStringLiteral("ID: " ) + id);
 }
 
 } // namespace muscovite_harbor::widgets

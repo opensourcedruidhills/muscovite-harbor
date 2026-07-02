@@ -8,9 +8,9 @@ Dialog {
     id: gateDialog
     title: qsTr("Edit Gate")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("Code") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("Code")
             text: viewModel.code
             onTextChanged: viewModel.setCode(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.codeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("Name") }
@@ -39,13 +51,26 @@ Dialog {
             text: viewModel.name
             onTextChanged: viewModel.setName(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.nameIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("Capacity") }
         SpinBox {
             id: capacityField
             from: 0
             to: 999999
             value: viewModel.capacity
             onValueChanged: viewModel.setCapacity(value)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.capacityIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("Status") }
@@ -55,6 +80,12 @@ Dialog {
             text: viewModel.status
             onTextChanged: viewModel.setStatus(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.statusIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("VoyageId") }
         TextField {
@@ -63,9 +94,27 @@ Dialog {
             text: viewModel.voyageId
             onTextChanged: viewModel.setVoyageId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.voyageIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); gateDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); gateDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

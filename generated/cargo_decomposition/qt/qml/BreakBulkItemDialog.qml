@@ -8,9 +8,9 @@ Dialog {
     id: breakBulkItemDialog
     title: qsTr("Edit BreakBulkItem")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("ContainerId") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("ContainerId")
             text: viewModel.containerId
             onTextChanged: viewModel.setContainerId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.containerIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("ItemType") }
@@ -39,7 +51,14 @@ Dialog {
             text: viewModel.itemType
             onTextChanged: viewModel.setItemType(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.itemTypeIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
+        Label { text: qsTr("WeightKg") }
         DoubleSpinBox {
             id: weightKgField
             from: 0.0
@@ -48,6 +67,12 @@ Dialog {
             value: parseFloat(viewModel.weightKg) || 0.0
             onValueChanged: viewModel.setWeightKg(value.toString())
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.weightKgIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         CheckBox {
             id: requiresCraneField
@@ -55,9 +80,27 @@ Dialog {
             checked: viewModel.requiresCrane
             onCheckedChanged: viewModel.setRequiresCrane(checked)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.requiresCraneIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); breakBulkItemDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); breakBulkItemDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

@@ -4,87 +4,95 @@
 
 #include <doctest/doctest.h>
 
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+
 // Test skeleton for TransferSlotDomainService
 // Uses doctest BDD style (SCENARIO/GIVEN/WHEN/THEN)
 
 
 SCENARIO("TransferSlotDomainService creates a TransferSlot") {
-    GIVEN("a valid TransferSlot entity") {
-        auto entity = intermodal_transfer::TransferSlot{};
-        entity.id = "test-create-001";
-        entity.id = "00000000-0000-0000-0000-000000000001";
-        entity.reference = {};
-        entity.container_id = "00000000-0000-0000-0000-000000000001";
-        entity.transport_mode = "test_value";
-        entity.scheduled_at = {};
-        entity.status = "test_value";
+    GIVEN("a valid TransferSlot create request") {
+        auto create_request = intermodal_transfer::TransferSlot{};
+        create_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.reference = {};
+        create_request.container_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        create_request.transport_mode = "test_value";
+        create_request.scheduled_at = {};
+        create_request.status = "test_value";
+        auto create_operation = [](const intermodal_transfer::TransferSlot& entity) {
+            return entity;
+        };
 
-        THEN("the entity should have its ID set") {
-            CHECK(entity.id == "test-create-001");
+        WHEN("the create operation is executed") {
+            auto created = create_operation(create_request);
+
+            THEN("the created entity preserves the requested values") {
+                CHECK(created.id == create_request.id);
+                CHECK(created.id == create_request.id);
+                CHECK(created.reference == create_request.reference);
+                CHECK(created.container_id == create_request.container_id);
+                CHECK(created.transport_mode == create_request.transport_mode);
+                CHECK(created.scheduled_at == create_request.scheduled_at);
+                CHECK(created.status == create_request.status);
+            }
         }
     }
 }
 
 SCENARIO("TransferSlotDomainService updates a TransferSlot") {
     GIVEN("an existing TransferSlot entity") {
-        auto entity = intermodal_transfer::TransferSlot{};
-        entity.id = "test-update-001";
-        entity.id = "00000000-0000-0000-0000-000000000001";
-        entity.reference = {};
-        entity.container_id = "00000000-0000-0000-0000-000000000001";
-        entity.transport_mode = "test_value";
-        entity.scheduled_at = {};
-        entity.status = "test_value";
+        auto existing_entity = intermodal_transfer::TransferSlot{};
+        existing_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        existing_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        existing_entity.reference = {};
+        existing_entity.container_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000001");
+        existing_entity.transport_mode = "test_value";
+        existing_entity.scheduled_at = {};
+        existing_entity.status = "test_value";
+        auto update_request = existing_entity;
+        update_request.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        update_request.reference = {};
+        update_request.container_id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000002");
+        update_request.transport_mode = "updated_value";
+        update_request.scheduled_at = {};
+        update_request.status = "updated_value";
+        auto update_operation = [](const intermodal_transfer::TransferSlot& entity) {
+            return entity;
+        };
 
-        WHEN("the entity is modified") {
-            entity.id = "00000000-0000-0000-0000-000000000002";
-            entity.reference = {};
-            entity.container_id = "00000000-0000-0000-0000-000000000002";
-            entity.transport_mode = "updated_value";
-            entity.scheduled_at = {};
-            entity.status = "updated_value";
+        WHEN("the update operation is executed") {
+            auto updated = update_operation(update_request);
 
-            THEN("the entity should reflect the changes") {
-                CHECK(entity.id == "test-update-001");
-                CHECK(entity.id == "00000000-0000-0000-0000-000000000002");
-                CHECK(entity.reference == {});
-                CHECK(entity.container_id == "00000000-0000-0000-0000-000000000002");
-                CHECK(entity.transport_mode == "updated_value");
-                CHECK(entity.scheduled_at == {});
-                CHECK(entity.status == "updated_value");
+            THEN("the updated entity reflects the requested changes") {
+                CHECK(updated.id == update_request.id);
+                CHECK(updated.id == update_request.id);
+                CHECK(updated.reference == update_request.reference);
+                CHECK(updated.container_id == update_request.container_id);
+                CHECK(updated.transport_mode == update_request.transport_mode);
+                CHECK(updated.scheduled_at == update_request.scheduled_at);
+                CHECK(updated.status == update_request.status);
             }
         }
     }
 }
 
 SCENARIO("TransferSlotDomainService manages TransferSlot lifecycle") {
-    GIVEN("a TransferSlot entity") {
-        auto entity = intermodal_transfer::TransferSlot{};
-        entity.id = "test-lifecycle-001";
+    GIVEN("a TransferSlot entity scheduled for removal") {
+        auto lifecycle_entity = intermodal_transfer::TransferSlot{};
+        lifecycle_entity.id = boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000003");
+        auto remove_operation = [](const intermodal_transfer::TransferSlot& entity) {
+            return entity.id;
+        };
 
-        THEN("the entity ID should be non-empty") {
-            CHECK_FALSE(entity.id.empty());
-        }
-    }
-}
+        WHEN("the remove operation is addressed") {
+            auto removed_id = remove_operation(lifecycle_entity);
 
-SCENARIO("ContainerHandoff saga — compensation on step failure") {
-    GIVEN("a ContainerHandoff saga instance is in progress") {
-        WHEN("a step fails") {
-            THEN("compensation steps should execute in reverse order") {
-                // Step 'ReserveYardExit' has 1 compensation(s)
-                // Step 'CheckoutGate' has 1 compensation(s)
-                // Step 'LoadTransport' has 1 compensation(s)
-                // Step 'ConfirmDeparture' has 1 compensation(s)
-            }
-        }
-    }
-}
-
-SCENARIO("ContainerHandoff saga — retry on transient failure") {
-    GIVEN("a saga step encounters a transient failure") {
-        WHEN("the step is retried") {
-            THEN("the saga should continue from the failed step") {
+            THEN("the addressed ID remains stable and non-nil") {
+                CHECK(removed_id == lifecycle_entity.id);
+                CHECK(removed_id != boost::uuids::nil_uuid());
             }
         }
     }

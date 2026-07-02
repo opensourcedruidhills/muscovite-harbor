@@ -18,7 +18,7 @@ inline constexpr std::string_view kInsert =
     "INSERT INTO audit_log_entrys (id, timestamp, actor, action, resource, details) VALUES ($1, $2, $3, $4, $5, $6)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE audit_log_entrys SET timestamp = $2, actor = $3, action = $4, resource = $5, details = $6 WHERE id = $7";
+    "UPDATE audit_log_entrys SET timestamp = $2, actor = $3, action = $4, resource = $5, details = $6 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM audit_log_entrys WHERE id = $1";

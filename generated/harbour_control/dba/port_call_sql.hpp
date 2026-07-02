@@ -9,16 +9,16 @@ namespace harbour_control {
 
 // SQL constants for table: port_calls
 inline constexpr std::string_view kSelectAll =
-    "SELECT id, id, vessel_name, imo_number, berth_code, arrival_time, departure_time, container_count, hazmat_permits, total_billed FROM port_calls";
+    "SELECT id, vessel_name, imo_number, berth_code, arrival_time, departure_time, container_count, hazmat_permits, total_billed FROM port_calls";
 
 inline constexpr std::string_view kSelectById =
-    "SELECT id, id, vessel_name, imo_number, berth_code, arrival_time, departure_time, container_count, hazmat_permits, total_billed FROM port_calls WHERE id = $1";
+    "SELECT id, vessel_name, imo_number, berth_code, arrival_time, departure_time, container_count, hazmat_permits, total_billed FROM port_calls WHERE id = $1";
 
 inline constexpr std::string_view kInsert =
-    "INSERT INTO port_calls (id, id, vessel_name, imo_number, berth_code, arrival_time, departure_time, container_count, hazmat_permits, total_billed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
+    "INSERT INTO port_calls (id, vessel_name, imo_number, berth_code, arrival_time, departure_time, container_count, hazmat_permits, total_billed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
 
 inline constexpr std::string_view kUpdate =
-    "UPDATE port_calls SET id = $2, vessel_name = $3, imo_number = $4, berth_code = $5, arrival_time = $6, departure_time = $7, container_count = $8, hazmat_permits = $9, total_billed = $10 WHERE id = $11";
+    "UPDATE port_calls SET vessel_name = $2, imo_number = $3, berth_code = $4, arrival_time = $5, departure_time = $6, container_count = $7, hazmat_permits = $8, total_billed = $9 WHERE id = $1";
 
 inline constexpr std::string_view kDelete =
     "DELETE FROM port_calls WHERE id = $1";

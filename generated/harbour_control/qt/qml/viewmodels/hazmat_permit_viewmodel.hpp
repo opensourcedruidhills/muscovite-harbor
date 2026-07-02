@@ -15,6 +15,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/hazmat_permit_grpc_binding.hpp"
 
 namespace muscovite_harbor::harbour_control::qml {
 
@@ -30,6 +31,18 @@ class HazmatPermitViewModel : public QObject {
     Q_PROPERTY(bool approved READ approved WRITE setApproved NOTIFY approvedChanged REQUIRED)
     Q_PROPERTY(QDateTime validFrom READ validFrom WRITE setValidFrom NOTIFY validFromChanged REQUIRED)
     Q_PROPERTY(QDateTime validUntil READ validUntil WRITE setValidUntil NOTIFY validUntilChanged REQUIRED)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool permitNumberIsValid READ permitNumberIsValid NOTIFY permitNumberIsValidChanged)
+    Q_PROPERTY(bool vesselIdIsValid READ vesselIdIsValid NOTIFY vesselIdIsValidChanged)
+    Q_PROPERTY(bool imoClassIsValid READ imoClassIsValid NOTIFY imoClassIsValidChanged)
+    Q_PROPERTY(bool quantityKgIsValid READ quantityKgIsValid NOTIFY quantityKgIsValidChanged)
+    Q_PROPERTY(bool approvedIsValid READ approvedIsValid NOTIFY approvedIsValidChanged)
+    Q_PROPERTY(bool validFromIsValid READ validFromIsValid NOTIFY validFromIsValidChanged)
+    Q_PROPERTY(bool validUntilIsValid READ validUntilIsValid NOTIFY validUntilIsValidChanged)
 
 public:
     explicit HazmatPermitViewModel(QObject* parent = nullptr);
@@ -42,6 +55,18 @@ public:
     [[nodiscard]] auto approved() const -> bool { return m_approved; }
     [[nodiscard]] auto validFrom() const -> QDateTime { return m_valid_from; }
     [[nodiscard]] auto validUntil() const -> QDateTime { return m_valid_until; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto permitNumberIsValid() const -> bool { return m_permit_number_is_valid; }
+    [[nodiscard]] auto vesselIdIsValid() const -> bool { return m_vessel_id_is_valid; }
+    [[nodiscard]] auto imoClassIsValid() const -> bool { return m_imo_class_is_valid; }
+    [[nodiscard]] auto quantityKgIsValid() const -> bool { return m_quantity_kg_is_valid; }
+    [[nodiscard]] auto approvedIsValid() const -> bool { return m_approved_is_valid; }
+    [[nodiscard]] auto validFromIsValid() const -> bool { return m_valid_from_is_valid; }
+    [[nodiscard]] auto validUntilIsValid() const -> bool { return m_valid_until_is_valid; }
 
     void setId(const QString& value);
     void setPermitNumber(const QString& value);
@@ -51,6 +76,8 @@ public:
     void setApproved(const bool& value);
     void setValidFrom(const QDateTime& value);
     void setValidUntil(const QDateTime& value);
+
+    void setBinding(HazmatPermitGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -66,12 +93,25 @@ Q_SIGNALS:
     void approvedChanged();
     void validFromChanged();
     void validUntilChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void permitNumberIsValidChanged();
+    void vesselIdIsValidChanged();
+    void imoClassIsValidChanged();
+    void quantityKgIsValidChanged();
+    void approvedIsValidChanged();
+    void validFromIsValidChanged();
+    void validUntilIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_permit_number;
     QString m_vessel_id;
@@ -80,6 +120,19 @@ private:
     bool m_approved = false;
     QDateTime m_valid_from;
     QDateTime m_valid_until;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    HazmatPermitGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_permit_number_is_valid = false;
+    bool m_vessel_id_is_valid = false;
+    bool m_imo_class_is_valid = true;
+    bool m_quantity_kg_is_valid = false;
+    bool m_approved_is_valid = true;
+    bool m_valid_from_is_valid = false;
+    bool m_valid_until_is_valid = false;
 };
 
 } // namespace muscovite_harbor::harbour_control::qml

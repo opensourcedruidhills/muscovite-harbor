@@ -6,6 +6,7 @@
 #include "passenger.hpp"
 #include "passenger_command_service.hpp"
 #include "passenger_query_service.hpp"
+#include "muscovite/dba/unit_of_work.hpp"
 #include "boarding_pass.hpp"
 #include <memory>
 #include <optional>
@@ -19,9 +20,12 @@ namespace passenger_terminal {
 /// CommandService (writes) and QueryService (reads).
 class PassengerDomainService {
 public:
-    explicit PassengerDomainService(PassengerCommandService& command_service, PassengerQueryService& query_service)
+    explicit PassengerDomainService(PassengerCommandService& command_service, PassengerQueryService& query_service, UnitOfWork& unit_of_work
+    )
         : command_service_{command_service}
-        , query_service_{query_service} {}
+        , query_service_{query_service}
+        , unit_of_work_{unit_of_work}
+        {}
 
     // Command operations (write side)
     auto create(const Passenger& entity) -> void;
@@ -39,6 +43,7 @@ public:
 private:
     PassengerCommandService& command_service_;
     PassengerQueryService& query_service_;
+    UnitOfWork& unit_of_work_;
 };
 
 } // namespace passenger_terminal

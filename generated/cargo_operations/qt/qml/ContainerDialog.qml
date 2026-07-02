@@ -8,9 +8,9 @@ Dialog {
     id: containerDialog
     title: qsTr("Edit Container")
     modal: true
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     required property var viewModel
+    property bool isValid: viewModel.isValid
 
     ColumnLayout {
         anchors.fill: parent
@@ -23,6 +23,12 @@ Dialog {
             text: viewModel.id
             onTextChanged: viewModel.setId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.idIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("ContainerNumber") }
         TextField {
@@ -30,6 +36,12 @@ Dialog {
             placeholderText: qsTr("ContainerNumber")
             text: viewModel.containerNumber
             onTextChanged: viewModel.setContainerNumber(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.containerNumberIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("SizeCategory") }
@@ -39,6 +51,12 @@ Dialog {
             text: viewModel.sizeCategory
             onTextChanged: viewModel.setSizeCategory(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.sizeCategoryIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("HazmatClass") }
         TextField {
@@ -46,6 +64,12 @@ Dialog {
             placeholderText: qsTr("HazmatClass")
             text: viewModel.hazmatClass
             onTextChanged: viewModel.setHazmatClass(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.hazmatClassIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("VoyageId") }
@@ -55,6 +79,12 @@ Dialog {
             text: viewModel.voyageId
             onTextChanged: viewModel.setVoyageId(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.voyageIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
         Label { text: qsTr("YardSlotId") }
         TextField {
@@ -62,6 +92,12 @@ Dialog {
             placeholderText: qsTr("YardSlotId")
             text: viewModel.yardSlotId
             onTextChanged: viewModel.setYardSlotId(text)
+        }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.yardSlotIdIsValid
+            color: "red"
+            wrapMode: Text.Wrap
         }
 
         Label { text: qsTr("Status") }
@@ -71,9 +107,27 @@ Dialog {
             text: viewModel.status
             onTextChanged: viewModel.setStatus(text)
         }
+        Label {
+            text: viewModel.errorMessage
+            visible: !viewModel.statusIsValid
+            color: "red"
+            wrapMode: Text.Wrap
+        }
 
     }
 
-    onAccepted: viewModel.save()
+    footer: RowLayout {
+        spacing: 8
+        Button {
+            text: qsTr("OK")
+            enabled: isValid
+            onClicked: { viewModel.save(); containerDialog.close() }
+        }
+        Button {
+            text: qsTr("Cancel")
+            onClicked: { viewModel.cancelRequests(); containerDialog.close() }
+        }
+    }
+    onRejected: viewModel.cancelRequests()
 }
 

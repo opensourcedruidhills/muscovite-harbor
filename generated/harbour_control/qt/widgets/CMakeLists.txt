@@ -14,6 +14,7 @@ add_library(harbour_control-qt-models
 target_link_libraries(harbour_control-qt-models PUBLIC
     Qt6::Core
     Qt6::Gui
+    gRPC::grpc++
 )
 
 add_library(harbour_control-qt-widgets
@@ -35,6 +36,7 @@ target_link_libraries(harbour_control-qt-widgets PUBLIC
     harbour_control-qt-models
     Qt6::Core
     Qt6::Gui
+    Qt6::Concurrent
     Qt6::Widgets
 )
 

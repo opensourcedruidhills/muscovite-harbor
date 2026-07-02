@@ -15,13 +15,6 @@ graph TB
     cargo_decomposition["CargoDecomposition"]
     harbour_control["HarbourControl"]
 
-    vessel_traffic -->|"VesselArrivalSequence"| vessel_traffic
-    vessel_traffic -->|"VesselArrivalSequence"| vessel_traffic
-    vessel_traffic -->|"VesselArrivalSequence"| cargo_operations
-    cargo_operations -->|"VesselArrivalSequence"| passenger_terminal
-    cargo_operations -->|"ContainerDischargeSequence"| cargo_operations
-    cargo_operations -->|"ContainerDischargeSequence"| harbour_control
-    harbour_control -->|"ContainerDischargeSequence"| intermodal_transfer
 ```
 
 ## Data Flow

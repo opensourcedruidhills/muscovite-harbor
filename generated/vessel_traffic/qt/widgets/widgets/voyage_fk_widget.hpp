@@ -25,10 +25,14 @@ class VoyageFkWidget : public QWidget {
 public:
     explicit VoyageFkWidget(QWidget* parent = nullptr);
 
+    [[nodiscard]] auto serverAddress() const -> QString { return m_server_address; }
+    void setServerAddress(const QString& address);
+
     [[nodiscard]] auto selectedVessel() const -> QString;
     [[nodiscard]] auto selectedBerth() const -> QString;
 
 Q_SIGNALS:
+    void serverAddressChanged();
     void vesselChanged(const QString& id);
     void berthChanged(const QString& id);
 
@@ -38,7 +42,10 @@ public Q_SLOTS:
 
 private:
     void setupUi();
+    void loadVesselOptions();
+    void loadBerthOptions();
 
+    QString m_server_address = QStringLiteral("localhost:50051");
     QComboBox* vessel_combo_ = nullptr;
     QComboBox* berth_combo_ = nullptr;
 };

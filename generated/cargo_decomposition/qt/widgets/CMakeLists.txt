@@ -16,6 +16,7 @@ add_library(cargo_decomposition-qt-models
 target_link_libraries(cargo_decomposition-qt-models PUBLIC
     Qt6::Core
     Qt6::Gui
+    gRPC::grpc++
 )
 
 add_library(cargo_decomposition-qt-widgets
@@ -41,6 +42,7 @@ target_link_libraries(cargo_decomposition-qt-widgets PUBLIC
     cargo_decomposition-qt-models
     Qt6::Core
     Qt6::Gui
+    Qt6::Concurrent
     Qt6::Widgets
 )
 

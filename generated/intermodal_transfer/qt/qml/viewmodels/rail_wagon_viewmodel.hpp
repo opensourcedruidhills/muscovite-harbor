@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QString>
 #include <QtQml/qqmlregistration.h>
+#include "viewmodels/rail_wagon_grpc_binding.hpp"
 
 namespace muscovite_harbor::intermodal_transfer::qml {
 
@@ -25,6 +26,14 @@ class RailWagonViewModel : public QObject {
     Q_PROPERTY(QString wagonNumber READ wagonNumber WRITE setWagonNumber NOTIFY wagonNumberChanged REQUIRED)
     Q_PROPERTY(QString maxWeightKg READ maxWeightKg WRITE setMaxWeightKg NOTIFY maxWeightKgChanged REQUIRED)
     Q_PROPERTY(QString slotId READ slotId WRITE setSlotId NOTIFY slotIdChanged)
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(QString id READ id NOTIFY idChanged)
+    Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+    Q_PROPERTY(bool idIsValid READ idIsValid NOTIFY idIsValidChanged)
+    Q_PROPERTY(bool wagonNumberIsValid READ wagonNumberIsValid NOTIFY wagonNumberIsValidChanged)
+    Q_PROPERTY(bool maxWeightKgIsValid READ maxWeightKgIsValid NOTIFY maxWeightKgIsValidChanged)
+    Q_PROPERTY(bool slotIdIsValid READ slotIdIsValid NOTIFY slotIdIsValidChanged)
 
 public:
     explicit RailWagonViewModel(QObject* parent = nullptr);
@@ -33,11 +42,21 @@ public:
     [[nodiscard]] auto wagonNumber() const -> QString { return m_wagon_number; }
     [[nodiscard]] auto maxWeightKg() const -> QString { return m_max_weight_kg; }
     [[nodiscard]] auto slotId() const -> QString { return m_slot_id; }
+    [[nodiscard]] auto isValid() const -> bool { return m_is_valid; }
+    [[nodiscard]] auto errorMessage() const -> QString { return m_error_message; }
+    [[nodiscard]] auto id() const -> QString { return m_id; }
+    [[nodiscard]] auto loading() const -> bool { return m_loading; }
+    [[nodiscard]] auto idIsValid() const -> bool { return m_id_is_valid; }
+    [[nodiscard]] auto wagonNumberIsValid() const -> bool { return m_wagon_number_is_valid; }
+    [[nodiscard]] auto maxWeightKgIsValid() const -> bool { return m_max_weight_kg_is_valid; }
+    [[nodiscard]] auto slotIdIsValid() const -> bool { return m_slot_id_is_valid; }
 
     void setId(const QString& value);
     void setWagonNumber(const QString& value);
     void setMaxWeightKg(const QString& value);
     void setSlotId(const QString& value);
+
+    void setBinding(RailWagonGrpcBinding* binding);
 
     Q_INVOKABLE void load(const QString& id);
     Q_INVOKABLE void save();
@@ -49,16 +68,34 @@ Q_SIGNALS:
     void wagonNumberChanged();
     void maxWeightKgChanged();
     void slotIdChanged();
+    void isValidChanged();
+    void errorMessageChanged();
+    void loadingChanged();
+    void idChanged();
+    void idIsValidChanged();
+    void wagonNumberIsValidChanged();
+    void maxWeightKgIsValidChanged();
+    void slotIdIsValidChanged();
     void loaded();
     void saved();
     void removed();
     void error(const QString& message);
 
 private:
+    void validate();
     QString m_id;
     QString m_wagon_number;
     QString m_max_weight_kg;
     QString m_slot_id;
+    bool m_is_valid = false;
+    QString m_error_message;
+    QString m_id;
+    bool m_loading{false};
+    RailWagonGrpcBinding* m_binding{nullptr};
+    bool m_id_is_valid = false;
+    bool m_wagon_number_is_valid = false;
+    bool m_max_weight_kg_is_valid = false;
+    bool m_slot_id_is_valid = true;
 };
 
 } // namespace muscovite_harbor::intermodal_transfer::qml

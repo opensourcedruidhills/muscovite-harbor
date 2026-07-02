@@ -3,14 +3,21 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include "passenger_domain_service.hpp"
+#include "nlohmann/json.hpp"
 #include <stdexcept>
+#include <string_view>
 
 namespace passenger_terminal {
 
 auto PassengerDomainService::create(const Passenger& entity) -> void {
-    // Tier 1: field-level constraints (handled by entity struct)
-    // Tier 2: cross-field invariants (EntityValidator)
+    // Tier 1+2: field constraints and cross-field invariants (EntityValidator)
+    auto tier12_errors = PassengerValidator::validate(entity);
+    if (!tier12_errors.empty()) { throw std::runtime_error("Tier 1/2 validation failed"); }
+
     // Tier 3: plugin validation (PluginValidator)
+    auto tier3_errors = PassengerPluginValidator::validate(entity);
+    if (!tier3_errors.empty()) { throw std::runtime_error("Tier 3 validation failed"); }
+
     command_service_.create(entity);
 }
 

@@ -42,6 +42,9 @@ Drawer {
                 ListElement { name: "ReeferUnits"; page: "ReeferUnitListView" }
                 ListElement { name: "LoadPlans"; page: "LoadPlanListView" }
                 ListElement { name: "DischargeSequences"; page: "DischargeSequenceListView" }
+                // BEGIN MUSCOVITE_OBSERVABILITY_PANEL
+                ListElement { name: "Observability"; page: "ObservabilityPanel" }
+                // END MUSCOVITE_OBSERVABILITY_PANEL
             }
 
             delegate: ItemDelegate {

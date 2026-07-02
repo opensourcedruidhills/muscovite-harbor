@@ -4,6 +4,7 @@
 // GENERATED FILE — DO NOT EDIT
 
 #include "foreign_types/vts_radar_types.hpp"
+#include "../dba/vessel_position.hpp"
 #include <string>
 
 namespace harbour_control {

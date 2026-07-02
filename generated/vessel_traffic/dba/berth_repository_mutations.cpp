@@ -2,12 +2,14 @@
 // Copyright (c) 2025-2026 Johannes Lochmann
 // GENERATED FILE — DO NOT EDIT
 
+#include "berth_repository_mutations.hpp"
+#include <pqxx/pqxx>
+#include <stdexcept>
 
 namespace vessel_traffic {
 
 auto BerthRepositoryImpl::insert(pqxx::work& tx, const Berth& entity) -> void {
     tx.exec_params(kInsert,
-        entity.id,
         entity.id,
         entity.code,
         entity.name,
@@ -16,14 +18,11 @@ auto BerthRepositoryImpl::insert(pqxx::work& tx, const Berth& entity) -> void {
         entity.max_beam_metres,
         entity.has_crane_access,
         entity.has_reefer_plugs,
-        entity.is_active,
-    );
+        entity.is_active);
 }
 
 auto BerthRepositoryImpl::update(pqxx::work& tx, const Berth& entity) -> void {
-    // field params reuse same order as kUpdate (SET ... WHERE id = $N+1)
     auto params = pqxx::params{};
-    params.append(entity.id);
     params.append(entity.id);
     params.append(entity.code);
     params.append(entity.name);

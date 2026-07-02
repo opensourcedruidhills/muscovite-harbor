@@ -5,7 +5,7 @@
 
 #include "passenger.hpp"
 #include <string>
-#include <vector>
+#include <muscovite/validation/validation_errors.hpp>
 
 namespace passenger_terminal {
 
@@ -14,9 +14,10 @@ namespace passenger_terminal {
 class PassengerValidator {
 public:
     /// Validate cross-field invariants. Returns accumulated error messages.
-    [[nodiscard]] static auto validate(const Passenger& entity) -> std::vector<std::string> {
+    [[nodiscard]] static auto validate(const Passenger& entity) -> muscovite::validation::ValidationErrors {
         (void)entity;
-        return {};
+        auto errors = muscovite::validation::ValidationErrors{};
+        return errors;
     }
 };
 

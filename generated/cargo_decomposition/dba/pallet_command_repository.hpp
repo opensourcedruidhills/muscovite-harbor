@@ -17,6 +17,7 @@ public:
     virtual ~PalletCommandRepository() = default;
 
     virtual auto save(const Pallet& entity) -> void = 0;
+    virtual auto update(const Pallet& entity) -> void = 0;
     virtual auto remove(const Pallet::Id& id) -> void = 0;
     [[nodiscard]] virtual auto find_by_id(const Pallet::Id& id) -> std::optional<Pallet> = 0;
 };
