@@ -326,6 +326,14 @@ PROJECT MuscoviteHarbor {
         include "contexts/cargo-decomposition.ddd"
         include "contexts/harbour-control.ddd"
     }
+
+    -- ====================================================================
+    -- Presentation Profiles (.lay)
+    -- ====================================================================
+
+    PRESENTATION_PROFILES {
+        "layouts/desktop.lay"
+    }
 }
 
 -- ============================================================================

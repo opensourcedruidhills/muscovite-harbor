@@ -1,0 +1,35 @@
+-- SPDX-License-Identifier: AGPL-3.0-or-later OR LicenseRef-Muscovite-Commercial
+-- Copyright (c) 2026 Johannes Lochmann
+
+-- ============================================================================
+-- Muscovite Harbor — Desktop layout profile
+-- ============================================================================
+-- Master/detail views for the harbour operations console (Qt Widgets desktop).
+-- Editing this file requires ZERO changes to contexts/*.ddd.
+-- ============================================================================
+
+LAYOUT_PROFILE "Harbour Desktop" FORM_FACTOR desktop {
+
+    LAYOUT VesselTraffic.VesselCall {
+        MASTER {
+            TABLE: [voyage_number, vessel_id, berth_id, eta, etd, status];
+        }
+        DETAIL {
+            STYLE: SIDEBAR;
+            GROUPING: TABS;
+            ACTIONS: [edit];
+            CHILDREN: [PilotAssignment as "Pilot", TugBooking as "Tugs"];
+        }
+    }
+
+    LAYOUT CargoOperations.ContainerStack {
+        MASTER {
+            TABLE: [container_number, size_category, hazmat_class, status];
+        }
+        DETAIL {
+            STYLE: FORM;
+            GROUPING: FLAT;
+        }
+    }
+
+}
