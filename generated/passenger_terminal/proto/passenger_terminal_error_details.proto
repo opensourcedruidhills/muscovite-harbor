@@ -19,6 +19,7 @@ import "google/protobuf/any.proto";
 message FieldViolation {
   string field = 1;
   string description = 2;
+  string error_code = 3;
 }
 
 message ValidationError {
@@ -43,5 +44,6 @@ message ErrorDetail {
   string error_code = 1;
   string message = 2;
   google.protobuf.Any detail = 3;
+  string field = 4;
 }
 
